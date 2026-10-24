@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+**/node_modules/
+**/.nuxt/
+**/.output/
+**/coverage/
+**/.data/
+*.pem
+*.key

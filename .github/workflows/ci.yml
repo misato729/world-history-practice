@@ -1,0 +1,29 @@
+name: Template checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare isolated development settings
+        run: cp .env.example .env
+      - name: Validate template configuration and sample content
+        run: node scripts/check-template.mjs
+      - name: Build containers
+        run: docker compose build
+      - name: Create isolated PostgreSQL test database
+        run: |
+          docker compose up -d db --wait
+          docker compose exec -T db sh -c 'createdb -U "$POSTGRES_USER" world_history_test'
+      - name: Check PostgreSQL API and security regressions
+        run: docker compose run --rm -e APP_ENV=test -e DB_NAME=world_history_test frontend sh -c 'npm run db:migrate && npm run test:server'
+      - name: Check frontend and production build
+        run: docker compose run --rm frontend sh -c 'npm run security:check && npm test && npm run typecheck && npm run build'
+      - name: Stop isolated services
+        if: always()
+        run: docker compose down

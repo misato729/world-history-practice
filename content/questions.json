@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "questions": [
+    {
+      "exam_number": 1,
+      "question_number": 1,
+      "major_category_code": "economy",
+      "category_code": "currency",
+      "publication_status": "published",
+      "content_blocks": [
+        {
+          "type": "text",
+          "text": "古代から中世にかけての貨幣と交易について述べた文として、誤っているものを一つ選べ。"
+        }
+      ],
+      "explanation_blocks": [
+        {
+          "type": "text",
+          "text": "正答は②。誤っているのは「ディナール自体も銀貨」の部分で、ディナールは金貨である。名称の由来となったローマのデナリウスは銀貨だが、貨幣の名称と材質がそのまま受け継がれたわけではない。"
+        },
+        {
+          "type": "text",
+          "text": "①は正しい。リディアは小アジア西部の王国で、都はサルデス。金と銀の合金であるエレクトラムの貨幣でも知られる。"
+        },
+        {
+          "type": "text",
+          "text": "③は正しい。イスラーム世界では、ディナール金貨とともにディルハム銀貨が流通した。ディルハムの名称はドラクマに由来する。"
+        },
+        {
+          "type": "text",
+          "text": "④は正しい。カーリミー商人は、インド洋と地中海を結ぶ香辛料交易などに携わった。アデンやアレクサンドリアを拠点とし、アイユーブ朝・マムルーク朝のもとで活動した。"
+        }
+      ],
+      "source_text": "山川出版社『世界史用語集』参照項目：リディア、ディナール、ディルハム、カーリミー商人（リンク先は書籍案内） | https://howtouse.yamakawa.co.jp/books/",
+      "choices": [
+        {
+          "choice_label": "①",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "リディアは小アジア西部に位置し、都サルデスを中心に交易で栄えた。また、エレクトラム貨の使用でも知られている。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 1
+        },
+        {
+          "choice_label": "②",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "イスラーム世界のディナールは、その名称がローマのデナリウス銀貨に由来する。ディナール自体も銀貨であり、イスラーム圏の商業活動を支えた。"
+            }
+          ],
+          "is_correct": true,
+          "display_order": 2
+        },
+        {
+          "choice_label": "③",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "ディルハム銀貨は、イラク・イラン・中央アジアなどで流通した。その名称は、ギリシア・ローマの貨幣ドラクマに由来する。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 3
+        },
+        {
+          "choice_label": "④",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "カーリミー商人は、アイユーブ朝やマムルーク朝の保護を受け、アデンやアレクサンドリアを拠点として香辛料などを取り扱った。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 4
+        }
+      ]
+    },
+    {
+      "exam_number": 1,
+      "question_number": 2,
+      "major_category_code": "economy",
+      "category_code": "currency",
+      "publication_status": "published",
+      "content_blocks": [
+        {
+          "type": "text",
+          "text": "中国の貨幣・金融と交易について述べた文として、正しいものを一つ選べ。"
+        }
+      ],
+      "explanation_blocks": [
+        {
+          "type": "text",
+          "text": "正答は①。交子は、宋初に四川の成都で富商の組合が発行した手形に由来する。11世紀前半に政府が業務を引き継ぎ、紙幣として発行した。"
+        },
+        {
+          "type": "text",
+          "text": "②の「四川地方」は「東南地方」に直す。会子は、北宋以来東南地方で用いられた民間手形を起源とし、南宋政府が12世紀後半から不換紙幣として発行した。成都・四川という交子の起源と混同しないようにする。"
+        },
+        {
+          "type": "text",
+          "text": "③は実施した皇帝の対応が誤り。地丁銀制は康熙帝の時代に始まり、雍正帝の時代に全国で実施された。丁税を土地税である地銀に繰り込むという制度の説明は正しい。"
+        },
+        {
+          "type": "text",
+          "text": "④の「泉州」は「広州」に直す。行商は広州で貿易業務の独占を認められた特権商人団体である。1760年に貨物価格の共同決定などを目的とする公行がつくられたが、この組織は1771年に廃止された。"
+        }
+      ],
+      "source_text": "山川出版社『世界史用語集』参照項目：交子、会子、地丁銀制、行商（公行）（リンク先は書籍案内） | https://howtouse.yamakawa.co.jp/books/",
+      "choices": [
+        {
+          "choice_label": "①",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "交子は、北宋初めに成都の富商の組合が発行した手形に由来し、その業務を政府が引き継いで紙幣を発行した。"
+            }
+          ],
+          "is_correct": true,
+          "display_order": 1
+        },
+        {
+          "choice_label": "②",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "会子は、北宋以来四川地方で用いられていた民間手形に由来し、南宋政府が12世紀後半から不換紙幣として発行した。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 2
+        },
+        {
+          "choice_label": "③",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "地丁銀制は、丁税を地銀に繰り込む清代の税制で、雍正帝の時代に導入が始まり、乾隆帝の時代に全国で実施された。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 3
+        },
+        {
+          "choice_label": "④",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "行商は、清代の泉州で外国貿易の独占を認められた商人で、貨物価格の共同決定のため1760年に公行を組織した。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 4
+        }
+      ]
+    },
+    {
+      "exam_number": 1,
+      "question_number": 3,
+      "major_category_code": "economy",
+      "category_code": "trade",
+      "publication_status": "published",
+      "content_blocks": [
+        {
+          "type": "text",
+          "text": "次のⅠ・Ⅱの文を読み、正誤の組合せとして正しいものを一つ選べ。"
+        },
+        {
+          "type": "text",
+          "text": "Ⅰ　12〜13世紀のシャンパーニュ地方の定期市では、毛織物や香料などの取引に加え、為替などの金融取引も行われた。"
+        },
+        {
+          "type": "text",
+          "text": "Ⅱ　ハンザ同盟はリューベックを盟主とし、常設の中央機関が加盟都市を統一的に統治する組織を整えた。また、ノヴゴロドやベルゲンにも在外商館を設けた。"
+        }
+      ],
+      "explanation_blocks": [
+        {
+          "type": "text",
+          "text": "正答は②。Ⅰは正しく、Ⅱは誤りである。"
+        },
+        {
+          "type": "text",
+          "text": "Ⅰ：シャンパーニュ地方の定期市では、毛織物や香料などの交易とともに為替などの金融取引が発達した。商品が集まる市場としてだけでなく、離れた地域の商人どうしが決済する場としても機能した。"
+        },
+        {
+          "type": "text",
+          "text": "Ⅱ：「常設の中央機関が加盟都市を統一的に統治する」という部分が誤り。ハンザ同盟は都市の緩やかな連合で、不定期の総会を通じて共通の利益を調整した。リューベックが盟主だったこと、ノヴゴロドやベルゲンに在外商館を設けたことは正しい。"
+        },
+        {
+          "type": "text",
+          "text": "したがって、Ⅰを誤りとする③・④、Ⅱを正しいとする①・③は選べない。"
+        }
+      ],
+      "source_text": "山川出版社『世界史用語集』参照項目：シャンパーニュ地方、ハンザ同盟（リンク先は書籍案内） | https://howtouse.yamakawa.co.jp/books/",
+      "choices": [
+        {
+          "choice_label": "①",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "Ⅰ：正　Ⅱ：正"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 1
+        },
+        {
+          "choice_label": "②",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "Ⅰ：正　Ⅱ：誤"
+            }
+          ],
+          "is_correct": true,
+          "display_order": 2
+        },
+        {
+          "choice_label": "③",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "Ⅰ：誤　Ⅱ：正"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 3
+        },
+        {
+          "choice_label": "④",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "Ⅰ：誤　Ⅱ：誤"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 4
+        }
+      ]
+    },
+    {
+      "exam_number": 1,
+      "question_number": 4,
+      "major_category_code": "culture",
+      "category_code": "cross_cultural",
+      "publication_status": "published",
+      "content_blocks": [
+        {
+          "type": "text",
+          "text": "13〜14世紀のユーラシアの交流と文化について述べた文として、正しいものを一つ選べ。"
+        }
+      ],
+      "explanation_blocks": [
+        {
+          "type": "text",
+          "text": "正答は①。ラシード＝アッディーンはイル＝ハン国に仕え、ガザン＝ハンの命でモンゴル史の編纂に取り組んだ。次代のウルジャイトゥのもとで対象を諸民族の歴史へと広げ、『集史』の編纂を進めた。"
+        },
+        {
+          "type": "text",
+          "text": "②は派遣者が誤り。ルブルックをモンゴル帝国へ派遣したのは、フランス王ルイ9世である。教皇インノケンティウス4世が派遣した使節はプラノ＝カルピニ。"
+        },
+        {
+          "type": "text",
+          "text": "③は人物が誤り。イル＝ハン国のアルグンの使節として西ヨーロッパへ赴いたのは、ネストリウス派のラッバン＝バール＝サウマである。"
+        },
+        {
+          "type": "text",
+          "text": "④は人物が誤り。元の大都でカトリック教会を創設したのはモンテ＝コルヴィノである。使節・宣教師それぞれの派遣者、訪問先、宗派を区別する。"
+        }
+      ],
+      "source_text": "山川出版社『世界史用語集』参照項目：プラノ＝カルピニ、ルブルック、モンテ＝コルヴィノ（リンク先は書籍案内） | https://howtouse.yamakawa.co.jp/books/\nメトロポリタン美術館『Folios from the Jami‘ al-tavarikh (Compendium of Chronicles)』 | https://www.metmuseum.org/de/essays/folios-from-the-jami-al-tavarikh-compendium-of-chronicles",
+      "choices": [
+        {
+          "choice_label": "①",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "イル＝ハン国のラシード＝アッディーンは、ガザン＝ハンらのもとで、諸民族の歴史を扱う『集史』の編纂を進めた。"
+            }
+          ],
+          "is_correct": true,
+          "display_order": 1
+        },
+        {
+          "choice_label": "②",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "ルブルックは、教皇インノケンティウス4世の命によってモンゴル帝国に赴いた。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 2
+        },
+        {
+          "choice_label": "③",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "モンテ＝コルヴィノは、イル＝ハン国の君主アルグンの使節として西ヨーロッパへ派遣された。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 3
+        },
+        {
+          "choice_label": "④",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "ラッバン＝バール＝サウマは、元の大都でカトリック教会を創設した。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 4
+        }
+      ]
+    },
+    {
+      "exam_number": 1,
+      "question_number": 5,
+      "major_category_code": "culture",
+      "category_code": "arts",
+      "publication_status": "published",
+      "content_blocks": [
+        {
+          "type": "text",
+          "text": "近世の陶磁器の生産と流通について述べた文として、誤っているものを一つ選べ。"
+        }
+      ],
+      "explanation_blocks": [
+        {
+          "type": "text",
+          "text": "正答は②。デルフトで中国磁器の外観を模してつくられたのは、白い錫釉を施した陶器であり、硬質磁器ではない。外観が似ていても、素地や釉薬、製法まで同じとは限らない。"
+        },
+        {
+          "type": "text",
+          "text": "①は正しい。17世紀半ばに中国磁器の輸出が滞ると、オランダ東インド会社は日本からの磁器調達を増やした。"
+        },
+        {
+          "type": "text",
+          "text": "③は正しい。イズニクでは、石英を多く含む素地を用いた陶器が生産された。デルフトの錫釉陶器やマイセンの硬質磁器とは、材質と製法を区別する必要がある。"
+        },
+        {
+          "type": "text",
+          "text": "④は正しい。マイセンでは1710年に製陶所が設立され、硬質磁器が生産された。中国磁器を模したヨーロッパの製品を、一律に硬質磁器とみなすことはできない。"
+        }
+      ],
+      "source_text": "ヴィクトリア＆アルバート博物館『Delftware tiles』 | https://www.vam.ac.uk/articles/delftware-tiles\nメトロポリタン美術館 所蔵品解説 | https://www.metmuseum.org/art/collection/search/201783",
+      "choices": [
+        {
+          "choice_label": "①",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "17世紀半ば、明清交代に伴う混乱によって中国磁器の輸出が滞ると、オランダ東インド会社は日本での磁器調達を拡大した。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 1
+        },
+        {
+          "choice_label": "②",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "オランダのデルフトでは、中国磁器の外観を模した硬質磁器の大量生産が17世紀に始まった。"
+            }
+          ],
+          "is_correct": true,
+          "display_order": 2
+        },
+        {
+          "choice_label": "③",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "オスマン帝国のイズニクでは、石英を多く含む素地を用いた陶器が生産された。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 3
+        },
+        {
+          "choice_label": "④",
+          "content_blocks": [
+            {
+              "type": "text",
+              "text": "マイセンでは、1710年に製陶所が設立され、硬質磁器が生産された。"
+            }
+          ],
+          "is_correct": false,
+          "display_order": 4
+        }
+      ]
+    }
+  ]
+}

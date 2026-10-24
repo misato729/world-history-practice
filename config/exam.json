@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "site": {
+    "id": "world-history-practice",
+    "name": "世界史ラボ",
+    "short_name": "世界史ラボ",
+    "exam_name": "歴検1級・難関大世界史",
+    "description": "歴検1級・難関大入試を目指す人のための世界史演習サービスです。四択問題と解説で、知識のつながりや正誤判断を確かめられます。",
+    "tagline": "知識をつなげ、世界史を読み解く。",
+    "logo_path": "/images/logo.svg",
+    "primary_color": "#24695c",
+    "contact_email": "",
+    "overview": [
+      {
+        "title": "対象とする学習",
+        "body": "歴史能力検定1級世界史や、早慶などの難関大学の世界史を目指す人のための演習です。人物・地域・年代・制度を関連付けて確認します。"
+      },
+      {
+        "title": "現在の収録内容",
+        "body": "自作の四択問題5問を、体験用の演習セットとして収録しています。公式過去問や、本番と同じ問題数の模擬試験ではありません。"
+      },
+      {
+        "title": "学習の進め方",
+        "body": "1問ずつ回答すると、正答・誤った選択肢の訂正・参照資料を確認できます。会員登録すると回答履歴とお気に入りを使えます。"
+      },
+      {
+        "title": "問題と解説の根拠",
+        "body": "用語集の参照項目や博物館等の資料に基づいて作問しています。用語名だけでなく、解説に含まれる制度や文化交流の細部も扱います。"
+      }
+    ]
+  },
+  "exam": {
+    "set_count": 1,
+    "questions_per_exam": 5,
+    "choice_labels": [
+      "①",
+      "②",
+      "③",
+      "④"
+    ]
+  },
+  "categories": {
+    "major": [
+      {
+        "value": "politics",
+        "label": "政治・制度史"
+      },
+      {
+        "value": "economy",
+        "label": "経済・交易史"
+      },
+      {
+        "value": "culture",
+        "label": "文化・交流史"
+      }
+    ],
+    "minor": [
+      {
+        "value": "state",
+        "label": "国家と制度",
+        "major_category_value": "politics"
+      },
+      {
+        "value": "currency",
+        "label": "貨幣と金融",
+        "major_category_value": "economy"
+      },
+      {
+        "value": "trade",
+        "label": "交易と都市",
+        "major_category_value": "economy"
+      },
+      {
+        "value": "cross_cultural",
+        "label": "東西交流",
+        "major_category_value": "culture"
+      },
+      {
+        "value": "arts",
+        "label": "美術と技術",
+        "major_category_value": "culture"
+      }
+    ]
+  },
+  "payments": {
+    "enabled": false,
+    "free_exam_count": 1,
+    "amount": 500,
+    "currency": "jpy"
+  }
+}
