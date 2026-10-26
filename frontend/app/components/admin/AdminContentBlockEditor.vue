@@ -163,7 +163,7 @@ const removeCodeItem = (block: ContentBlock, index: number) => {
 .block-card { overflow: hidden; border: 1px solid var(--admin-line); border-radius: 6px; background: #111a1f; }
 .block-card-head { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 10px 7px 13px; border-bottom: 1px solid var(--admin-line); background: #172127; }
 .block-card-head > div:first-child { display: flex; align-items: center; gap: 8px; }
-.block-card-head strong { font-size: 12px; }
+.block-card-head strong { font-size: 0.75rem; }
 .drag-handle { display: grid; place-items: center; color: #64777f; }
 .block-actions { display: flex; gap: 4px; }
 .block-actions button { width: 31px; height: 31px; display: grid; place-items: center; padding: 0; border: 1px solid var(--admin-line); border-radius: 4px; background: #111a1f; color: var(--admin-muted); cursor: pointer; }
@@ -174,19 +174,19 @@ const removeCodeItem = (block: ContentBlock, index: number) => {
 .block-card-body .admin-field + .admin-field { margin-top: 0; }
 .compact-field textarea { min-height: 80px; }
 .fill-choice-fields { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; border: 0; }
-.fill-choice-fields legend { margin-bottom: 8px; color: var(--admin-text); font-size: 13px; font-weight: 700; }
+.fill-choice-fields legend { margin-bottom: 8px; color: var(--admin-text); font-size: 0.8125rem; font-weight: 700; }
 .fill-choice-fields .admin-field { min-width: 0; }
-.code-input { min-height: 150px !important; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; font-size: 13px !important; tab-size: 2; }
+.code-input { min-height: 150px !important; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; font-size: 0.8125rem !important; tab-size: 2; }
 .code-item-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .code-item { display: grid; gap: 12px; padding: 13px; border: 1px solid var(--admin-line); border-radius: 5px; }
 .code-item-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.code-item-head strong { font-size: 12px; }
-.code-item-head button { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--admin-muted); font-size: 11px; cursor: pointer; }
+.code-item-head strong { font-size: 0.75rem; }
+.code-item-head button { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--admin-muted); font-size: 0.6875rem; cursor: pointer; }
 .code-item-head button:disabled { opacity: .3; }
-.add-code-button { justify-self: start; display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--admin-line); border-radius: 4px; background: transparent; color: var(--admin-muted); font-size: 11px; font-weight: 700; cursor: pointer; }
+.add-code-button { justify-self: start; display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--admin-line); border-radius: 4px; background: transparent; color: var(--admin-muted); font-size: 0.6875rem; font-weight: 700; cursor: pointer; }
 .add-block-row { min-height: 52px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 9px; border: 1px dashed var(--admin-line-strong); border-radius: 6px; }
-.add-block-row select { min-height: 35px; padding: 0 9px; border: 1px solid var(--admin-line); border-radius: 4px; background: #111a1f; color: var(--admin-text); font-size: 12px; }
-.add-block-row button { min-height: 35px; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid var(--admin-line-strong); border-radius: 4px; background: var(--admin-surface-3); color: var(--admin-text); font-size: 12px; font-weight: 800; cursor: pointer; }
+.add-block-row select { min-height: 35px; padding: 0 9px; border: 1px solid var(--admin-line); border-radius: 4px; background: #111a1f; color: var(--admin-text); font-size: 0.75rem; }
+.add-block-row button { min-height: 35px; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid var(--admin-line-strong); border-radius: 4px; background: var(--admin-surface-3); color: var(--admin-text); font-size: 0.75rem; font-weight: 800; cursor: pointer; }
 @media (max-width: 700px) {
   .code-item-list { grid-template-columns: 1fr; }
   .fill-choice-fields { grid-template-columns: 1fr; }

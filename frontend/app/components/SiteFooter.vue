@@ -42,7 +42,7 @@ const { apiStatus } = useApiStatus()
   justify-content: space-between;
   gap: 20px;
   color: #52636c;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .footer-main, .footer-copy { min-width: 0; display: grid; gap: 6px; }
 .footer-main { gap: 10px; }

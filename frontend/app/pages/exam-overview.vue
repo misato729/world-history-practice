@@ -24,6 +24,6 @@ useSeoMeta({ title: `試験概要｜${SITE.name}`, description: `${SITE.exam_nam
 .overview-page { padding-bottom: 36px; }
 .content-panel p { white-space: pre-line; overflow-wrap: anywhere; }
 .category-group { margin: 24px 0; }
-.category-group h3 { font-size: 18px; }
+.category-group h3 { font-size: 1.125rem; }
 .category-group ul { padding-left: 1.4em; }
 </style>

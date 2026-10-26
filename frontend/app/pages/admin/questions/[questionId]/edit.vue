@@ -76,5 +76,5 @@ const submit = async (input: AdminQuestionInput) => {
 </template>
 
 <style scoped>
-.success-message { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 13px 15px; border: 1px solid rgba(53, 185, 121, .45); border-radius: 5px; background: rgba(53, 185, 121, .09); color: #83d9ad; font-size: 13px; font-weight: 700; }
+.success-message { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 13px 15px; border: 1px solid rgba(53, 185, 121, .45); border-radius: 5px; background: rgba(53, 185, 121, .09); color: #83d9ad; font-size: 0.8125rem; font-weight: 700; }
 </style>

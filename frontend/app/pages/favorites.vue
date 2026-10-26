@@ -222,16 +222,16 @@ watch([() => user.value?.id, canUseFavorites, page], loadFavorites, { immediate:
 .favorite-card.locked { border-color: #cad3d5; background: #f8fafa; }
 .favorite-card.pending-removal { border-color: #d7dee0; background: #fbfcfc; }
 .favorite-card-head { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.favorite-card-head > span { color: var(--teal-dark); font-size: 14px; font-weight: 800; }
+.favorite-card-head > span { color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
 .favorite-toggle { width: 42px; height: 42px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #718287; cursor: pointer; transition: color .15s, transform .15s; }
 .favorite-toggle.active { color: #f0b323; }
 .favorite-toggle:hover { color: #c78b00; transform: scale(1.08); }
 .favorite-toggle:disabled { opacity: .5; cursor: wait; }
 .favorite-card-link { min-width: 0; display: grid; gap: 18px; color: var(--ink); text-decoration: none; }
 .favorite-question { min-width: 0; display: grid; gap: 7px; }
-.favorite-question strong { overflow-wrap: anywhere; font-size: 18px; line-height: 1.65; }
+.favorite-question strong { overflow-wrap: anywhere; font-size: 1.125rem; line-height: 1.65; }
 .favorite-question small { color: var(--muted); }
-.review-link { display: inline-flex; align-items: center; justify-self: end; gap: 6px; color: var(--teal-dark); font-size: 14px; font-weight: 800; }
+.review-link { display: inline-flex; align-items: center; justify-self: end; gap: 6px; color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
 .locked-content { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; color: #53676e; }
 .locked-content :deep(svg) { width: 27px; height: 27px; }
 .locked-content strong { color: var(--ink); }
@@ -244,7 +244,7 @@ watch([() => user.value?.id, canUseFavorites, page], loadFavorites, { immediate:
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 640px) {
   .favorite-card { padding: 18px; }
-  .favorite-question strong { font-size: 16px; }
+  .favorite-question strong { font-size: 1rem; }
   .pagination { gap: 8px; }
   .pagination button { padding: 0 12px; }
 }

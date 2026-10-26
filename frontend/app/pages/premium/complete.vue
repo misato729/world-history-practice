@@ -75,10 +75,13 @@ onBeforeUnmount(() => { stopped = true })
 .completion-card { width: min(680px, 100%); display: grid; justify-items: center; padding: clamp(32px, 7vw, 64px); border: 1px solid var(--line); border-radius: 10px; background: #fff; text-align: center; box-shadow: 0 16px 50px rgba(25, 54, 60, .08); }
 .state-icon { width: 52px; height: 52px; color: var(--teal); }
 .pending-icon { color: #c78b00; }
-.completion-card h1 { margin: 22px 0 0; font-size: clamp(26px, 5vw, 38px); }
+.completion-card h1 { margin: 22px 0 0; font-size: 2.375rem; }
 .completion-card p { max-width: 530px; margin: 14px 0 26px; color: var(--muted); line-height: 1.85; }
 .completion-card p a { color: var(--teal-dark); font-weight: 700; }
 .completion-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 640px) {
+  .completion-card h1 { font-size: 1.625rem; }
+}
 </style>

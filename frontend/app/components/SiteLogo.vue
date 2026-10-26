@@ -6,8 +6,9 @@
 </template>
 
 <style scoped>
-.site-logo { display: inline-flex; min-width: 0; align-items: center; gap: 10px; font-size: clamp(18px, 2.4vw, 26px); font-weight: 900; color: var(--ink); }
+.site-logo { display: inline-flex; min-width: 0; align-items: center; gap: 10px; font-size: 1.625rem; font-weight: 900; color: var(--ink); }
 .site-logo img { flex: 0 0 auto; width: 44px; height: 44px; object-fit: contain; }
 .site-logo span { overflow-wrap: anywhere; }
-@media (max-width: 420px) { .site-logo { gap: 6px; font-size: 16px; } .site-logo img { width: 32px; height: 32px; } }
+@media (max-width: 760px) { .site-logo { font-size: 1.125rem; } }
+@media (max-width: 420px) { .site-logo { gap: 6px; font-size: 1rem; } .site-logo img { width: 32px; height: 32px; } }
 </style>

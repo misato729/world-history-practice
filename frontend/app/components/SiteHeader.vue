@@ -52,7 +52,7 @@ const handleLogout = async () => {
         :aria-label="`${SITE.name}：ホームへ戻る`"
         :title="SITE.description"
       >
-        <SiteLogo />
+        <SiteLogo class="brand-logo" />
         <small class="brand-tagline">{{ SITE.exam_name }}</small>
       </NuxtLink>
 
@@ -131,14 +131,15 @@ const handleLogout = async () => {
 }
 .brand, .header-actions, .account-link { display: flex; align-items: center; }
 .brand { min-width: 0; align-items: center; gap: 12px; color: #082e32; text-decoration: none; }
-.brand-tagline { min-width: 0; overflow-wrap: anywhere; margin-bottom: 4px; font-size: 12px; line-height: 1.4; font-weight: 700; }
+.brand-logo { flex-shrink: 0; }
+.brand-tagline { min-width: 0; overflow-wrap: anywhere; margin-bottom: 4px; font-size: 0.75rem; line-height: 1.4; font-weight: 700; }
 .brand-tagline span { display: inline-block; white-space: nowrap; }
 .header-actions { flex: 0 0 auto; gap: 18px; }
 .login-link, .account-link { color: #082e32; font-weight: 800; text-decoration: none; }
 .account-link { gap: 7px; }
 .account-link :deep(svg) { width: 22px; height: 22px; }
 .menu-button, .drawer-head button { display: grid; place-items: center; border: 0; cursor: pointer; }
-.menu-button { width: 46px; height: 46px; border-radius: 6px; background: var(--teal-dark); color: #fff; font-size: 26px; }
+.menu-button { width: 46px; height: 46px; border-radius: 6px; background: var(--teal-dark); color: #fff; font-size: 1.625rem; }
 .menu-backdrop { position: fixed; inset: 0; z-index: 40; border: 0; background: rgba(10, 31, 36, .42); }
 .menu-drawer {
   position: fixed;
@@ -152,8 +153,8 @@ const handleLogout = async () => {
   box-shadow: -18px 0 50px rgba(18, 42, 48, .2);
 }
 .drawer-head { min-height: 52px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
-.drawer-head strong { font-size: 20px; }
-.drawer-head button { width: 40px; height: 40px; border-radius: 6px; background: #e6eeee; color: var(--ink); font-size: 22px; }
+.drawer-head strong { font-size: 1.25rem; }
+.drawer-head button { width: 40px; height: 40px; border-radius: 6px; background: #e6eeee; color: var(--ink); font-size: 1.375rem; }
 nav { display: grid; gap: 4px; padding-top: 18px; }
 nav a, .logout-button {
   width: 100%;
@@ -184,7 +185,7 @@ nav a.mobile-login-link { display: none; }
 @media (max-width: 760px) {
   .header-inner { padding: 0 12px; gap: 10px; }
   .brand { gap: 10px; }
-  .brand-tagline { font-size: 11px; }
+  .brand-tagline { font-size: 0.6875rem; }
   .brand-tagline span { display: inline; white-space: normal; }
   .account-label, .login-link { display: none; }
   nav a.mobile-login-link { display: grid; }

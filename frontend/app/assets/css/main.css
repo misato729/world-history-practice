@@ -17,14 +17,15 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--surface-soft); }
+/* App font sizes use rem so this is the single text-size baseline. */
+html { background: var(--surface-soft); font-size: 90%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0;
   color: var(--ink);
   background: var(--surface-soft);
   font-family: "Hiragino Sans", "Yu Gothic", Meiryo, ui-sans-serif, system-ui, sans-serif;
 }
-button, input { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a:focus-visible, button:focus-visible, input:focus-visible {
   outline: 3px solid rgba(8, 127, 131, 0.28);
@@ -33,7 +34,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 .page-wrap { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
 .page-intro { padding: 56px 0 28px; }
-.page-intro h1 { margin: 0; font-size: clamp(30px, 5vw, 46px); line-height: 1.25; }
+.page-intro h1 { margin: 0; font-size: 2.875rem; line-height: 1.25; }
 .page-intro p { max-width: 720px; margin: 14px 0 0; color: var(--muted); line-height: 1.9; }
 .content-panel { padding: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .content-panel + .content-panel { margin-top: 18px; }
@@ -59,7 +60,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 .field { display: grid; gap: 8px; }
 .field + .field { margin-top: 18px; }
-.field label { font-size: 14px; font-weight: 700; }
+.field label { font-size: 0.875rem; font-weight: 700; }
 .field input {
   width: 100%;
   min-height: 46px;
@@ -74,9 +75,9 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .auth-form { width: min(520px, 100%); margin-right: auto; margin-left: auto; }
 .auth-form .primary-link { width: 100%; margin-top: 24px; }
 .auth-form .primary-link:disabled { opacity: .55; cursor: not-allowed; }
-.auth-note { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.auth-note { margin-top: 18px; color: var(--muted); font-size: 0.875rem; }
 .auth-note a { color: var(--teal-dark); font-weight: 700; }
-.form-error { margin: 18px 0 0; color: #a23b2a; font-size: 14px; font-weight: 700; line-height: 1.7; }
+.form-error { margin: 18px 0 0; color: #a23b2a; font-size: 0.875rem; font-weight: 700; line-height: 1.7; }
 
 .empty-state {
   display: grid;
@@ -101,7 +102,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   background: var(--surface);
 }
 .legal-document > section + section { margin-top: 34px; padding-top: 34px; border-top: 1px solid var(--line); }
-.legal-document h2 { margin: 0 0 14px; font-size: clamp(19px, 3vw, 23px); line-height: 1.5; }
+.legal-document h2 { margin: 0 0 14px; font-size: 1.4375rem; line-height: 1.5; }
 .legal-document p { margin: 0; color: #42555d; line-height: 1.95; }
 .legal-document p + p { margin-top: 12px; }
 .legal-document ol,
@@ -111,13 +112,19 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .legal-document li { padding-left: .25em; line-height: 1.9; }
 .legal-document li + li { margin-top: 6px; }
 .legal-document a { color: var(--teal-dark); font-weight: 700; text-underline-offset: 3px; overflow-wrap: anywhere; }
-.legal-revised { margin: 28px 0 0; color: var(--muted); font-size: 13px; }
+.legal-revised { margin: 28px 0 0; color: var(--muted); font-size: 0.8125rem; }
+
+@media (max-width: 960px) {
+  .page-intro h1 { font-size: 2.5rem; }
+}
 
 @media (max-width: 640px) {
   :root { --header-height: 66px; }
   .page-wrap { width: min(100% - 28px, 1080px); }
   .page-intro { padding-top: 38px; }
+  .page-intro h1 { font-size: 1.875rem; }
   .content-panel, .empty-state { padding: 22px; }
+  .legal-document h2 { font-size: 1.1875rem; }
   .legal-document > section + section { margin-top: 28px; padding-top: 28px; }
 }
 
@@ -156,13 +163,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   background: #111a1f;
 }
 .admin-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--admin-text); text-decoration: none; }
-.admin-brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 5px; background: var(--admin-accent); color: #071214; font-size: 21px; }
+.admin-brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 5px; background: var(--admin-accent); color: #071214; font-size: 1.3125rem; }
 .admin-brand > span:last-child { display: flex; align-items: baseline; gap: 9px; }
-.admin-brand strong { font-size: 17px; letter-spacing: .04em; }
-.admin-brand small { color: var(--admin-muted); font-size: 12px; font-weight: 700; }
+.admin-brand strong { font-size: 1.0625rem; letter-spacing: .04em; }
+.admin-brand small { color: var(--admin-muted); font-size: 0.75rem; font-weight: 700; }
 .admin-topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 22px; }
 .admin-site-link,
-.admin-user { display: inline-flex; align-items: center; gap: 7px; color: var(--admin-muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.admin-user { display: inline-flex; align-items: center; gap: 7px; color: var(--admin-muted); font-size: 0.8125rem; font-weight: 700; text-decoration: none; }
 .admin-site-link:hover { color: var(--admin-text); }
 .admin-menu-trigger { display: none; }
 .admin-frame { min-height: calc(100vh - 66px); display: grid; grid-template-columns: 224px minmax(0, 1fr); }
@@ -176,7 +183,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border-right: 1px solid var(--admin-line);
   background: #111a1f;
 }
-.admin-sidebar-title { padding: 0 10px 15px; color: #72858d; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.admin-sidebar-title { padding: 0 10px 15px; color: #72858d; font-size: 0.6875rem; font-weight: 800; letter-spacing: .08em; }
 .admin-sidebar-title button { display: none; }
 .admin-navigation { display: grid; gap: 5px; }
 .admin-navigation a {
@@ -188,7 +195,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   padding: 0 11px;
   border-radius: 5px;
   color: var(--admin-muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
 }
@@ -207,7 +214,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border-radius: 5px;
   background: transparent;
   color: var(--admin-muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -215,9 +222,9 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .admin-main { min-width: 0; padding: 36px clamp(24px, 4vw, 52px) 72px; }
 .admin-page { width: min(1240px, 100%); margin: 0 auto; }
 .admin-page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
-.admin-page-eyebrow { margin: 0 0 8px; color: var(--admin-accent-hover); font-size: 11px; font-weight: 900; letter-spacing: .1em; }
-.admin-page-head h1 { margin: 0; font-size: clamp(25px, 3vw, 34px); line-height: 1.3; }
-.admin-page-head p:not(.admin-page-eyebrow) { margin: 10px 0 0; color: var(--admin-muted); font-size: 14px; }
+.admin-page-eyebrow { margin: 0 0 8px; color: var(--admin-accent-hover); font-size: 0.6875rem; font-weight: 900; letter-spacing: .1em; }
+.admin-page-head h1 { margin: 0; font-size: 2.125rem; line-height: 1.3; }
+.admin-page-head p:not(.admin-page-eyebrow) { margin: 10px 0 0; color: var(--admin-muted); font-size: 0.875rem; }
 .admin-primary-button,
 .admin-secondary-button,
 .admin-danger-button,
@@ -246,13 +253,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .admin-panel { border: 1px solid var(--admin-line); border-radius: 7px; background: var(--admin-surface); }
 .admin-panel + .admin-panel { margin-top: 18px; }
 .admin-panel-head { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 20px; border-bottom: 1px solid var(--admin-line); }
-.admin-panel-head h2 { margin: 0; font-size: 17px; }
-.admin-panel-head p { margin: 3px 0 0; color: var(--admin-muted); font-size: 12px; }
+.admin-panel-head h2 { margin: 0; font-size: 1.0625rem; }
+.admin-panel-head p { margin: 3px 0 0; color: var(--admin-muted); font-size: 0.75rem; }
 .admin-panel-body { padding: 20px; }
 .admin-field { display: grid; gap: 7px; min-width: 0; }
 .admin-field > label,
-.admin-field > span:first-child { color: #dbe5e7; font-size: 13px; font-weight: 800; }
-.admin-field small { color: var(--admin-muted); font-size: 11px; line-height: 1.6; }
+.admin-field > span:first-child { color: #dbe5e7; font-size: 0.8125rem; font-weight: 800; }
+.admin-field small { color: var(--admin-muted); font-size: 0.6875rem; line-height: 1.6; }
 .admin-field input,
 .admin-field select,
 .admin-field textarea {
@@ -271,7 +278,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .admin-field select:focus,
 .admin-field textarea:focus { outline: 2px solid rgba(39, 168, 173, .28); border-color: var(--admin-accent); }
 .admin-form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.admin-inline-error { margin: 0; padding: 13px 15px; border: 1px solid rgba(216, 106, 98, .5); border-radius: 5px; background: rgba(216, 106, 98, .09); color: #f3aaa4; font-size: 13px; font-weight: 700; line-height: 1.7; }
+.admin-inline-error { margin: 0; padding: 13px 15px; border: 1px solid rgba(216, 106, 98, .5); border-radius: 5px; background: rgba(216, 106, 98, .09); color: #f3aaa4; font-size: 0.8125rem; font-weight: 700; line-height: 1.7; }
 .admin-empty,
 .admin-loading { min-height: 220px; display: grid; place-items: center; padding: 32px; color: var(--admin-muted); text-align: center; }
 .admin-loading > div,
@@ -280,14 +287,15 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .admin-empty svg { width: 34px; height: 34px; color: #687b83; }
 .admin-empty h2,
 .admin-empty p { margin: 0; }
-.admin-empty h2 { color: var(--admin-text); font-size: 18px; }
-.admin-empty p { max-width: 520px; font-size: 13px; line-height: 1.7; }
+.admin-empty h2 { color: var(--admin-text); font-size: 1.125rem; }
+.admin-empty p { max-width: 520px; font-size: 0.8125rem; line-height: 1.7; }
 .admin-nav-backdrop { display: none; }
 @keyframes admin-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 900px) {
+  .admin-page-head h1 { font-size: 1.5625rem; }
   .admin-frame { grid-template-columns: 1fr; }
-  .admin-menu-trigger { width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border: 1px solid var(--admin-line); border-radius: 5px; background: var(--admin-surface); color: var(--admin-text); font-size: 20px; }
+  .admin-menu-trigger { width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border: 1px solid var(--admin-line); border-radius: 5px; background: var(--admin-surface); color: var(--admin-text); font-size: 1.25rem; }
   .admin-sidebar { position: fixed; top: 0; left: 0; z-index: 60; width: min(280px, 86vw); height: 100vh; transform: translateX(-100%); transition: transform .18s ease; }
   .admin-sidebar.open { transform: translateX(0); }
   .admin-sidebar-title { display: flex; align-items: center; justify-content: space-between; min-height: 44px; color: var(--admin-muted); }
@@ -308,3 +316,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 
 .draft-notice { padding: 16px; border: 1px solid #dfc278; border-radius: 6px; background: #fff9e8; color: #6c5519; line-height: 1.8; }
+
+@media (max-width: 760px) {
+  /* Avoid automatic focus zoom on iOS, including compact editor inputs. */
+  :root :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    font-size: max(1rem, 16px) !important;
+  }
+}

@@ -343,7 +343,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   background: #eef4f3;
 }
 .launcher-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; }
-.launcher-heading h2 { margin: 0; font-size: 30px; line-height: 1.3; }
+.launcher-heading h2 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
 .launcher-heading > p { max-width: 480px; margin: 0; color: var(--muted); line-height: 1.8; }
 .section-heading { display: flex; align-items: center; gap: 10px; }
 .section-heading::before { content: ''; flex: 0 0 4px; width: 4px; height: 26px; background: var(--teal-dark); }
@@ -380,8 +380,8 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   margin-bottom: 14px;
 }
 .exam-grid-heading p { display: flex; align-items: baseline; gap: 10px; margin: 0; }
-.exam-grid-heading strong { font-size: 16px; }
-.exam-grid-heading span { color: var(--muted); font-size: 13px; font-weight: 700; }
+.exam-grid-heading strong { font-size: 1rem; }
+.exam-grid-heading span { color: var(--muted); font-size: 0.8125rem; font-weight: 700; }
 .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
 .exam-card {
   min-height: 90px;
@@ -399,15 +399,15 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 }
 .exam-card:hover { border-color: var(--teal); background: #f9ffff; transform: translateY(-1px); }
 .exam-card-copy { min-width: 0; display: grid; gap: 7px; }
-.exam-card strong { color: var(--teal-dark); font-size: 18px; line-height: 1.4; }
-.exam-card-copy > span { color: var(--muted); font-size: 13px; }
+.exam-card strong { color: var(--teal-dark); font-size: 1.125rem; line-height: 1.4; }
+.exam-card-copy > span { color: var(--muted); font-size: 0.8125rem; }
 .exam-card :deep(.iconify) { flex: 0 0 20px; width: 20px; height: 20px; color: var(--teal-dark); }
-.premium-info-link { display: inline-flex; align-items: center; gap: 5px; color: var(--teal-dark); font-size: 13px; font-weight: 800; }
+.premium-info-link { display: inline-flex; align-items: center; gap: 5px; color: var(--teal-dark); font-size: 0.8125rem; font-weight: 800; }
 .condition-form { border: 1px solid #c7d4d5; border-radius: 8px; background: #fff; }
 .condition-fields { display: grid; gap: 28px; padding: 28px; }
 .condition-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .condition-fieldset + .condition-fieldset { padding-top: 26px; border-top: 1px solid #dce4e4; }
-.condition-fieldset legend { padding: 0; color: #253d45; font-size: 17px; font-weight: 900; }
+.condition-fieldset legend { padding: 0; color: #253d45; font-size: 1.0625rem; font-weight: 900; }
 .condition-field-heading {
   display: flex;
   align-items: center;
@@ -415,7 +415,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   gap: 16px;
   margin: 7px 0 13px;
 }
-.condition-field-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.condition-field-heading p { margin: 0; color: var(--muted); font-size: 0.8125rem; }
 .all-selector {
   min-height: 36px;
   display: flex;
@@ -426,7 +426,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   border-radius: 5px;
   background: #f8faf9;
   color: #344951;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
   cursor: pointer;
 }
@@ -464,7 +464,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   background: #f4f7f6;
 }
 .condition-submit p { margin: 0; color: #40545b; font-weight: 800; }
-.condition-submit p span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 11px; }
+.condition-submit p span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 0.6875rem; }
 .condition-submit p strong { margin-left: 8px; color: var(--teal-dark); }
 .condition-submit .selection-required { color: #a23b2a; }
 .condition-actions { display: flex; flex: 0 0 auto; gap: 10px; }
@@ -479,12 +479,12 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   background: #fff;
 }
 .overview-copy { max-width: 680px; }
-.overview-copy h1 { margin: 0; font-size: 30px; line-height: 1.3; }
-.overview-copy > p { margin: 22px 0 0; color: var(--muted); font-size: 16px; line-height: 1.9; }
+.overview-copy h1 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
+.overview-copy > p { margin: 22px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.9; }
 .overview-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
 .home-section { padding: 62px clamp(28px, 6vw, 86px); }
 .section-title { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
-.section-title h2 { margin: 0; font-size: 30px; }
+.section-title h2 { margin: 0; font-size: 1.875rem; }
 .updates-section { background: #f1f5f4; }
 .update-list { border-top: 1px solid #cbd7d9; }
 .update-list article { min-height: 68px; display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 18px; border-bottom: 1px solid #cbd7d9; }
@@ -502,8 +502,8 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   padding: 26px 0;
   border-bottom: 1px solid #dce4e4;
 }
-.usage-row dt { color: var(--ink); font-size: 16px; font-weight: 700; line-height: 1.9; }
-.usage-row dd { min-width: 0; margin: 0; color: #51636c; font-size: 15px; line-height: 1.9; }
+.usage-row dt { color: var(--ink); font-size: 1rem; font-weight: 700; line-height: 1.9; }
+.usage-row dd { min-width: 0; margin: 0; color: #51636c; font-size: 0.9375rem; line-height: 1.9; }
 .usage-row p { margin: 0; }
 .usage-premium-link {
   min-height: 44px;
@@ -512,7 +512,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   gap: 8px;
   margin-top: 4px;
   color: var(--teal-dark);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   text-decoration: underline;
   text-decoration-color: #a3c3c4;
@@ -534,8 +534,8 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 @media (max-width: 640px) {
   .practice-launcher { padding: 32px 20px 38px; }
   .launcher-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
-  .launcher-heading h2 { font-size: 27px; }
-  .launcher-heading > p { font-size: 14px; }
+  .launcher-heading h2 { font-size: 1.6875rem; }
+  .launcher-heading > p { font-size: 0.875rem; }
   .launcher-tabs { width: 100%; margin-top: 24px; }
   .exam-grid-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
   .exam-grid { grid-template-columns: minmax(0, 1fr); }

@@ -100,7 +100,7 @@ const deleteAccount = async () => {
 .account-info { display: grid; gap: 18px; }
 .account-info div { display: grid; grid-template-columns: 160px 1fr; gap: 20px; }
 .account-info span { color: var(--muted); }
-.account-actions h2, .danger-zone h2 { font-size: 20px; }
+.account-actions h2, .danger-zone h2 { font-size: 1.25rem; }
 .membership-action p { margin-bottom: 18px; }
 .danger-zone { border-color: #e8b9af; }
 .danger-zone button { min-height: 42px; padding: 0 14px; border: 1px solid #d65e49; border-radius: 6px; background: #fff; color: #b33b29; font-weight: 700; cursor: pointer; }
