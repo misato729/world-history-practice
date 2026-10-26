@@ -176,8 +176,8 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   width: 260px;
   min-height: calc(100vh - var(--header-height));
   padding: 22px 16px;
-  border-right: 1px solid #cdd9dc;
-  background: #e3e9e9;
+  border-right: 1px solid var(--line);
+  background: var(--surface-tint);
 }
 
 .sidebar-heading {
@@ -186,7 +186,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   align-items: center;
   gap: 9px;
   padding: 0 10px 10px;
-  color: #53676e;
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 800;
 }
@@ -199,7 +199,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   place-items: center;
   align-content: center;
   gap: 10px;
-  color: #53676e;
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 700;
   text-align: center;
@@ -216,14 +216,14 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
 .sidebar-error button {
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid #aebfc3;
+  border: 1px solid var(--line-strong);
   border-radius: 5px;
-  background: #fff;
+  background: var(--surface);
   color: var(--teal-dark);
   font-weight: 800;
   cursor: pointer;
 }
-.sidebar-error button:hover { background: #f2f7f7; }
+.sidebar-error button:hover { background: var(--surface-soft); }
 
 @keyframes sidebar-spin {
   to { transform: rotate(360deg); }
@@ -240,9 +240,9 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   justify-content: space-between;
   gap: 12px;
   padding: 10px 10px 10px 16px;
-  border: 1px solid #c2ced1;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .exam-link {
@@ -272,14 +272,14 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   place-items: center;
   border: 0;
   border-radius: 5px;
-  background: #e7f2f2;
+  background: var(--surface-tint);
   color: var(--teal-dark);
   font-size: 1.3125rem;
   cursor: pointer;
 }
 
 .exam-row button:hover {
-  background: #d5ebeb;
+  background: var(--surface-selected);
 }
 
 .question-list {
@@ -296,7 +296,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   align-items: center;
   justify-content: center;
   border-radius: 5px;
-  color: #40545b;
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 700;
   text-decoration: none;
@@ -304,7 +304,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
 
 .question-list a:hover,
 .question-list a.active {
-  background: #cce8e8;
+  background: var(--surface-selected);
   color: var(--teal-dark);
 }
 
@@ -353,7 +353,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
     min-height: auto;
     padding: 0;
     border-right: 0;
-    border-bottom: 1px solid #cdd9dc;
+    border-bottom: 1px solid var(--line);
   }
 
   .sidebar-heading {
@@ -377,7 +377,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
     cursor: pointer;
   }
 
-  .mobile-exam-toggle:hover { background: #d8e5e5; }
+  .mobile-exam-toggle:hover { background: var(--surface-selected); }
   .mobile-exam-toggle > :first-child,
   .mobile-exam-toggle > :last-child { width: 20px; height: 20px; }
 
@@ -393,9 +393,9 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
     overflow-y: auto;
     scrollbar-gutter: stable;
     overscroll-behavior-y: contain;
-    border-bottom: 1px solid #cdd9dc;
-    background: #e3e9e9;
-    box-shadow: 0 10px 16px rgba(18, 42, 48, .12);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-tint);
+    box-shadow: 0 10px 16px rgba(var(--shadow-color), .12);
   }
 
   .mobile-open .sidebar-content { display: block; }

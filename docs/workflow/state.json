@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 7,
-  "updated_at": "2026-10-26T15:55:02.442Z",
+  "revision": 8,
+  "updated_at": "2026-10-26T18:25:24.289Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T15-55-02-442Z-r7-published.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T18-25-24-289Z-r8.json",
   "contexts": [
     {
       "id": "product",
@@ -191,6 +191,28 @@
       "verification_scope": "軽量な引き継ぎテスト28件と追加の公開メタデータ回帰1件、送信防止テスト9件が成功。Git除外・手元の全履歴・有効化したpre-pushの実呼出し・リポジトリ内リンク・ローカルPython構文を確認。push・外部送信・DB操作・再OCR・アプリの重い検査は行っていない。"
     },
     {
+      "id": "textbook_palette",
+      "context": "service",
+      "title": "詳説世界史の表紙に合わせた全体配色",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "2026-10-27 この会話：添付の山川『詳説世界史』表紙にサイト全体の色調を合わせる依頼",
+      "authorization": "requested",
+      "next_action": "配色変更はローカル実装・代表画面の確認まで完了。コミット・push・デプロイは別途の明示依頼を待つ。",
+      "evidence": [
+        "config/exam.json",
+        "frontend/app/assets/css/main.css",
+        "frontend/public/images/logo.svg",
+        "docs/verification.md",
+        "docs/screenshots/textbook-palette-desktop.jpg",
+        "docs/screenshots/textbook-palette-mobile.jpg",
+        "docs/screenshots/textbook-palette-practice-mobile.jpg",
+        "docs/screenshots/textbook-palette-admin-mobile.jpg"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "Docker内の型検査・設定検査・差分検査が成功。Chromeでホーム・管理ログインのPC1440px／スマートフォン390px・320px、問題画面のPC1440px／390pxと匿名回答を確認。会員画面・管理一覧／編集／プレビューの実画面、全件テスト・本番ビルド・本番は未確認。未コミット・未公開。"
+    },
+    {
       "id": "harness_refinement",
       "context": "service",
       "title": "記事を踏まえた完了ゲート・修正ループ・依存グラフ",
@@ -270,6 +292,60 @@
           }
         ]
       }
+    },
+    {
+      "id": "palette_delivery",
+      "context": "service",
+      "title": "承認された配色変更のコミット・push",
+      "status": "doing",
+      "depends_on": [],
+      "request_ref": "2026-10-27 この会話：OKです。コミット・pushしてください。デプロイはまだ行なっていないです",
+      "authorization": "requested",
+      "next_action": "対象差分を[skip netlify]付きでコミット・pushし、origin/mainとの同期を確認する。デプロイしない。",
+      "evidence": [
+        "docs/verification.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "送信準備中。設定・差分・原資料の追跡と履歴の検査、独立レビューが成功。Netlify管理画面で世界史プロジェクト未登録を現在確認。",
+      "acceptance": [
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "承認された配色差分のみを対象とし、設定・差分・原資料保護の検査に合格する",
+          "verification": "git diff --check、check-template、check-private-sourcesと明示的な対象一覧で送信範囲を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が処理・文言の保持と配色・記録・送信対象を確認する",
+          "verification": "delivery_reviewの独立差分レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "delivery_review"
+        },
+        {
+          "id": "remote",
+          "kind": "automated",
+          "description": "配色コミットがorigin/mainへ送信され、ローカルとリモートの差分が0/0になる",
+          "verification": "[skip netlify]付きコミット、pre-push、push結果とgit rev-listで確認。Netlify設定変更・デプロイなし",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "palette_delivery_owner",
+        "max_attempts": 3,
+        "attempts": []
+      }
     }
   ],
   "gate_policy": {
@@ -283,7 +359,8 @@
       "edition_comparison",
       "more_questions",
       "delivery",
-      "repository_layout"
+      "repository_layout",
+      "textbook_palette"
     ]
   }
 }

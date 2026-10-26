@@ -268,18 +268,18 @@ const deleteQuestion = async () => {
 
 <style scoped>
 .filter-panel { margin-bottom: 18px; }
-.filter-form { display: grid; grid-template-columns: minmax(220px, 1.7fr) 140px 180px 180px 150px auto; align-items: end; gap: 14px; }
+.filter-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 14px; }
 .keyword-input { position: relative; }
-.keyword-input :deep(svg) { position: absolute; top: 50%; left: 11px; width: 17px; height: 17px; color: #72858d; transform: translateY(-50%); }
+.keyword-input :deep(svg) { position: absolute; top: 50%; left: 11px; width: 17px; height: 17px; color: var(--admin-subtle); transform: translateY(-50%); }
 .keyword-input input { padding-left: 36px; }
-.filter-actions { display: flex; gap: 8px; }
+.filter-actions { display: flex; justify-content: flex-end; gap: 8px; grid-column: 1 / -1; }
 .question-table td small.history-topic-label { color: var(--admin-accent-hover); }
 .admin-inline-error { margin: 0 0 18px; }
 .result-head .admin-icon-button { width: 38px; min-height: 38px; padding: 0; border-color: var(--admin-line); background: transparent; color: var(--admin-muted); }
 .question-table-wrap { overflow-x: auto; }
 .question-table { width: 100%; min-width: 860px; border-collapse: collapse; }
-.question-table th { padding: 11px 15px; border-bottom: 1px solid var(--admin-line); background: #121b20; color: #85979f; font-size: 0.6875rem; letter-spacing: .03em; text-align: left; white-space: nowrap; }
-.question-table td { padding: 15px; border-bottom: 1px solid var(--admin-line); color: #cdd9dc; font-size: 0.8125rem; vertical-align: middle; }
+.question-table th { padding: 11px 15px; border-bottom: 1px solid var(--admin-line); background: var(--admin-chrome); color: var(--admin-muted); font-size: 0.6875rem; letter-spacing: .03em; text-align: left; white-space: nowrap; }
+.question-table td { padding: 15px; border-bottom: 1px solid var(--admin-line); color: var(--admin-text); font-size: 0.8125rem; vertical-align: middle; }
 .question-table tbody tr:last-child td { border-bottom: 0; }
 .question-table tbody tr:hover { background: rgba(255, 255, 255, .018); }
 .question-table th:first-child { width: 42%; }
@@ -292,12 +292,12 @@ const deleteQuestion = async () => {
 .question-table td:nth-child(2) span { white-space: nowrap; }
 .question-table td:nth-child(2) small { margin-top: 4px; color: var(--admin-muted); }
 .question-table time { color: var(--admin-muted); white-space: nowrap; }
-.status-select-wrap { min-width: 114px; display: inline-grid; grid-template-columns: 8px 1fr; align-items: center; gap: 7px; padding-left: 10px; border: 1px solid var(--admin-line); border-radius: 5px; background: #10191e; }
-.status-select-wrap .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #9cabb1; }
+.status-select-wrap { min-width: 114px; display: inline-grid; grid-template-columns: 8px 1fr; align-items: center; gap: 7px; padding-left: 10px; border: 1px solid var(--admin-line); border-radius: 5px; background: var(--admin-input); }
+.status-select-wrap .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--admin-muted); }
 .status-select-wrap.status-published .status-dot { background: #35b979; }
 .status-select-wrap.status-draft .status-dot { background: #d4aa4b; }
-.status-select-wrap.status-private .status-dot { background: #829199; }
-.status-select-wrap select { min-height: 35px; padding: 0 7px 0 0; border: 0; background: transparent; color: #d3dee0; font-size: 0.75rem; font-weight: 700; }
+.status-select-wrap.status-private .status-dot { background: var(--admin-subtle); }
+.status-select-wrap select { min-height: 35px; padding: 0 7px 0 0; border: 0; background: transparent; color: var(--admin-text); font-size: 0.75rem; font-weight: 700; }
 .row-actions { display: flex; justify-content: flex-end; gap: 5px; }
 .row-actions a,
 .row-actions button { width: 35px; height: 35px; display: grid; place-items: center; padding: 0; border: 1px solid var(--admin-line); border-radius: 5px; background: transparent; color: var(--admin-muted); cursor: pointer; }
@@ -307,7 +307,7 @@ const deleteQuestion = async () => {
 .admin-pagination { min-height: 68px; display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 12px 18px; border-top: 1px solid var(--admin-line); }
 .admin-pagination span { color: var(--admin-muted); font-size: 0.75rem; }
 .admin-pagination .admin-secondary-button { min-height: 36px; padding: 0 12px; font-size: 0.75rem; }
-.admin-dialog-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(2, 7, 9, .76); }
+.admin-dialog-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(5, 9, 28, .76); }
 .admin-dialog { width: min(470px, 100%); padding: 28px; border: 1px solid var(--admin-line-strong); border-radius: 7px; background: var(--admin-surface-2); color: var(--admin-text); box-shadow: 0 24px 70px rgba(0, 0, 0, .38); }
 .dialog-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 6px; background: rgba(216, 106, 98, .13); color: #ef9992; font-size: 1.375rem; }
 .admin-dialog h2 { margin: 18px 0 0; font-size: 1.3125rem; }
@@ -329,7 +329,7 @@ const deleteQuestion = async () => {
   .question-table thead { display: none; }
   .question-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px 15px; border-bottom: 1px solid var(--admin-line); }
   .question-table td { display: block; padding: 0; border: 0; }
-  .question-table td::before { content: attr(data-label); display: block; margin-bottom: 6px; color: #758891; font-size: 0.625rem; font-weight: 800; }
+  .question-table td::before { content: attr(data-label); display: block; margin-bottom: 6px; color: var(--admin-subtle); font-size: 0.625rem; font-weight: 800; }
   .question-table td:first-child { grid-column: 1 / -1; }
   .question-table td p { white-space: normal; }
   .row-actions { align-items: end; }

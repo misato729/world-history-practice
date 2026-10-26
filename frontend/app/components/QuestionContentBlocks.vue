@@ -106,7 +106,7 @@ const blankLabels = ['①', '②', '③', '④', '⑤', '⑥']
 <style scoped>
 .content-blocks { display: grid; gap: 20px; min-width: 0; }
 .content-text { margin: 0; white-space: pre-wrap; }
-.content-quote { margin: 0; padding: 18px 20px; border: 1px solid var(--line); border-left: 4px solid var(--teal); background: #f7faf9; }
+.content-quote { margin: 0; padding: 18px 20px; border: 1px solid var(--line); border-left: 4px solid var(--teal); background: var(--surface-soft); }
 .content-quote p { margin: 0; font-size: 1.125rem; font-weight: 500; white-space: pre-wrap; }
 .content-quote cite { display: block; margin-top: 10px; color: var(--muted); font-size: 0.8125rem; font-style: normal; }
 .fill-in-text { line-height: 2.15; }
@@ -118,9 +118,9 @@ const blankLabels = ['①', '②', '③', '④', '⑤', '⑥']
   justify-content: center;
   margin: 0 .18em;
   padding: 0 .55em;
-  border: 2px solid #46575c;
-  background: #fff;
-  color: #46575c;
+  border: 2px solid var(--text-secondary);
+  background: var(--surface);
+  color: var(--text-secondary);
   font-size: .82em;
   font-weight: 700;
   line-height: 1;
@@ -129,9 +129,9 @@ const blankLabels = ['①', '②', '③', '④', '⑤', '⑥']
 .exam-fill-in-quote {
   margin: 0;
   padding: 22px 24px;
-  border: 1px solid #66777c;
-  background: #fff;
-  color: #263a41;
+  border: 1px solid var(--muted);
+  background: var(--surface);
+  color: var(--ink);
   font-size: 1.125rem;
   font-weight: 500;
   line-height: 2.3;
@@ -139,18 +139,18 @@ const blankLabels = ['①', '②', '③', '④', '⑤', '⑥']
 .exam-fill-in-quote p { margin: 0; white-space: pre-wrap; }
 .fill-in-choice { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .fill-in-choice-cell { min-width: 0; display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: baseline; gap: 6px; }
-.fill-in-choice-cell small { color: #52666d; font-size: 0.875rem; font-weight: 700; }
+.fill-in-choice-cell small { color: var(--text-secondary); font-size: 0.875rem; font-weight: 700; }
 .fill-in-choice-cell > span { font-weight: 700; }
 .content-table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--line); }
-.content-table { width: 100%; min-width: 620px; border-collapse: collapse; background: #fff; font-size: 1rem; font-weight: 500; line-height: 1.7; }
+.content-table { width: 100%; min-width: 620px; border-collapse: collapse; background: var(--surface); font-size: 1rem; font-weight: 500; line-height: 1.7; }
 .content-table th,
 .content-table td { padding: 12px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: pre-wrap; }
-.content-table th { background: #f1f6f5; color: #30464d; font-size: 0.875rem; font-weight: 700; }
+.content-table th { background: var(--surface-soft); color: var(--ink); font-size: 0.875rem; font-weight: 700; }
 .content-table tr:last-child td { border-bottom: 0; }
 .content-table th:last-child,
 .content-table td:last-child { border-right: 0; }
 .code-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.code-panel { min-width: 0; margin: 0; border: 1px solid var(--line); background: #f8faf9; }
+.code-panel { min-width: 0; margin: 0; border: 1px solid var(--line); background: var(--surface-soft); }
 .code-panel figcaption { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 800; text-align: center; }
 .code-panel pre { margin: 0; padding: 16px; overflow-x: auto; font-size: 0.875rem; line-height: 1.75; white-space: pre; }
 .code-panel code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }

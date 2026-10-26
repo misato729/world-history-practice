@@ -119,7 +119,7 @@ const handleLogout = async () => {
 </template>
 
 <style scoped>
-.site-header { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(5, 94, 98, .24); background: var(--aqua); }
+.site-header { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(var(--shadow-color), .24); background: var(--aqua); }
 .header-inner {
   width: 100%;
   height: var(--header-height);
@@ -130,17 +130,17 @@ const handleLogout = async () => {
   gap: 24px;
 }
 .brand, .header-actions, .account-link { display: flex; align-items: center; }
-.brand { min-width: 0; align-items: center; gap: 12px; color: #082e32; text-decoration: none; }
+.brand { min-width: 0; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; }
 .brand-logo { flex-shrink: 0; }
 .brand-tagline { min-width: 0; overflow-wrap: anywhere; margin-bottom: 4px; font-size: 0.75rem; line-height: 1.4; font-weight: 700; }
 .brand-tagline span { display: inline-block; white-space: nowrap; }
 .header-actions { flex: 0 0 auto; gap: 18px; }
-.login-link, .account-link { color: #082e32; font-weight: 800; text-decoration: none; }
+.login-link, .account-link { color: var(--ink); font-weight: 800; text-decoration: none; }
 .account-link { gap: 7px; }
 .account-link :deep(svg) { width: 22px; height: 22px; }
 .menu-button, .drawer-head button { display: grid; place-items: center; border: 0; cursor: pointer; }
-.menu-button { width: 46px; height: 46px; border-radius: 6px; background: var(--teal-dark); color: #fff; font-size: 1.625rem; }
-.menu-backdrop { position: fixed; inset: 0; z-index: 40; border: 0; background: rgba(10, 31, 36, .42); }
+.menu-button { width: 46px; height: 46px; border-radius: 6px; background: var(--teal-dark); color: var(--surface); font-size: 1.625rem; }
+.menu-backdrop { position: fixed; inset: 0; z-index: 40; border: 0; background: rgba(var(--shadow-color), .42); }
 .menu-drawer {
   position: fixed;
   inset: 0 0 0 auto;
@@ -149,12 +149,12 @@ const handleLogout = async () => {
   padding: 22px;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  background: #f8fbfb;
-  box-shadow: -18px 0 50px rgba(18, 42, 48, .2);
+  background: var(--surface-soft);
+  box-shadow: -18px 0 50px rgba(var(--shadow-color), .2);
 }
 .drawer-head { min-height: 52px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .drawer-head strong { font-size: 1.25rem; }
-.drawer-head button { width: 40px; height: 40px; border-radius: 6px; background: #e6eeee; color: var(--ink); font-size: 1.375rem; }
+.drawer-head button { width: 40px; height: 40px; border-radius: 6px; background: var(--surface-tint); color: var(--ink); font-size: 1.375rem; }
 nav { display: grid; gap: 4px; padding-top: 18px; }
 nav a, .logout-button {
   width: 100%;
@@ -167,15 +167,15 @@ nav a, .logout-button {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #263840;
+  color: var(--ink);
   font-weight: 700;
   text-decoration: none;
   text-align: left;
   cursor: pointer;
 }
-nav a:hover, nav a.active, .logout-button:hover { background: #dff2f2; color: var(--teal-dark); }
+nav a:hover, nav a.active, .logout-button:hover { background: var(--surface-selected); color: var(--teal-dark); }
 .logout-button { margin-top: 8px; border-top: 1px solid var(--line); border-radius: 0; }
-.chevron { color: #7d9097; }
+.chevron { color: var(--muted); }
 nav a.mobile-login-link { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .fade-enter-active, .fade-leave-active, .slide-enter-active, .slide-leave-active { transition: opacity 180ms ease, transform 220ms ease; }

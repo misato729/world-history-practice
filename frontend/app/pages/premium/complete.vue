@@ -72,7 +72,7 @@ onBeforeUnmount(() => { stopped = true })
 
 <style scoped>
 .complete-page { min-height: 60vh; display: grid; place-items: center; padding-top: 64px; }
-.completion-card { width: min(680px, 100%); display: grid; justify-items: center; padding: clamp(32px, 7vw, 64px); border: 1px solid var(--line); border-radius: 10px; background: #fff; text-align: center; box-shadow: 0 16px 50px rgba(25, 54, 60, .08); }
+.completion-card { width: min(680px, 100%); display: grid; justify-items: center; padding: clamp(32px, 7vw, 64px); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-align: center; box-shadow: 0 16px 50px rgba(var(--shadow-color), .08); }
 .state-icon { width: 52px; height: 52px; color: var(--teal); }
 .pending-icon { color: #c78b00; }
 .completion-card h1 { margin: 22px 0 0; font-size: 2.375rem; }

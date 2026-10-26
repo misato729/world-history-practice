@@ -103,12 +103,12 @@ const deleteAccount = async () => {
 .account-actions h2, .danger-zone h2 { font-size: 1.25rem; }
 .membership-action p { margin-bottom: 18px; }
 .danger-zone { border-color: #e8b9af; }
-.danger-zone button { min-height: 42px; padding: 0 14px; border: 1px solid #d65e49; border-radius: 6px; background: #fff; color: #b33b29; font-weight: 700; cursor: pointer; }
+.danger-zone button { min-height: 42px; padding: 0 14px; border: 1px solid #d65e49; border-radius: 6px; background: var(--surface); color: #b33b29; font-weight: 700; cursor: pointer; }
 .delete-form { margin-top: 22px; padding-top: 22px; border-top: 1px solid #efd8d3; }
 .delete-confirmation { display: grid; grid-template-columns: 20px 1fr; gap: 9px; margin-top: 18px; color: #6a4740; line-height: 1.7; }
 .delete-confirmation input { width: 18px; height: 18px; margin-top: 4px; accent-color: #b33b29; }
 .delete-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-.delete-actions button:first-child { border-color: #b9c8cc; color: var(--ink); }
+.delete-actions button:first-child { border-color: var(--line-strong); color: var(--ink); }
 .delete-actions button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 520px) { .account-info div { grid-template-columns: 1fr; gap: 5px; } }
 </style>

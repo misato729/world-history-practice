@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "revision": 8,
+  "state_hash": "eebeca3995bf10b9e7475d7130fe99fb3c26ddc2ee5064003ac88d0b1c448bc0",
+  "recorded_at": "2026-10-26T18:25:24.289Z",
+  "timezone": "Asia/Tokyo",
+  "context": "service",
+  "task": "palette_delivery",
+  "summary": "ユーザーが配色変更のコミット・pushを承認。差分・設定・原資料保護と独立レビューが成功。Netlify管理画面で世界史プロジェクト未登録と既存プロジェクトのビルド停止表示を確認。配色・ロゴ・画像・関連記録だけを送信する準備を完了。",
+  "next_action": "対象差分を[skip netlify]付きでコミット・pushし、origin/mainとの同期を確認する。デプロイしない。",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "ed9eb5a2098be85971fc34b676d69f24b5b71410",
+    "changes": [
+      {
+        "status": " M",
+        "path": "config/exam.json"
+      },
+      {
+        "status": " M",
+        "path": "docs/verification.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/assets/css/main.css"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/ExamSidebar.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/QuestionContentBlocks.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/SiteFooter.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/SiteHeader.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminContentBlockEditor.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionForm.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionPreview.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/account.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/login.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/questions/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/commercial-disclosure.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/favorites.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/history.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/practice/[examNumber]/[questionNumber].vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/premium/complete.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/premium/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/public/images/logo.svg"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/textbook-palette-admin-mobile.jpg"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/textbook-palette-desktop.jpg"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/textbook-palette-mobile.jpg"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/textbook-palette-practice-mobile.jpg"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "b84708f3867fb9c3bc976d0ff8bb002df3c77636e1f1c1c5aac3b9d4fd52890e",
+    "README.md": "52848a7b38e5d9fae499cc8f5f3744dcba614db310ad450b0af4c1da433809b4",
+    "config/exam.json": "c21d235b34635c9c31c16bf87958a17e6bb91e28139c67163703f4363eb8cc7d",
+    "docs/classification.md": "479db5c42c5a762d757c2ff413cb30376a4730d4fa5d1379039b31b9a2f0ff42",
+    "docs/verification.md": "4319c9082738405b3631f1987505cc8c6b72453913ffb53ae43ae9862fd6aa90",
+    "docs/workflow/README.md": "a2a9103c04020c1159c8b93db47e41535eada176a7d2afae952108a75654b3c0",
+    "scripts/context.mjs": "6c678d3f6aeac19ec6b960c25d131b4fc0d0d0a48307bcb38f2f65356bdaed63",
+    "scripts/context.test.mjs": "45ae75edc0280e513e36ee65252053cea17376fee61eb33a4ba7058d461c71ca",
+    "docs/workflow/contexts/product.md": "69b4ec14ec82c24de9e2144056c40afa5bf816e86c0e6a52072f3666dfbeaf26",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "15eb6103f0886f1608c556e26e6de099e6e411e58cb87b52789629c9a41f1c6c",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "e85284c6830280f8b6ed81acb8d729f45adf36e81b74df59b347b46a20921efd",
+    "scripts/check-private-sources.mjs": "eb4a3277a952c19cfd182b41b371a918c32e1598ea8f10ebed934274b26e86f2",
+    "scripts/check-private-sources.test.mjs": "1e3ed8da8552eb10d38c974d4e65ae23c5fe1c9bdb7da5adbff9c5e48c01d9dc",
+    ".gitignore": "0c57b76f803924064770c88a5154c9470140fdc113e7d46964813cd6804e0d61",
+    ".dockerignore": "58fcd073427254464edac55980e9d9572075c5ec03db99aa8be8390e054aff35",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a"
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

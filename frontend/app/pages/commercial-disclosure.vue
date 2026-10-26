@@ -69,8 +69,8 @@ useSeoMeta({
 .disclosure-table dl div { display: grid; grid-template-columns: minmax(180px, .35fr) minmax(0, 1fr); border-bottom: 1px solid var(--line); }
 .disclosure-table dl div:last-child { border-bottom: 0; }
 .disclosure-table dt, .disclosure-table dd { margin: 0; padding: 18px 22px; line-height: 1.8; }
-.disclosure-table dt { background: #edf4f4; font-weight: 800; }
-.disclosure-table dd { color: #42555d; overflow-wrap: anywhere; }
+.disclosure-table dt { background: var(--surface-tint); font-weight: 800; }
+.disclosure-table dd { color: var(--text-secondary); overflow-wrap: anywhere; }
 .disclosure-table a { color: var(--teal-dark); font-weight: 700; }
 @media (max-width: 640px) {
   .disclosure-table dl div { grid-template-columns: 1fr; }

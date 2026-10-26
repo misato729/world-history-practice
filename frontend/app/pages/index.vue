@@ -389,12 +389,12 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 </template>
 
 <style scoped>
-.home-main { min-width: 0; background: #f8faf9; }
+.home-main { min-width: 0; background: var(--surface-soft); }
 .practice-launcher {
   scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px);
   padding: 52px clamp(28px, 6vw, 86px) 58px;
-  border-top: 1px solid #d4dfde;
-  background: #eef4f3;
+  border-top: 1px solid var(--line);
+  background: var(--surface-tint);
 }
 .launcher-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; }
 .launcher-heading h2 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
@@ -407,7 +407,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 30px;
-  border-bottom: 1px solid #bfcfd0;
+  border-bottom: 1px solid var(--line);
 }
 .launcher-tabs button {
   min-height: 48px;
@@ -418,7 +418,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   border: 0;
   border-bottom: 3px solid transparent;
   background: transparent;
-  color: #52656c;
+  color: var(--text-secondary);
   font-weight: 800;
   cursor: pointer;
 }
@@ -444,30 +444,30 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   justify-content: space-between;
   gap: 20px;
   padding: 20px 22px;
-  border: 1px solid #bdccce;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   text-decoration: none;
   transition: border-color .15s, background .15s, transform .15s;
 }
-.exam-card:hover { border-color: var(--teal); background: #f9ffff; transform: translateY(-1px); }
+.exam-card:hover { border-color: var(--teal); background: var(--surface-soft); transform: translateY(-1px); }
 .exam-card-copy { min-width: 0; display: grid; gap: 7px; }
 .exam-card strong { color: var(--teal-dark); font-size: 1.125rem; line-height: 1.4; }
 .exam-card-copy > span { color: var(--muted); font-size: 0.8125rem; }
 .exam-card :deep(.iconify) { flex: 0 0 20px; width: 20px; height: 20px; color: var(--teal-dark); }
 .premium-info-link { display: inline-flex; align-items: center; gap: 5px; color: var(--teal-dark); font-size: 0.8125rem; font-weight: 800; }
-.condition-form { border: 1px solid #c7d4d5; border-radius: 8px; background: #fff; }
+.condition-form { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .condition-fields { display: grid; gap: 28px; padding: 28px; }
 .condition-help { margin: 10px 0; color: var(--muted); font-size: .8125rem; line-height: 1.7; }
 .subject-select-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
 .subject-select-grid > div { min-width: 0; }
-.subject-select-grid label { display: block; margin-bottom: 7px; color: #344951; font-size: .8125rem; font-weight: 800; }
-.subject-select-grid select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid #bdcbcd; border-radius: 5px; background: #fff; color: var(--ink); font-size: .875rem; }
+.subject-select-grid label { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: .8125rem; font-weight: 800; }
+.subject-select-grid select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--ink); font-size: .875rem; }
 .practice-start-error { margin: 0; padding: 0 28px 20px; color: #a23b2a; font-weight: 700; line-height: 1.7; }
 .condition-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
-.condition-fieldset + .condition-fieldset { padding-top: 26px; border-top: 1px solid #dce4e4; }
-.condition-fieldset legend { padding: 0; color: #253d45; font-size: 1.0625rem; font-weight: 900; }
+.condition-fieldset + .condition-fieldset { padding-top: 26px; border-top: 1px solid var(--line); }
+.condition-fieldset legend { padding: 0; color: var(--ink); font-size: 1.0625rem; font-weight: 900; }
 .condition-field-heading {
   display: flex;
   align-items: center;
@@ -482,10 +482,10 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border: 1px solid #bdcbcd;
+  border: 1px solid var(--line-strong);
   border-radius: 5px;
-  background: #f8faf9;
-  color: #344951;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 800;
   cursor: pointer;
@@ -500,16 +500,16 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   justify-content: center;
   gap: 8px;
   padding: 8px 6px;
-  border: 1px solid #c5d1d3;
+  border: 1px solid var(--line);
   border-radius: 5px;
-  background: #fff;
-  color: #3a5057;
+  background: var(--surface);
+  color: var(--text-secondary);
   font-weight: 900;
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
 .number-checkbox-grid label:hover { border-color: var(--teal); }
-.number-checkbox-grid label.selected { border-color: var(--teal); background: #eaf6f5; color: var(--teal-dark); }
+.number-checkbox-grid label.selected { border-color: var(--teal); background: var(--surface-selected); color: var(--teal-dark); }
 .number-checkbox-grid input { width: 16px; height: 16px; flex: 0 0 16px; margin: 0; accent-color: var(--teal); }
 .question-number-grid label { gap: 4px; padding-inline: 4px; }
 .question-number-grid label span { white-space: nowrap; }
@@ -520,10 +520,10 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   justify-content: space-between;
   gap: 20px;
   padding: 16px 26px;
-  border-top: 1px solid #d8e1e2;
-  background: #f4f7f6;
+  border-top: 1px solid var(--line);
+  background: var(--surface-soft);
 }
-.condition-submit p { margin: 0; color: #40545b; font-weight: 800; }
+.condition-submit p { margin: 0; color: var(--text-secondary); font-weight: 800; }
 .condition-submit p span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 0.6875rem; }
 .condition-submit p strong { margin-left: 8px; color: var(--teal-dark); }
 .condition-submit .selection-required { color: #a23b2a; }
@@ -536,7 +536,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   padding: 52px clamp(28px, 6vw, 86px);
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--surface);
 }
 .overview-copy { max-width: 680px; }
 .overview-copy h1 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
@@ -545,25 +545,25 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .home-section { padding: 62px clamp(28px, 6vw, 86px); }
 .section-title { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
 .section-title h2 { margin: 0; font-size: 1.875rem; }
-.updates-section { background: #f1f5f4; }
-.update-list { border-top: 1px solid #cbd7d9; }
-.update-list article { min-height: 68px; display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 18px; border-bottom: 1px solid #cbd7d9; }
+.updates-section { background: var(--surface-soft); }
+.update-list { border-top: 1px solid var(--line); }
+.update-list article { min-height: 68px; display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 18px; border-bottom: 1px solid var(--line); }
 .update-list time { color: var(--teal-dark); font-weight: 800; }
-.update-list p { margin: 0; color: #4f6169; }
+.update-list p { margin: 0; color: var(--text-secondary); }
 .policy-section {
   scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px);
-  background: #fff;
+  background: var(--surface);
 }
-.usage-details { margin: 0; border-top: 1px solid #dce4e4; }
+.usage-details { margin: 0; border-top: 1px solid var(--line); }
 .usage-row {
   display: grid;
   grid-template-columns: minmax(180px, .3fr) minmax(0, 1fr);
   gap: 32px;
   padding: 26px 0;
-  border-bottom: 1px solid #dce4e4;
+  border-bottom: 1px solid var(--line);
 }
 .usage-row dt { color: var(--ink); font-size: 1rem; font-weight: 700; line-height: 1.9; }
-.usage-row dd { min-width: 0; margin: 0; color: #51636c; font-size: 0.9375rem; line-height: 1.9; }
+.usage-row dd { min-width: 0; margin: 0; color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.9; }
 .usage-row p { margin: 0; }
 .usage-premium-link {
   min-height: 44px;
@@ -575,7 +575,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: underline;
-  text-decoration-color: #a3c3c4;
+  text-decoration-color: var(--line-strong);
   text-underline-offset: 4px;
 }
 .usage-premium-link:hover { text-decoration-color: currentColor; }

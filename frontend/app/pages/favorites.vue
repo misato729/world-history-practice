@@ -217,13 +217,13 @@ watch([() => user.value?.id, canUseFavorites, page], loadFavorites, { immediate:
 .favorite-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; color: var(--muted); }
 .favorite-summary strong { color: var(--ink); }
 .favorite-list { display: grid; gap: 14px; }
-.favorite-card { min-width: 0; display: grid; gap: 18px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 8px; background: #fff; transition: border-color .15s, transform .15s, box-shadow .15s, background-color .15s; }
-.favorite-card:not(.locked):hover { border-color: #9dbfc1; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(20, 48, 54, .08); }
-.favorite-card.locked { border-color: #cad3d5; background: #f8fafa; }
-.favorite-card.pending-removal { border-color: #d7dee0; background: #fbfcfc; }
+.favorite-card { min-width: 0; display: grid; gap: 18px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); transition: border-color .15s, transform .15s, box-shadow .15s, background-color .15s; }
+.favorite-card:not(.locked):hover { border-color: var(--line-strong); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(var(--shadow-color), .08); }
+.favorite-card.locked { border-color: var(--line); background: var(--surface-soft); }
+.favorite-card.pending-removal { border-color: var(--line); background: var(--surface-soft); }
 .favorite-card-head { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .favorite-card-head > span { color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
-.favorite-toggle { width: 42px; height: 42px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #718287; cursor: pointer; transition: color .15s, transform .15s; }
+.favorite-toggle { width: 42px; height: 42px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; transition: color .15s, transform .15s; }
 .favorite-toggle.active { color: #f0b323; }
 .favorite-toggle:hover { color: #c78b00; transform: scale(1.08); }
 .favorite-toggle:disabled { opacity: .5; cursor: wait; }
@@ -232,7 +232,7 @@ watch([() => user.value?.id, canUseFavorites, page], loadFavorites, { immediate:
 .favorite-question strong { overflow-wrap: anywhere; font-size: 1.125rem; line-height: 1.65; }
 .favorite-question small { color: var(--muted); }
 .review-link { display: inline-flex; align-items: center; justify-self: end; gap: 6px; color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
-.locked-content { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; color: #53676e; }
+.locked-content { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; color: var(--text-secondary); }
 .locked-content :deep(svg) { width: 27px; height: 27px; }
 .locked-content strong { color: var(--ink); }
 .locked-content p { margin: 5px 0 0; line-height: 1.7; }

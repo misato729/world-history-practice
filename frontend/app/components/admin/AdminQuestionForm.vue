@@ -129,11 +129,11 @@ const submit = () => {
 .history-flags-field label { display: flex; align-items: center; gap: 8px; color: var(--admin-text); cursor: pointer; }
 .history-flags-field input { width: 18px; height: 18px; accent-color: var(--admin-accent); }
 .publication-field { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 2px 0 0; padding: 0; border: 0; }
-.publication-field legend { margin-bottom: 8px; color: #dbe5e7; font-size: 0.8125rem; font-weight: 800; }
-.publication-field label { min-height: 58px; display: grid; grid-template-columns: 17px 9px 1fr; align-items: center; gap: 9px; padding: 9px 12px; border: 1px solid var(--admin-line); border-radius: 5px; background: #111a1f; cursor: pointer; }
-.publication-field label.selected { border-color: var(--admin-line-strong); background: #1a272d; }
+.publication-field legend { margin-bottom: 8px; color: var(--admin-text); font-size: 0.8125rem; font-weight: 800; }
+.publication-field label { min-height: 58px; display: grid; grid-template-columns: 17px 9px 1fr; align-items: center; gap: 9px; padding: 9px 12px; border: 1px solid var(--admin-line); border-radius: 5px; background: var(--admin-chrome); cursor: pointer; }
+.publication-field label.selected { border-color: var(--admin-line-strong); background: var(--admin-selection); }
 .publication-field input { width: 15px; height: 15px; accent-color: var(--admin-accent); }
-.publication-dot { width: 8px; height: 8px; border-radius: 50%; background: #819199; }
+.publication-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--admin-subtle); }
 .status-draft .publication-dot { background: #d4aa4b; }
 .status-published .publication-dot { background: #35b979; }
 .publication-field strong,
@@ -141,7 +141,7 @@ const submit = () => {
 .publication-field strong { color: var(--admin-text); font-size: 0.75rem; }
 .publication-field small { margin-top: 2px; color: var(--admin-muted); font-size: 0.625rem; }
 .choice-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.choice-editor { min-width: 0; padding: 13px; border: 1px solid var(--admin-line); border-radius: 6px; background: #111a1f; }
+.choice-editor { min-width: 0; padding: 13px; border: 1px solid var(--admin-line); border-radius: 6px; background: var(--admin-chrome); }
 .choice-editor.correct { border-color: #287b78; background: #112323; }
 .choice-editor > header { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
 .choice-label { min-width: 34px; max-width: 110px; min-height: 34px; padding: 5px 8px; overflow-wrap: anywhere; display: grid; place-items: center; border-radius: 5px; background: var(--admin-surface-3); color: var(--admin-text); font-weight: 900; }
@@ -151,7 +151,7 @@ const submit = () => {
 .correct-control span { min-height: 32px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border: 1px solid var(--admin-line); border-radius: 4px; color: var(--admin-muted); font-size: 0.6875rem; font-weight: 800; }
 .correct-control input:checked + span { border-color: #287b78; background: #153d3c; color: #8dd8d4; }
 .preview-panel .admin-icon-button { width: 36px; min-height: 36px; padding: 0; border-color: var(--admin-line); background: transparent; color: var(--admin-muted); }
-.form-action-bar { position: sticky; bottom: 14px; z-index: 25; min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 11px 14px; border: 1px solid var(--admin-line-strong); border-radius: 7px; background: rgba(17, 26, 31, .96); box-shadow: 0 14px 35px rgba(0, 0, 0, .32); backdrop-filter: blur(10px); }
+.form-action-bar { position: sticky; bottom: 14px; z-index: 25; min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 11px 14px; border: 1px solid var(--admin-line-strong); border-radius: 7px; background: color-mix(in srgb, var(--admin-chrome) 96%, transparent); box-shadow: 0 14px 35px rgba(0, 0, 0, .32); backdrop-filter: blur(10px); }
 .save-status { display: inline-flex; align-items: center; gap: 7px; color: var(--admin-muted); font-size: 0.6875rem; }
 .form-actions { display: flex; gap: 8px; }
 .spin { animation: admin-spin 1s linear infinite; }
