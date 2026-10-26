@@ -53,9 +53,12 @@ function questionFilters(params: Record<string, unknown>, conditions: string[], 
     if (present(params[key])) { values.push(params[key]); conditions.push(`${key}=$${values.length}`) }
   }
   const topic = present(params.history_topic) ? params.history_topic : 'all'
-  if (!['all', 'cultural_history', 'art_history'].includes(topic as string)) fail(400, 'bad_request', '演習テーマを正しく指定してください')
+  if (typeof topic !== 'string' || !['all', 'cultural_history', ...configuration.cultural_history_categories.map(item => item.value)].includes(topic)) fail(400, 'bad_request', '演習テーマを正しく指定してください')
   if (topic === 'cultural_history') conditions.push('is_cultural_history=true')
-  if (topic === 'art_history') conditions.push('is_art_history=true')
+  else if (topic !== 'all') {
+    values.push(topic)
+    conditions.push('is_cultural_history=true', `cultural_history_category=$${values.length}`)
+  }
 }
 
 export async function authorizeExam(examNumber: number, user: User | null, db?: Database): Promise<void> {
@@ -69,6 +72,7 @@ async function serializePublicQuestion(question: QuestionRecord, user: User | nu
     question_number: question.question_number, content_blocks: question.content_blocks,
     major_category_code: question.major_category_code, category_code: question.category_code,
     is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history,
+    cultural_history_category: question.cultural_history_category,
     choices: question.choices.map(serializeChoice) }
   if (user) {
     const allowed = await hasPaidAccess(user, db)
@@ -250,6 +254,7 @@ export async function listAdminQuestions(user: User | null, params: Record<strin
     summary: question.content_blocks.filter(block => ['text', 'quote', 'fill_in_text', 'fill_in_quote'].includes(block.type)).map(block => block.text ?? '').join(' ').replace(/\s+/g, ' ').trim() || '表・プログラムを含む問題',
     major_category_code: question.major_category_code, category_code: question.category_code,
     is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history,
+    cultural_history_category: question.cultural_history_category,
     publication_status: question.publication_status, updated_at: iso(question.updated_at) })),
   meta: meta(page, perPage, total, true) }
 }

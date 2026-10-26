@@ -66,6 +66,7 @@
       "category_code": "chapter_06_section_01",
       "is_cultural_history": false,
       "is_art_history": false,
+      "cultural_history_category": null,
       "publication_status": "published",
       "content_blocks": [{ "type": "text", "text": "問題文" }],
       "explanation_blocks": [{ "type": "text", "text": "正答の根拠と各選択肢の解説" }],

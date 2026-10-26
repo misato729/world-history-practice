@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { EXAM_CATALOG, QUESTIONS_PER_EXAM, FREE_EXAM_MAX, type ExamCatalogEntry } from '~/utils/examCatalog'
-import { HISTORY_TOPICS } from '~/utils/historyTopics'
+import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
+import { culturalHistoryLabel, HISTORY_TOPICS } from '~/utils/historyTopics'
 import {
   createPracticeSequence,
   selectPracticePositions,
@@ -37,6 +38,7 @@ type Question = {
   category_code: string
   is_cultural_history: boolean
   is_art_history: boolean
+  cultural_history_category: CulturalHistoryCategoryCode | null
   choices: Choice[]
   is_favorite?: boolean
 }
@@ -507,7 +509,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
           </button>
           <div class="question-classification">
             <p>{{ majorCategoryLabel }} / {{ categoryLabel }}</p>
-            <span v-if="question.is_cultural_history" class="history-topic-label">{{ question.is_art_history ? '文化史・美術史' : '文化史' }}</span>
+            <span v-if="question.is_cultural_history" class="history-topic-label">{{ culturalHistoryLabel(question) }}</span>
           </div>
         </div>
       </header>

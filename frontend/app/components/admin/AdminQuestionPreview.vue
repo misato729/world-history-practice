@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AdminQuestionInput } from '~/types/adminQuestion'
+import { culturalHistoryLabel } from '~/utils/historyTopics'
 
 const props = defineProps<{ question: AdminQuestionInput }>()
 
@@ -13,7 +14,7 @@ const majorCategoryLabel = computed(() => getMasterDataLabel(
   <section class="question-preview" aria-label="問題のプレビュー">
     <header class="preview-head">
       <div><span>試験 {{ question.exam_number }}</span><h2>問{{ question.question_number }}</h2></div>
-      <div class="preview-classification"><p>{{ majorCategoryLabel }} / {{ getCategoryLabel(question.category_code) }}</p><p v-if="question.is_cultural_history">{{ question.is_art_history ? '文化史・美術史' : '文化史' }}</p></div>
+      <div class="preview-classification"><p>{{ majorCategoryLabel }} / {{ getCategoryLabel(question.category_code) }}</p><p v-if="question.is_cultural_history">{{ culturalHistoryLabel(question) }}</p></div>
     </header>
 
     <div class="preview-paper">

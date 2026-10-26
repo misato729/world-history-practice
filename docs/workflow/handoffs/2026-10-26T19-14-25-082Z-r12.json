@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "revision": 12,
+  "state_hash": "5247a8bce0f7b3bfe87d6fbf1db00f41f3837f98c8d5ec9461cacd0d1f352dab",
+  "recorded_at": "2026-10-26T19:14:25.082Z",
+  "timezone": "Asia/Tokyo",
+  "context": "service",
+  "task": "culture_categories",
+  "summary": "初回検証でフロント80件と型検査は成功、API/DBは73件中72件成功。追加したアーカイブ検査1件の期待値が既存の全体ハッシュ形式ではなく配列だけを対象としていたため、検査の期待値を訂正する",
+  "next_action": "検査の期待値を既存仕様に合わせて修正し、関連検査を再実行する。続けてローカル移行とPC/SP操作を確認する",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "12de425369233b3fd234cd1c781f635704ecb1c2",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "config/exam.json"
+      },
+      {
+        "status": " M",
+        "path": "content/questions.json"
+      },
+      {
+        "status": " M",
+        "path": "docs/classification.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/customization.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/product.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionForm.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionPreview.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/questions/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/practice/[examNumber]/[questionNumber].vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/types/adminQuestion.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/utils/examConfig.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/utils/historyTopics.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/archive-optional.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/learning.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/operations.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/timezone.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/content.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/restore-drill.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-validation.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-writer.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/shared/examConfig.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/tests/examConfig.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/tests/historyTopics.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "scripts/check-template.mjs"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/database/migrations/004_cultural_history_categories.sql"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "b1bf50ee26c217d7a1af007f187620b9242653f3660116f93d87e4ebbf0cf171",
+    "README.md": "52848a7b38e5d9fae499cc8f5f3744dcba614db310ad450b0af4c1da433809b4",
+    "config/exam.json": "328e17f24acad57dfecdb0ecaa2a1731be9f0f94c87593b08a000328b8bf2119",
+    "docs/classification.md": "278beac283f590b0918133c8b599034828c517bf502b7f392dea4850f8f61b1b",
+    "docs/verification.md": "fdb0095210bd99d6789087f7a73fa243ecca270a1690f4d757956e03abf76620",
+    "docs/workflow/README.md": "a2a9103c04020c1159c8b93db47e41535eada176a7d2afae952108a75654b3c0",
+    "scripts/context.mjs": "6c678d3f6aeac19ec6b960c25d131b4fc0d0d0a48307bcb38f2f65356bdaed63",
+    "scripts/context.test.mjs": "45ae75edc0280e513e36ee65252053cea17376fee61eb33a4ba7058d461c71ca",
+    "docs/workflow/contexts/product.md": "cc25a8e658a340bd07e8a95f91c07a45536f4c1e7b5be5a418445f651fb6915c",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "6bc7be7acc475485b5258e7a9df94a3dd5b246c03b23333c05daa38e0374c603",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "e85284c6830280f8b6ed81acb8d729f45adf36e81b74df59b347b46a20921efd",
+    "scripts/check-private-sources.mjs": "eb4a3277a952c19cfd182b41b371a918c32e1598ea8f10ebed934274b26e86f2",
+    "scripts/check-private-sources.test.mjs": "1e3ed8da8552eb10d38c974d4e65ae23c5fe1c9bdb7da5adbff9c5e48c01d9dc",
+    ".gitignore": "0c57b76f803924064770c88a5154c9470140fdc113e7d46964813cd6804e0d61",
+    ".dockerignore": "58fcd073427254464edac55980e9d9572075c5ec03db99aa8be8390e054aff35",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a"
+  },
+  "attempt": {
+    "outcome": "failed",
+    "number": 1
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

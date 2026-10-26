@@ -446,5 +446,23 @@
     "free_exam_count": 1,
     "amount": 500,
     "currency": "jpy"
-  }
+  },
+  "cultural_history_categories": [
+    {
+      "value": "art_history",
+      "label": "美術史"
+    },
+    {
+      "value": "music_history",
+      "label": "音楽史"
+    },
+    {
+      "value": "literature_history",
+      "label": "文学史"
+    },
+    {
+      "value": "other_cultural_history",
+      "label": "その他"
+    }
+  ]
 }

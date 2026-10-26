@@ -76,3 +76,19 @@ test('theme and logo configuration cannot inject markup or external asset URLs',
   config.site.primary_color = '#0088CC'
   assert.match(themeVariables(parseExamConfig(config)), /--brand-primary:#0088CC/)
 })
+
+test('cultural history configuration keeps exactly four distinct categories with labels', () => {
+  const config = variant()
+  assert.deepEqual(parseExamConfig(config).cultural_history_categories.map(item => item.label), ['美術史', '音楽史', '文学史', 'その他'])
+  const invalid = [
+    (c: ReturnType<typeof variant>) => { c.cultural_history_categories.pop() },
+    (c: ReturnType<typeof variant>) => { c.cultural_history_categories[1]!.value = 'art_history' },
+    (c: ReturnType<typeof variant>) => { c.cultural_history_categories[0]!.label = ' ' },
+    (c: ReturnType<typeof variant>) => { (c.cultural_history_categories[0] as { value: string }).value = 'unknown' },
+  ]
+  for (const change of invalid) {
+    const changed = variant(); change(changed)
+    assert.throws(() => parseExamConfig(changed), /cultural_history_categories/)
+  }
+  assert.deepEqual(config.cultural_history_categories, variant().cultural_history_categories)
+})

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AdminQuestion, AdminQuestionSummary, ApiResponse, PaginatedApiResponse } from '~/types/adminQuestion'
-import { HISTORY_TOPICS } from '~/utils/historyTopics'
+import { culturalHistoryLabel, HISTORY_TOPICS } from '~/utils/historyTopics'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
@@ -24,7 +24,7 @@ const actionError = ref('')
 const filteredCategories = computed(() => (
   filters.major_category_code
     ? getCategoriesByMajorCategory(filters.major_category_code)
-    : CATEGORIES
+    : []
 ))
 
 watch(() => filters.major_category_code, () => {
@@ -175,7 +175,7 @@ const deleteQuestion = async () => {
         </div>
         <div class="admin-field">
           <label for="category">小分類</label>
-          <select id="category" v-model="filters.category_code">
+          <select id="category" v-model="filters.category_code" :disabled="!filters.major_category_code">
             <option value="">すべて</option>
             <option v-for="item in filteredCategories" :key="item.value" :value="item.value">{{ item.label }}</option>
           </select>
@@ -188,9 +188,9 @@ const deleteQuestion = async () => {
           </select>
         </div>
         <div class="admin-field">
-          <label for="history-topic">文化史・美術史</label>
+          <label for="history-topic">文化史の絞り込み</label>
           <select id="history-topic" v-model="filters.history_topic">
-            <option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.label }}</option>
+            <option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.filterLabel }}</option>
           </select>
         </div>
         <div class="filter-actions">
@@ -224,7 +224,7 @@ const deleteQuestion = async () => {
                 <strong class="question-number">試験 {{ question.exam_number }} ・ 問{{ question.question_number }}</strong>
                 <p>{{ question.summary }}</p>
               </td>
-              <td data-label="分類"><span>{{ majorCategoryLabel(question.major_category_code) }}</span><small>{{ getCategoryLabel(question.category_code) }}</small><small v-if="question.is_cultural_history" class="history-topic-label">{{ question.is_art_history ? '文化史・美術史' : '文化史' }}</small></td>
+              <td data-label="分類"><span>{{ majorCategoryLabel(question.major_category_code) }}</span><small>{{ getCategoryLabel(question.category_code) }}</small><small v-if="question.is_cultural_history" class="history-topic-label">{{ culturalHistoryLabel(question) }}</small></td>
               <td data-label="公開状態">
                 <div class="status-select-wrap" :class="statusClass(question.publication_status)">
                   <span class="status-dot" />

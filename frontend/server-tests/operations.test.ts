@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
-import { mkdtemp, readFile, writeFile, lstat, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, writeFile, lstat, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, test } from 'node:test'
@@ -24,7 +24,23 @@ const content = JSON.parse(await readFile(defaultContentPath, 'utf8'))
 const archive = () => createArchive(structuredClone(content.questions))
 after(async () => closeDatabase())
 
-async function isolated(action: (db: Database) => Promise<void>) {
+async function migrateThrough(db: Database, through: string) {
+  const directory = await mkdtemp(join(tmpdir(), 'exam-migrations-through-'))
+  const previous = process.env.MIGRATIONS_DIR
+  try {
+    const source = new URL('../server/database/migrations/', import.meta.url)
+    for (const name of (await readdir(source)).filter(name => /^\d+_[a-z0-9_]+\.sql$/.test(name) && name <= through)) {
+      await writeFile(join(directory, name), await readFile(new URL(name, source)))
+    }
+    process.env.MIGRATIONS_DIR = directory
+    return await migrate(db)
+  } finally {
+    if (previous === undefined) delete process.env.MIGRATIONS_DIR; else process.env.MIGRATIONS_DIR = previous
+    await rm(directory, { recursive: true, force: true })
+  }
+}
+
+async function isolated(action: (db: Database) => Promise<void>, through?: string) {
   const client = await getDatabase().connect()
   const schema = `operations_test_${randomUUID().replaceAll('-', '')}`
   await client.query('BEGIN')
@@ -32,7 +48,8 @@ async function isolated(action: (db: Database) => Promise<void>) {
     await client.query(`CREATE SCHEMA "${schema}"`)
     await client.query(`SET LOCAL search_path TO "${schema}"`)
     await client.query("SET LOCAL lock_timeout='10s'")
-    await migrate(client)
+    if (through) await migrateThrough(client, through)
+    else await migrate(client)
     await action(client)
   } finally { await client.query('ROLLBACK'); client.release() }
 }
@@ -41,6 +58,20 @@ async function user(db: Database) {
   const email = `operations-${randomUUID()}@example.invalid`
   const [row] = await query<{ id: number }>("INSERT INTO users(name,email,password_digest,role,created_at,updated_at) VALUES('Operations test',$1,'synthetic-digest','user',NOW(),NOW()) RETURNING id", [email], db)
   return { id: row!.id, email }
+}
+
+/** Insert a pre-category fixture using only columns available before migration 004. */
+async function insertLegacySamples(db: Database) {
+  for (const question of content.questions) {
+    const [saved] = await query<{ id: number }>(`INSERT INTO questions(exam_number,question_number,major_category_code,category_code,
+      content_blocks,explanation_blocks,source_text,publication_status,is_cultural_history,is_art_history,created_at,updated_at)
+      VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,false,false,NOW(),NOW()) RETURNING id`,
+    [question.exam_number, question.question_number, question.major_category_code, question.category_code,
+      JSON.stringify(question.content_blocks), JSON.stringify(question.explanation_blocks), question.source_text, question.publication_status], db)
+    for (const choice of question.choices) await query(`INSERT INTO question_choices(question_id,choice_label,content_blocks,is_correct,display_order,created_at,updated_at)
+      VALUES($1,$2,$3::jsonb,$4,$5,NOW(),NOW())`,
+    [saved!.id, choice.choice_label, JSON.stringify(choice.content_blocks), choice.is_correct, choice.display_order], db)
+  }
 }
 
 test('archives preserve Rails canonical checksums regardless of object attribute order', () => {
@@ -56,7 +87,7 @@ test('archives preserve Rails canonical checksums regardless of object attribute
 
 test('v1 archives retain omitted legacy flags and preserve explicit culture/art flags', () => {
   const legacy = structuredClone(content.questions)
-  for (const question of legacy) { delete question.is_cultural_history; delete question.is_art_history }
+  for (const question of legacy) { delete question.is_cultural_history; delete question.is_art_history; delete question.cultural_history_category }
   const archivedLegacy = createArchive(legacy)
   assert.deepEqual(archivedLegacy.questions, legacy)
   assert.deepEqual(validateArchive(archivedLegacy), archivedLegacy)
@@ -68,6 +99,32 @@ test('v1 archives retain omitted legacy flags and preserve explicit culture/art 
   assert.notEqual(document.sha256, archivedLegacy.sha256)
   flagged[0].is_cultural_history = false
   assert.throws(() => createArchive(flagged), error => error instanceof ApiError && error.status === 422)
+})
+
+test('v1 archives retain explicit single culture categories and legacy omissions without rewriting checksums', () => {
+  const rows = structuredClone(content.questions)
+  const categories = ['art_history', 'music_history', 'literature_history', 'other_cultural_history'] as const
+  for (const [index, category] of categories.entries()) Object.assign(rows[index], {
+    is_cultural_history: true, is_art_history: category === 'art_history', cultural_history_category: category,
+  })
+  const checksumFor = (questions: { choices: unknown[] }[]) => digest({
+    format: 'exam-practice-question-archive', version: 1,
+    question_count: questions.length,
+    choice_count: questions.reduce((count, question) => count + question.choices.length, 0),
+    questions,
+  })
+  const document = createArchive(rows)
+  assert.deepEqual(validateArchive(document).questions, rows)
+  assert.equal(document.sha256, checksumFor(rows))
+  const oldFlagsOnly = structuredClone(rows)
+  for (const row of oldFlagsOnly) delete row.cultural_history_category
+  const legacy = createArchive(oldFlagsOnly)
+  assert.deepEqual(validateArchive(legacy).questions, oldFlagsOnly)
+  assert.equal(legacy.sha256, checksumFor(oldFlagsOnly))
+  assert.notEqual(document.sha256, legacy.sha256)
+  const changed = structuredClone(document)
+  changed.questions[0]!.cultural_history_category = 'music_history'
+  assert.throws(() => validateArchive(changed))
 })
 
 test('archive integrity rejects modified content, counts, unknown fields and duplicate coordinates before DB access', async () => {
@@ -142,7 +199,7 @@ test('fresh PostgreSQL migrations retain constraints and adopt existing Rails re
 }))
 
 test('Yamakawa taxonomy migration maps untouched legacy samples and preserves learning records while skipping edited choices', integration, async () => isolated(async db => {
-  await importContent(undefined, IMPORT_CONFIRMATION, db)
+  await insertLegacySamples(db)
   const owner = await user(db)
   const oldCategories = [
     ['economy', 'currency'], ['economy', 'currency'], ['economy', 'trade'],
@@ -166,12 +223,13 @@ test('Yamakawa taxonomy migration maps untouched legacy samples and preserves le
   }
   const applyTaxonomy = async () => {
     await query("DELETE FROM nitro_schema_migrations WHERE version='003_yamakawa_question_categories.sql'", [], db)
-    assert.deepEqual(await migrate(db), { applied: ['003_yamakawa_question_categories.sql'] })
+    assert.deepEqual(await migrate(db), { applied: ['003_yamakawa_question_categories.sql', '004_cultural_history_categories.sql'] })
   }
-  const classifications = () => query('SELECT question_number,major_category_code,category_code,is_cultural_history,is_art_history FROM questions ORDER BY question_number', [], db)
+  const classifications = () => query('SELECT question_number,major_category_code,category_code,is_cultural_history,is_art_history,cultural_history_category FROM questions ORDER BY question_number', [], db)
   const expected = content.questions.map((question: any) => ({ question_number: question.question_number,
     major_category_code: question.major_category_code, category_code: question.category_code,
-    is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history }))
+    is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history,
+    cultural_history_category: question.is_cultural_history ? (question.is_art_history ? 'art_history' : 'other_cultural_history') : null }))
   await query('SAVEPOINT legacy_taxonomy', [], db)
   await applyTaxonomy()
   assert.deepEqual(await classifications(), expected)
@@ -186,11 +244,42 @@ test('Yamakawa taxonomy migration maps untouched legacy samples and preserves le
   const editedChoices = await query('SELECT * FROM question_choices ORDER BY id', [], db)
   await applyTaxonomy()
   const expectedWithEdit = structuredClone(expected)
-  expectedWithEdit[2] = { ...expectedWithEdit[2], major_category_code: 'economy', category_code: 'trade', is_cultural_history: false, is_art_history: false }
+  expectedWithEdit[2] = { ...expectedWithEdit[2], major_category_code: 'economy', category_code: 'trade', is_cultural_history: false, is_art_history: false, cultural_history_category: null }
   assert.deepEqual(await classifications(), expectedWithEdit)
   assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), editedChoices)
   await verifyLearningRecords()
-}))
+}, '002_question_history_topics.sql'))
+
+test('culture category migration backfills legacy flags without changing identities, timestamps or learning records', integration, async () => isolated(async db => {
+  const owner = await user(db)
+  const category = configuration.categories.minor[0]!
+  for (const [index, flags] of [[false, false], [true, true], [true, false]].entries()) {
+    const [question] = await query<{ id: number }>(`INSERT INTO questions(exam_number,question_number,major_category_code,category_code,
+      content_blocks,explanation_blocks,source_text,publication_status,is_cultural_history,is_art_history,created_at,updated_at)
+      VALUES(1,$1,$2,$3,'[{"type":"text","text":"Synthetic migration question"}]'::jsonb,
+      '[{"type":"text","text":"Synthetic explanation"}]'::jsonb,'Synthetic source | https://example.com/migration','published',$4,$5,
+      '2025-01-02 03:04:05.123456','2025-02-03 04:05:06.654321') RETURNING id`,
+    [index + 1, category.major_category_value, category.value, ...flags], db)
+    const [choice] = await query<{ id: number }>(`INSERT INTO question_choices(question_id,choice_label,content_blocks,is_correct,display_order,created_at,updated_at)
+      VALUES($1,$2,'[{"type":"text","text":"Synthetic choice"}]'::jsonb,true,1,'2025-01-02','2025-02-03') RETURNING id`,
+    [question!.id, configuration.exam.choice_labels[0]], db)
+    await query(`INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,created_at,updated_at)
+      VALUES($1,$2,$3,true,'2025-01-02','2025-02-03')`, [owner.id, question!.id, choice!.id], db)
+    await query(`INSERT INTO favorites(user_id,question_id,created_at,updated_at) VALUES($1,$2,'2025-01-02','2025-02-03')`, [owner.id, question!.id], db)
+  }
+  const preservedTables = ['questions', 'question_choices', 'users', 'answer_histories', 'favorites'] as const
+  const before = Object.fromEntries(await Promise.all(preservedTables.map(async table => [table, await query(`SELECT * FROM ${table} ORDER BY id`, [], db)])))
+  assert.deepEqual(await migrate(db), { applied: ['004_cultural_history_categories.sql'] })
+  const upgraded = await query('SELECT * FROM questions ORDER BY question_number', [], db)
+  assert.deepEqual(upgraded.map(question => question.cultural_history_category), [null, 'art_history', 'other_cultural_history'])
+  for (const table of preservedTables) {
+    const rows = await query(`SELECT * FROM ${table} ORDER BY id`, [], db)
+    if (table === 'questions') for (const row of rows) delete row.cultural_history_category
+    assert.deepEqual(rows, before[table])
+  }
+  assert.deepEqual(await migrate(db), { applied: [] })
+  assert.deepEqual(await query('SELECT * FROM questions ORDER BY question_number', [], db), upgraded)
+}, '003_yamakawa_question_categories.sql'))
 
 test('applied SQL checksums cannot be silently rewritten', integration, async () => isolated(async db => {
   const directory = await mkdtemp(join(tmpdir(), 'exam-migration-test-'))

@@ -33,7 +33,7 @@ const startingPractice = ref(false)
 const practiceStartError = ref('')
 const availableCategories = computed(() => selectedMajorCategory.value
   ? getCategoriesByMajorCategory(selectedMajorCategory.value)
-  : CATEGORIES)
+  : [])
 const hasSubjectFilter = computed(() => Boolean(selectedMajorCategory.value || selectedCategory.value || selectedHistoryTopic.value !== 'all'))
 watch(selectedMajorCategory, () => {
   if (!availableCategories.value.some(item => item.value === selectedCategory.value)) selectedCategory.value = ''
@@ -182,7 +182,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
             <span>問題演習を始める</span>
           </h2>
         </div>
-        <p>公開中の演習セットを1問ずつ解いて、理解を確かめられます。章・節や文化史・美術史を指定した演習にも取り組めます。</p>
+        <p>公開中の演習セットを1問ずつ解いて、理解を確かめられます。章・節や文化史の区分を指定した演習にも取り組めます。</p>
       </div>
 
       <div class="launcher-tabs" role="tablist" aria-label="問題演習の開始方法">
@@ -254,13 +254,13 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
           <div class="condition-fields">
             <fieldset class="condition-fieldset" :disabled="startingPractice">
               <legend>分野</legend>
-              <p class="condition-help">山川の章・節に沿って選べます。文化史・美術史の条件も組み合わせられます。</p>
+              <p class="condition-help">山川の章・節に沿って選べます。文化史全体や各区分の条件も組み合わせられます。</p>
               <div class="subject-select-grid">
                 <div><label for="practice-major-category">大分類（章）</label><select id="practice-major-category" v-model="selectedMajorCategory"><option value="">すべての章</option><option v-for="item in MAJOR_CATEGORIES" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
-                <div><label for="practice-category">小分類（節）</label><select id="practice-category" v-model="selectedCategory"><option value="">すべての節</option><option v-for="item in availableCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
-                <div><label for="practice-history-topic">文化史・美術史</label><select id="practice-history-topic" v-model="selectedHistoryTopic"><option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+                <div><label for="practice-category">小分類（節）</label><select id="practice-category" v-model="selectedCategory" :disabled="!selectedMajorCategory"><option value="">すべての節</option><option v-for="item in availableCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+                <div><label for="practice-history-topic">文化史の絞り込み</label><select id="practice-history-topic" v-model="selectedHistoryTopic"><option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.filterLabel }}</option></select></div>
               </div>
-              <p class="condition-help">文化史には美術史も含まれます。</p>
+              <p class="condition-help">文化史全般には、美術史・音楽史・文学史も含まれます。</p>
             </fieldset>
             <fieldset class="condition-fieldset" :disabled="startingPractice">
               <legend>対象演習セット</legend>

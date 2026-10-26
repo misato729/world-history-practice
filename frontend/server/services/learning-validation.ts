@@ -1,4 +1,5 @@
 import type { ExamConfiguration } from '../../app/utils/examConfig.ts'
+import type { CulturalHistoryCategoryCode } from '../../shared/examConfig.ts'
 import { configuration } from '../core/config.ts'
 import { fail } from '../core/errors.ts'
 
@@ -27,6 +28,7 @@ export type QuestionInput = {
   category_code: string
   is_cultural_history: boolean
   is_art_history: boolean
+  cultural_history_category: CulturalHistoryCategoryCode | null
   publication_status: string
   content_blocks: Block[]
   explanation_blocks: Block[]
@@ -130,8 +132,18 @@ export function validateQuestionInput(value: unknown, config: ExamConfiguration 
     if (value[key] !== undefined && typeof value[key] !== 'boolean') return invalid('文化史・美術史の指定を確認してください', { [key]: ['は真偽値で指定してください'] })
   }
   const isCulturalHistory = value.is_cultural_history ?? false
-  const isArtHistory = value.is_art_history ?? false
-  if (isArtHistory && !isCulturalHistory) return invalid('美術史の問題は文化史にも指定してください', { is_cultural_history: ['美術史を指定するときは文化史も指定してください'] })
+  if (value.is_art_history && !isCulturalHistory) return invalid('美術史の問題は文化史にも指定してください', { is_cultural_history: ['美術史を指定するときは文化史も指定してください'] })
+  // Older forms/archives have only the two flags. Retain their meaning without
+  // guessing music or literature classifications from question text.
+  const culturalHistoryCategory = value.cultural_history_category === undefined
+    ? isCulturalHistory ? value.is_art_history ? 'art_history' : 'other_cultural_history' : null
+    : value.cultural_history_category
+  if (culturalHistoryCategory !== null && (typeof culturalHistoryCategory !== 'string' || !config.cultural_history_categories.some(item => item.value === culturalHistoryCategory))) {
+    return invalid('文化史の区分を確認してください', { cultural_history_category: ['は美術史・音楽史・文学史・その他から1つ指定してください'] })
+  }
+  if (isCulturalHistory !== (culturalHistoryCategory !== null)) return invalid('文化史と区分の組合せを確認してください', { cultural_history_category: ['文化史には区分を1つ指定し、文化史以外は区分を指定しないでください'] })
+  const isArtHistory = culturalHistoryCategory === 'art_history'
+  if (value.is_art_history !== undefined && value.is_art_history !== isArtHistory) return invalid('美術史と文化史の区分が一致しません', { is_art_history: ['文化史の区分に合わせて指定してください'] })
   if (typeof value.publication_status !== 'string' || !['draft', 'published', 'private'].includes(value.publication_status)) return invalid('入力内容を確認してください', { publication_status: ['は下書き・公開・非公開から指定してください'] })
   if (value.source_text !== null && typeof value.source_text !== 'string') return invalid('出典の形式を確認してください')
   const published = value.publication_status === 'published'
@@ -165,6 +177,7 @@ export function validateQuestionInput(value: unknown, config: ExamConfiguration 
   return { exam_number: examNumber, question_number: questionNumber, major_category_code: major.value,
     category_code: category.value, publication_status: value.publication_status,
     is_cultural_history: isCulturalHistory as boolean, is_art_history: isArtHistory as boolean,
+    cultural_history_category: culturalHistoryCategory as CulturalHistoryCategoryCode | null,
     content_blocks: contentBlocks, explanation_blocks: explanationBlocks, source_text: value.source_text as string | null, choices }
 }
 

@@ -1,5 +1,7 @@
 import rawConfiguration from '../../config/exam.json' with { type: 'json' }
 
+export type CulturalHistoryCategoryCode = 'art_history' | 'music_history' | 'literature_history' | 'other_cultural_history'
+
 export type ExamConfiguration = {
   schema_version: number
   site: {
@@ -19,6 +21,7 @@ export type ExamConfiguration = {
     major: { value: string, label: string }[]
     minor: { value: string, label: string, major_category_value: string }[]
   }
+  cultural_history_categories: { value: CulturalHistoryCategoryCode, label: string }[]
   payments: { enabled: boolean, free_exam_count: number, amount: number, currency: string }
 }
 
@@ -47,6 +50,9 @@ export const parseExamConfig = (input: unknown): ExamConfiguration => {
   const validItems = (items: { value: string, label: string }[]) => items.every(item => item && nonempty(item.value) && /^[a-z][a-z0-9_]{0,49}$/.test(item.value) && nonempty(item.label)) && new Set(items.map(item => item.value)).size === items.length
   requireValue(validItems(categories.major) && validItems(categories.minor), 'category codes must be unique and labels nonempty')
   requireValue(categories.minor.every(item => categories.major.some(major => major.value === item.major_category_value)), 'minor category must reference an existing major category')
+  const culture = config.cultural_history_categories
+  const cultureCodes: CulturalHistoryCategoryCode[] = ['art_history', 'music_history', 'literature_history', 'other_cultural_history']
+  requireValue(Array.isArray(culture) && culture.length === cultureCodes.length && validItems(culture) && cultureCodes.every(code => culture.some(item => item.value === code)), 'cultural_history_categories must contain the four distinct supported categories')
   const payment = config.payments
   requireValue(payment && typeof payment.enabled === 'boolean' && Number.isSafeInteger(payment.free_exam_count) && payment.free_exam_count >= 0 && payment.free_exam_count <= config.exam.set_count, 'free_exam_count must be between zero and set_count')
   requireValue(positive(payment.amount) && payment.currency === 'jpy', 'payments require a positive amount and jpy currency')

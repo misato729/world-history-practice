@@ -54,6 +54,7 @@ function questionInput(): QuestionInput {
     exam_number: 1, question_number: 1,
     major_category_code: category.major_category_value, category_code: category.value,
     is_cultural_history: false, is_art_history: false,
+    cultural_history_category: null,
     publication_status: 'published', content_blocks: [{ type: 'text', text: 'Timezone sample' }],
     explanation_blocks: [{ type: 'text', text: 'Sample explanation' }], source_text: 'Self-authored sample | https://example.com/timezone',
     choices: configuration.exam.choice_labels.map((label, index) => ({ choice_label: label,

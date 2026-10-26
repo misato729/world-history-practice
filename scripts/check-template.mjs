@@ -35,6 +35,10 @@ for (const item of config.categories.minor) {
   assert(typeof item.value === 'string' && /^[a-z][a-z0-9_]{0,49}$/.test(item.value) && item.label?.trim(), 'Invalid minor category')
   assert(config.categories.major.some(major => major.value === item.major_category_value), 'Minor category refers to unknown major category')
 }
+const cultureCodes = ['art_history', 'music_history', 'literature_history', 'other_cultural_history']
+assert(Array.isArray(config.cultural_history_categories), 'Cultural history categories are required')
+assert.deepEqual(config.cultural_history_categories.map(item => item.value).sort(), [...cultureCodes].sort(), 'Exactly four cultural history categories are required')
+assert(config.cultural_history_categories.every(item => typeof item.label === 'string' && item.label.trim()), 'Cultural history category labels are required')
 assert.equal(content.schema_version, 1, 'Unsupported content schema_version')
 assert(Array.isArray(content.questions) && content.questions.length, 'At least one sample question is required')
 unique(content.questions.map(item => `${item.exam_number}/${item.question_number}`), 'question coordinates')
@@ -48,6 +52,8 @@ for (const question of content.questions) {
   assert(['draft', 'published', 'private'].includes(question.publication_status), 'Invalid publication status')
   for (const flag of ['is_cultural_history', 'is_art_history']) assert.equal(typeof question[flag], 'boolean', `${flag} must be a boolean`)
   assert(!question.is_art_history || question.is_cultural_history, 'Art history must also be cultural history')
+  assert(question.is_cultural_history ? cultureCodes.includes(question.cultural_history_category) : question.cultural_history_category === null, 'Culture requires exactly one category; non-culture requires null')
+  assert.equal(question.is_art_history, question.cultural_history_category === 'art_history', 'Art history flag and cultural category must agree')
   assert(Array.isArray(question.content_blocks) && question.content_blocks.length, 'Question content is required')
   assert(Array.isArray(question.explanation_blocks) && question.explanation_blocks.length, 'Explanation is required')
   assert.equal(question.choices.length, config.exam.choice_labels.length, 'Choice count mismatch')

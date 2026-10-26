@@ -14,16 +14,18 @@ process.env.APP_ENV = 'test'
 if (process.env.TEST_DATABASE_URL) process.env.DATABASE_URL = process.env.TEST_DATABASE_URL
 const integration = { skip: !Boolean(process.env.DATABASE_URL || process.env.PGHOST) }
 const originalConfiguration = structuredClone(configuration)
-const testConfiguration = { ...originalConfiguration, exam: { ...originalConfiguration.exam, set_count: 1, questions_per_exam: 3 }, payments: { ...originalConfiguration.payments, enabled: false, free_exam_count: 1 } }
+const testConfiguration = { ...originalConfiguration, exam: { ...originalConfiguration.exam, set_count: 1, questions_per_exam: 4 }, payments: { ...originalConfiguration.payments, enabled: false, free_exam_count: 1 } }
 setConfigurationForTesting(testConfiguration)
 after(async () => { setConfigurationForTesting(originalConfiguration); await closeDatabase() })
 
 function questions(): QuestionInput[] {
   const category = configuration.categories.minor[0]!
-  const rows: QuestionInput[] = [1, 2, 3].map(number => ({
+  const categories = ['art_history', 'music_history', 'literature_history', 'other_cultural_history'] as const
+  const rows: QuestionInput[] = [1, 2, 3, 4].map(number => ({
     exam_number: 1, question_number: number,
     major_category_code: category.major_category_value, category_code: category.value,
     is_cultural_history: true, is_art_history: number === 1, publication_status: 'published',
+    cultural_history_category: categories[number - 1]!,
     content_blocks: [{ type: 'text', text: `Archive sample ${number}` }], explanation_blocks: [{ type: 'text', text: 'Explanation' }],
     source_text: 'Self-authored sample | https://example.com/archive',
     choices: configuration.exam.choice_labels.map((label, index) => ({ choice_label: label, display_order: index + 1,

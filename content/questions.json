@@ -79,7 +79,8 @@
         }
       ],
       "is_cultural_history": false,
-      "is_art_history": false
+      "is_art_history": false,
+      "cultural_history_category": null
     },
     {
       "exam_number": 1,
@@ -159,7 +160,8 @@
         }
       ],
       "is_cultural_history": false,
-      "is_art_history": false
+      "is_art_history": false,
+      "cultural_history_category": null
     },
     {
       "exam_number": 1,
@@ -247,7 +249,8 @@
         }
       ],
       "is_cultural_history": false,
-      "is_art_history": false
+      "is_art_history": false,
+      "cultural_history_category": null
     },
     {
       "exam_number": 1,
@@ -327,7 +330,8 @@
         }
       ],
       "is_cultural_history": true,
-      "is_art_history": false
+      "is_art_history": false,
+      "cultural_history_category": "other_cultural_history"
     },
     {
       "exam_number": 1,
@@ -407,7 +411,8 @@
         }
       ],
       "is_cultural_history": true,
-      "is_art_history": true
+      "is_art_history": true,
+      "cultural_history_category": "art_history"
     }
   ]
 }
