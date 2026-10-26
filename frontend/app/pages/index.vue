@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { EXAM_CATALOG, FREE_EXAM_MAX, QUESTIONS_PER_EXAM } from '~/utils/examCatalog'
+import { EXAM_CATALOG, FREE_EXAM_MAX, QUESTIONS_PER_EXAM, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { HISTORY_TOPICS, type HistoryTopic } from '~/utils/historyTopics'
 import {
   createPracticeSeed,
   createPracticeSequence,
+  selectPracticePositions,
   shufflePracticeSequence,
   type PracticeOrder,
 } from '~/utils/practiceSequence'
@@ -21,8 +23,24 @@ useSeoMeta({
 
 const questionNumbers = Object.freeze(Array.from({ length: QUESTIONS_PER_EXAM }, (_, index) => index + 1))
 
-const { user } = useAuth()
+const { user, authHeaders } = useAuth()
+const { $api: api } = useNuxtApp()
 const launcherMode = ref<LauncherMode>('exam')
+const selectedMajorCategory = ref('')
+const selectedCategory = ref('')
+const selectedHistoryTopic = ref<HistoryTopic>('all')
+const startingPractice = ref(false)
+const practiceStartError = ref('')
+const availableCategories = computed(() => selectedMajorCategory.value
+  ? getCategoriesByMajorCategory(selectedMajorCategory.value)
+  : CATEGORIES)
+const hasSubjectFilter = computed(() => Boolean(selectedMajorCategory.value || selectedCategory.value || selectedHistoryTopic.value !== 'all'))
+watch(selectedMajorCategory, () => {
+  if (!availableCategories.value.some(item => item.value === selectedCategory.value)) selectedCategory.value = ''
+})
+watch([selectedMajorCategory, selectedCategory, selectedHistoryTopic], () => {
+  practiceStartError.value = ''
+})
 
 const hasFullAccess = computed(() => (
   hasFullExamAccess(user.value)
@@ -79,29 +97,54 @@ const examIsLocked = (examNumber: number) => examNumber > FREE_EXAM_MAX && !hasF
 const examTarget = (examNumber: number) => (
   examIsLocked(examNumber) ? '/premium' : `/practice/${examNumber}/1`
 )
-const startConditionalPractice = (order: PracticeOrder) => {
-  if (!hasConditionSelection.value) return
+const startConditionalPractice = async (order: PracticeOrder) => {
+  if (!hasConditionSelection.value || startingPractice.value) return
+  startingPractice.value = true
+  practiceStartError.value = ''
 
   const query: Record<string, string> = {
     exams: sortedSelectedExamNumbers.value.join(','),
     questions: sortedSelectedQuestionNumbers.value.join(','),
   }
-  let sequence = conditionSequence.value
+  if (selectedMajorCategory.value) query.major_category_code = selectedMajorCategory.value
+  if (selectedCategory.value) query.category_code = selectedCategory.value
+  if (selectedHistoryTopic.value !== 'all') query.history_topic = selectedHistoryTopic.value
 
-  if (order === 'random') {
-    const seed = createPracticeSeed()
-    sequence = shufflePracticeSequence(sequence, seed)
-    query.order = order
-    query.seed = String(seed)
+  try {
+    let sequence = conditionSequence.value
+    if (hasSubjectFilter.value) {
+      const result = await api<{ data: ExamCatalogEntry[] }>('/api/v1/exams', {
+        headers: authHeaders.value,
+        query: {
+          ...(selectedMajorCategory.value ? { major_category_code: selectedMajorCategory.value } : {}),
+          ...(selectedCategory.value ? { category_code: selectedCategory.value } : {}),
+          history_topic: selectedHistoryTopic.value,
+        },
+      })
+      sequence = selectPracticePositions(result.data, sortedSelectedExamNumbers.value, sortedSelectedQuestionNumbers.value)
+    }
+    if (order === 'random') {
+      const seed = createPracticeSeed()
+      sequence = shufflePracticeSequence(sequence, seed)
+      query.order = order
+      query.seed = String(seed)
+    }
+    const firstPosition = sequence[0]
+    if (!firstPosition) {
+      practiceStartError.value = 'この条件に合う公開問題はまだありません。分野や対象演習セットを変更してください。'
+      return
+    }
+    await navigateTo({
+      path: `/practice/${firstPosition.examNumber}/${firstPosition.questionNumber}`,
+      query,
+    })
   }
-
-  const firstPosition = sequence[0]
-  if (!firstPosition) return
-
-  navigateTo({
-    path: `/practice/${firstPosition.examNumber}/${firstPosition.questionNumber}`,
-    query,
-  })
+  catch {
+    practiceStartError.value = '演習を開始できませんでした。通信状況を確認して、もう一度お試しください。'
+  }
+  finally {
+    startingPractice.value = false
+  }
 }
 
 watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
@@ -139,7 +182,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
             <span>問題演習を始める</span>
           </h2>
         </div>
-        <p>公開中の演習セットを1問ずつ解いて、理解を確かめられます。問題番号を選んだ演習にも取り組めます。</p>
+        <p>公開中の演習セットを1問ずつ解いて、理解を確かめられます。章・節や文化史・美術史を指定した演習にも取り組めます。</p>
       </div>
 
       <div class="launcher-tabs" role="tablist" aria-label="問題演習の開始方法">
@@ -209,7 +252,17 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
       >
         <form class="condition-form" @submit.prevent="startConditionalPractice('sequential')">
           <div class="condition-fields">
-            <fieldset class="condition-fieldset">
+            <fieldset class="condition-fieldset" :disabled="startingPractice">
+              <legend>分野</legend>
+              <p class="condition-help">山川の章・節に沿って選べます。文化史・美術史の条件も組み合わせられます。</p>
+              <div class="subject-select-grid">
+                <div><label for="practice-major-category">大分類（章）</label><select id="practice-major-category" v-model="selectedMajorCategory"><option value="">すべての章</option><option v-for="item in MAJOR_CATEGORIES" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+                <div><label for="practice-category">小分類（節）</label><select id="practice-category" v-model="selectedCategory"><option value="">すべての節</option><option v-for="item in availableCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+                <div><label for="practice-history-topic">文化史・美術史</label><select id="practice-history-topic" v-model="selectedHistoryTopic"><option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+              </div>
+              <p class="condition-help">文化史には美術史も含まれます。</p>
+            </fieldset>
+            <fieldset class="condition-fieldset" :disabled="startingPractice">
               <legend>対象演習セット</legend>
               <div class="condition-field-heading">
                 <p>複数選択できます</p>
@@ -239,7 +292,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
               </div>
             </fieldset>
 
-            <fieldset class="condition-fieldset">
+            <fieldset class="condition-fieldset" :disabled="startingPractice">
               <legend>問題番号</legend>
               <div class="condition-field-heading">
                 <p>問題番号を選択してください</p>
@@ -270,25 +323,26 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
             </fieldset>
           </div>
 
+          <p v-if="practiceStartError" class="practice-start-error" role="alert">{{ practiceStartError }}</p>
           <div class="condition-submit">
             <p v-if="hasConditionSelection">
               <span>選択中</span>
               {{ sortedSelectedExamNumbers.length }}セット・各{{ sortedSelectedQuestionNumbers.length }}問
-              <strong>全{{ selectedQuestionCount }}問</strong>
+              <strong>{{ hasSubjectFilter ? `最大${selectedQuestionCount}問から条件で絞り込み` : `全${selectedQuestionCount}問` }}</strong>
             </p>
             <p v-else class="selection-required">
               <span>選択内容を確認してください</span>
               対象演習セットと問題番号を1つ以上選択してください
             </p>
             <div class="condition-actions">
-              <button class="primary-link" type="submit" :disabled="!hasConditionSelection">
+              <button class="primary-link" type="submit" :disabled="!hasConditionSelection || startingPractice">
                 <UIcon name="i-lucide-list-ordered" />
-                問題番号順に始める
+                {{ startingPractice ? '確認中です' : '問題番号順に始める' }}
               </button>
               <button
                 class="secondary-link"
                 type="button"
-                :disabled="!hasConditionSelection"
+                :disabled="!hasConditionSelection || startingPractice"
                 @click="startConditionalPractice('random')"
               >
                 <UIcon name="i-lucide-shuffle" />
@@ -405,6 +459,12 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .premium-info-link { display: inline-flex; align-items: center; gap: 5px; color: var(--teal-dark); font-size: 0.8125rem; font-weight: 800; }
 .condition-form { border: 1px solid #c7d4d5; border-radius: 8px; background: #fff; }
 .condition-fields { display: grid; gap: 28px; padding: 28px; }
+.condition-help { margin: 10px 0; color: var(--muted); font-size: .8125rem; line-height: 1.7; }
+.subject-select-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.subject-select-grid > div { min-width: 0; }
+.subject-select-grid label { display: block; margin-bottom: 7px; color: #344951; font-size: .8125rem; font-weight: 800; }
+.subject-select-grid select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid #bdcbcd; border-radius: 5px; background: #fff; color: var(--ink); font-size: .875rem; }
+.practice-start-error { margin: 0; padding: 0 28px 20px; color: #a23b2a; font-weight: 700; line-height: 1.7; }
 .condition-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .condition-fieldset + .condition-fieldset { padding-top: 26px; border-top: 1px solid #dce4e4; }
 .condition-fieldset legend { padding: 0; color: #253d45; font-size: 1.0625rem; font-weight: 900; }
@@ -532,6 +592,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 }
 
 @media (max-width: 640px) {
+  .subject-select-grid { grid-template-columns: 1fr; }
   .practice-launcher { padding: 32px 20px 38px; }
   .launcher-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .launcher-heading h2 { font-size: 1.6875rem; }

@@ -1,0 +1,136 @@
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import test from 'node:test'
+import { inspect, isPrivateSource, main } from './check-private-sources.mjs'
+
+const ZERO = '0'.repeat(40)
+const write = (path, content = 'Synthetic fixture only; no copyrighted material.\n') => {
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, content)
+}
+
+function fixture(t) {
+  const root = mkdtempSync(join(realpathSync(tmpdir()), 'world-history-private-source-test-'))
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  const git = args => execFileSync('git', ['-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', ...args], {
+    cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  git(['init', '--quiet'])
+  write(join(root, 'README.md'), '# Synthetic repository\n')
+  write(join(root, '.gitignore'), '/past-exam/\n/glossary*\n/分析/\n')
+  git(['add', 'README.md', '.gitignore'])
+  const commit = message => git(['-c', 'user.name=Private Source Test', '-c', 'user.email=private-source-test@example.invalid', 'commit', '--quiet', '-m', message])
+  commit('Synthetic public fixture')
+  const head = () => git(['rev-parse', 'HEAD']).trim()
+  return { root, git, commit, head }
+}
+
+function capture(action) {
+  const oldLog = console.log, oldError = console.error, output = []
+  console.log = (...args) => output.push(args.join(' '))
+  console.error = (...args) => output.push(args.join(' '))
+  try { return { code: action(), output: output.join('\n') } }
+  finally { console.log = oldLog; console.error = oldError }
+}
+
+test('protected source paths are distinguished from public code and documentation', () => {
+  for (const path of [
+    'past-exam/question.pdf', 'nested/past-exam/image.png',
+    'glossary.pdf', 'Glossary-old.pdf', 'nested/GLOSSARY_backup.zip',
+    '分析/full-ocr.txt', 'nested/分析/scan.png',
+    '歴検1級世界史_2025.pdf', 'nested/歴検1級世界史_解答解説_2008-2012.pdf', '歴検1級世界史_2025.zip',
+  ]) assert.equal(isPrivateSource(path), true, path)
+  for (const path of [
+    'README.md', 'scripts/check-private-sources.mjs', 'docs/past-exam-notes.md',
+    'docs/classification.md', 'frontend/public/images/logo.svg', 'content/questions.json',
+    'docs/分析方針.md', 'docs/歴検1級世界史_notes.md',
+  ]) assert.equal(isPrivateSource(path), false, path)
+})
+
+test('untracked local-only material is not read or included in a clean repository scan', t => {
+  const f = fixture(t)
+  write(join(f.root, 'past-exam/question.pdf'))
+  write(join(f.root, 'glossary.pdf'))
+  write(join(f.root, '分析/ocr.txt'))
+  const before = readFileSync(join(f.root, 'glossary.pdf'), 'utf8')
+  assert.deepEqual(inspect(f.root), { tracked: [], history: [] })
+  assert.equal(capture(() => main([], f.root)).code, 0)
+  assert.equal(readFileSync(join(f.root, 'glossary.pdf'), 'utf8'), before)
+})
+
+test('forced staging cannot bypass source protection despite ignore rules', t => {
+  const f = fixture(t)
+  const paths = ['past-exam/question.pdf', 'glossary.pdf', '分析/ocr.txt']
+  for (const path of paths) write(join(f.root, path))
+  f.git(['add', '--force', ...paths])
+  const result = inspect(f.root)
+  assert.deepEqual([...result.tracked].sort(), [...paths].sort())
+  assert.deepEqual(result.history, [])
+  assert.equal(capture(() => main([], f.root)).code, 1)
+})
+
+test('committing then deleting a source still fails because earlier history would be uploaded', t => {
+  const f = fixture(t)
+  const path = 'past-exam/question.pdf'
+  write(join(f.root, path))
+  f.git(['add', '--force', path]); f.commit('Synthetic source fixture')
+  f.git(['rm', path]); f.commit('Remove synthetic source fixture')
+  const result = inspect(f.root)
+  assert.deepEqual(result.tracked, [])
+  assert(result.history.includes(path))
+  assert.equal(capture(() => main([], f.root)).code, 1)
+})
+
+test('history checks protected path names even when the blob also exists at a benign path', t => {
+  const f = fixture(t)
+  const value = 'Identical synthetic fixture; no real source content.\n'
+  write(join(f.root, 'docs/synthetic-note.txt'), value)
+  f.git(['add', 'docs/synthetic-note.txt']); f.commit('Synthetic public blob')
+  write(join(f.root, 'past-exam/copied-note.pdf'), value)
+  f.git(['add', '--force', 'past-exam/copied-note.pdf']); f.commit('Reuse blob under private path')
+  f.git(['rm', 'past-exam/copied-note.pdf']); f.commit('Remove private alias')
+  assert.deepEqual(inspect(f.root).tracked, [])
+  assert(inspect(f.root).history.includes('past-exam/copied-note.pdf'))
+  assert.equal(capture(() => main([], f.root)).code, 1)
+})
+
+test('default scanning checks other local refs while explicit revisions stay scoped', t => {
+  const f = fixture(t)
+  const clean = f.head()
+  f.git(['checkout', '--quiet', '-b', 'synthetic-private-branch'])
+  write(join(f.root, 'glossary.pdf'))
+  f.git(['add', '--force', 'glossary.pdf']); f.commit('Synthetic private branch fixture')
+  f.git(['checkout', '--quiet', '--detach', clean])
+  assert(inspect(f.root).history.includes('glossary.pdf'))
+  assert.deepEqual(inspect(f.root, [clean]), { tracked: [], history: [] })
+})
+
+test('pre-push examines the local ref history including removed raw material', t => {
+  const f = fixture(t)
+  const path = '分析/full-ocr.txt'
+  write(join(f.root, path))
+  f.git(['add', '--force', path]); f.commit('Synthetic OCR fixture')
+  f.git(['rm', path]); f.commit('Remove synthetic OCR fixture')
+  const line = `refs/heads/main ${f.head()} refs/heads/main ${ZERO}\n`
+  assert.equal(capture(() => main(['--pre-push'], f.root, line)).code, 1)
+})
+
+test('pre-push accepts public code without requiring local-only files', t => {
+  const f = fixture(t)
+  write(join(f.root, 'scripts/public-example.mjs'), 'export const synthetic = true\n')
+  f.git(['add', 'scripts/public-example.mjs']); f.commit('Synthetic public code')
+  const line = `refs/heads/main ${f.head()} refs/heads/main ${ZERO}\n`
+  assert.deepEqual(inspect(f.root), { tracked: [], history: [] })
+  assert.equal(capture(() => main(['--pre-push'], f.root, line)).code, 0)
+})
+
+test('unknown revisions fail closed instead of treating an incomplete history scan as clean', t => {
+  const f = fixture(t)
+  const badRef = 'f'.repeat(40)
+  const line = `refs/heads/main ${badRef} refs/heads/main ${ZERO}\n`
+  const result = capture(() => main(['--pre-push'], f.root, line))
+  assert.equal(result.code, 1)
+})

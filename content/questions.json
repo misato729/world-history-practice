@@ -4,8 +4,8 @@
     {
       "exam_number": 1,
       "question_number": 1,
-      "major_category_code": "economy",
-      "category_code": "currency",
+      "major_category_code": "chapter_06",
+      "category_code": "chapter_06_section_01",
       "publication_status": "published",
       "content_blocks": [
         {
@@ -77,13 +77,15 @@
           "is_correct": false,
           "display_order": 4
         }
-      ]
+      ],
+      "is_cultural_history": false,
+      "is_art_history": false
     },
     {
       "exam_number": 1,
       "question_number": 2,
-      "major_category_code": "economy",
-      "category_code": "currency",
+      "major_category_code": "chapter_08",
+      "category_code": "chapter_08_section_01",
       "publication_status": "published",
       "content_blocks": [
         {
@@ -155,13 +157,15 @@
           "is_correct": false,
           "display_order": 4
         }
-      ]
+      ],
+      "is_cultural_history": false,
+      "is_art_history": false
     },
     {
       "exam_number": 1,
       "question_number": 3,
-      "major_category_code": "economy",
-      "category_code": "trade",
+      "major_category_code": "chapter_07",
+      "category_code": "chapter_07_section_03",
       "publication_status": "published",
       "content_blocks": [
         {
@@ -241,13 +245,15 @@
           "is_correct": false,
           "display_order": 4
         }
-      ]
+      ],
+      "is_cultural_history": false,
+      "is_art_history": false
     },
     {
       "exam_number": 1,
       "question_number": 4,
-      "major_category_code": "culture",
-      "category_code": "cross_cultural",
+      "major_category_code": "chapter_08",
+      "category_code": "chapter_08_section_02",
       "publication_status": "published",
       "content_blocks": [
         {
@@ -319,13 +325,15 @@
           "is_correct": false,
           "display_order": 4
         }
-      ]
+      ],
+      "is_cultural_history": true,
+      "is_art_history": false
     },
     {
       "exam_number": 1,
       "question_number": 5,
-      "major_category_code": "culture",
-      "category_code": "arts",
+      "major_category_code": "chapter_11",
+      "category_code": "chapter_11_section_04",
       "publication_status": "published",
       "content_blocks": [
         {
@@ -397,7 +405,9 @@
           "is_correct": false,
           "display_order": 4
         }
-      ]
+      ],
+      "is_cultural_history": true,
+      "is_art_history": true
     }
   ]
 }

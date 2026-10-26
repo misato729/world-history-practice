@@ -94,7 +94,8 @@ async function createSyntheticRecords(db: Database, password: string) {
   await query("INSERT INTO users(name,email,password_digest,role,created_at,updated_at) VALUES('Restore admin','restore-admin@example.invalid',$1,'admin',NOW(),NOW())", [encoded], db)
   const category = configuration.categories.minor[0]!
   const question = await saveQuestion({ exam_number: 1, question_number: 1,
-    major_category_code: category.major_category_value, category_code: category.value, publication_status: 'published',
+    major_category_code: category.major_category_value, category_code: category.value,
+    is_cultural_history: false, is_art_history: false, publication_status: 'published',
     content_blocks: [{ type: 'text', text: 'Synthetic restore question' }], explanation_blocks: [{ type: 'text', text: 'Synthetic explanation' }],
     source_text: 'Synthetic source | https://example.invalid/source',
     choices: configuration.exam.choice_labels.map((choice_label, index) => ({ choice_label, display_order: index + 1,

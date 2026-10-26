@@ -21,6 +21,7 @@ function input(overrides: Partial<QuestionInput> = {}, config = configuration): 
   const category = config.categories.minor[0]!
   return {
     exam_number: 1, question_number: 1, major_category_code: category.major_category_value, category_code: category.value,
+    is_cultural_history: false, is_art_history: false,
     publication_status: 'published', content_blocks: [{ type: 'text', text: 'Sample question' }],
     explanation_blocks: [{ type: 'text', text: 'Explanation revealed only after answering' }], source_text: 'Self-authored sample | https://example.com/sample',
     choices: config.exam.choice_labels.map((label, index) => ({ choice_label: label, content_blocks: [{ type: 'text', text: `Choice ${label}` }], is_correct: index === 1, display_order: index + 1 })),
@@ -88,6 +89,21 @@ test('admin normalization handles form booleans, enforces all choice rows and ig
   assert.throws(() => sanitizeQuestionInput({ ...raw, content_blocks: [] }), apiError(422))
 })
 
+test('topic flags default for older input and reject non-booleans and art without culture', () => {
+  const legacy = { ...input() } as Partial<QuestionInput>
+  delete legacy.is_cultural_history
+  delete legacy.is_art_history
+  assert.equal(validateQuestionInput(legacy).is_cultural_history, false)
+  assert.equal(validateQuestionInput(legacy).is_art_history, false)
+  assert.equal(validateQuestionInput(input({ is_cultural_history: true, is_art_history: true })).is_art_history, true)
+  assert.throws(() => validateQuestionInput(input({ is_art_history: true })), apiError(422))
+  for (const value of ['false', 'true', 0, 1, null, [], {}]) {
+    assert.throws(() => validateQuestionInput({ ...input(), is_cultural_history: value }), apiError(422))
+    assert.throws(() => sanitizeQuestionInput({ ...input(), is_art_history: value }), apiError(422))
+  }
+  assert.equal(materialDigest(input()), materialDigest(input({ is_cultural_history: true, is_art_history: true })))
+})
+
 test('material comparison ignores visibility and IDs; excerpts remove blank markers and limit Unicode characters', () => {
   const attributes = input()
   assert.equal(materialDigest(attributes), materialDigest({ ...attributes, publication_status: 'private', choices: attributes.choices.map((choice, index) => ({ ...choice, id: index + 10 })) }))
@@ -137,6 +153,55 @@ test('next-question selection is ordered and validates parameters without return
   await assert.rejects(nextQuestion({ exam_number: exam, after_question_number: 3 }, null, db), apiError(404))
   const exams = await listExams(null, db)
   assert.deepEqual(exams.data.find(item => item.exam_number === exam)?.question_numbers, [1, 3])
+}))
+
+test('chapter and topic filters intersect in catalogs, selection and administration without leaking answers', integration, async () => isolated(async (db, exam) => {
+  const admin = await user(db, 'admin')
+  const firstCategory = configuration.categories.minor[0]!
+  const otherCategory = configuration.categories.minor.find(item => item.major_category_value !== firstCategory.major_category_value)!
+  await saveQuestion(input({ exam_number: exam }), { db })
+  const culture = await saveQuestion(input({ exam_number: exam, question_number: 2, is_cultural_history: true }), { db })
+  const art = await saveQuestion(input({ exam_number: exam, question_number: 3, major_category_code: otherCategory.major_category_value,
+    category_code: otherCategory.value, is_cultural_history: true, is_art_history: true }), { db })
+  const cultural = (await listExams(null, db, { history_topic: 'cultural_history' })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(cultural.question_numbers, [2, 3])
+  const arts = (await listExams(null, db, { history_topic: 'art_history' })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(arts.question_numbers, [3])
+  assert.equal(arts.published_question_count, 1)
+  const combined = await nextQuestion({ exam_number: exam, history_topic: 'cultural_history', major_category_code: firstCategory.major_category_value, category_code: firstCategory.value }, null, db)
+  assert.equal(combined.data.id, culture.id)
+  assert.equal(combined.data.is_cultural_history, true)
+  assert.equal(combined.data.is_art_history, false)
+  assert.equal('explanation_blocks' in combined.data, false)
+  assert.equal('is_correct' in (combined.data.choices as Record<string, unknown>[])[0]!, false)
+  await assert.rejects(nextQuestion({ exam_number: exam, history_topic: 'art_history', category_code: firstCategory.value }, null, db), apiError(404))
+  const filtered = await listAdminQuestions(admin, { exam_number: exam, history_topic: 'art_history' }, db)
+  assert.equal(filtered.meta.total_count, 1)
+  assert.equal(filtered.data[0]!.id, art.id)
+  assert.equal(filtered.data[0]!.is_art_history, true)
+  for (const params of [{ history_topic: 'unknown' }, { history_topic: ['art_history'] }, { major_category_code: 'unknown' },
+    { major_category_code: firstCategory.major_category_value, category_code: otherCategory.value }]) {
+    await assert.rejects(nextQuestion(params, null, db), apiError(400))
+    await assert.rejects(listExams(null, db, params), apiError(400))
+    await assert.rejects(listAdminQuestions(admin, params, db), apiError(400))
+  }
+  await query('SAVEPOINT topic_constraint', [], db)
+  await assert.rejects(query('UPDATE questions SET is_cultural_history=false WHERE id=$1', [art.id], db), error => (error as { code?: string }).code === '23514')
+  await query('ROLLBACK TO SAVEPOINT topic_constraint', [], db)
+}))
+
+test('topic-only edits retain answer histories, choice IDs and favorite links', integration, async () => isolated(async (db, exam) => {
+  const owner = await user(db)
+  const initial = input({ exam_number: exam })
+  const question = await saveQuestion(initial, { db })
+  const answer = await answerQuestion(question.id, question.choices[1]!.id, owner, db)
+  await putFavorite(question.id, owner, db)
+  const saved = await saveQuestion({ ...initial, is_cultural_history: true, is_art_history: true }, { id: question.id, db })
+  assert.equal(saved.is_cultural_history, true)
+  assert.equal(saved.is_art_history, true)
+  assert.deepEqual(saved.choices.map(choice => choice.id), question.choices.map(choice => choice.id))
+  assert.equal((await query('SELECT id FROM answer_histories WHERE id=$1', [answer.data.answer_history_id], db)).length, 1)
+  assert.equal((await query('SELECT id FROM favorites WHERE user_id=$1 AND question_id=$2', [owner.id, question.id], db)).length, 1)
 }))
 
 test('signed-in answers, history ownership, favorite idempotency and pagination retain the API contract', integration, async () => isolated(async (db, exam) => {

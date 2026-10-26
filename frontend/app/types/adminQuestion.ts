@@ -36,6 +36,8 @@ export type AdminQuestionInput = {
   content_blocks: ContentBlock[]
   major_category_code: string
   category_code: string
+  is_cultural_history: boolean
+  is_art_history: boolean
   explanation_blocks: ContentBlock[]
   source_text: string
   publication_status: string
@@ -55,6 +57,8 @@ export type AdminQuestionSummary = {
   summary: string
   major_category_code: string
   category_code: string
+  is_cultural_history: boolean
+  is_art_history: boolean
   publication_status: string
   updated_at: string
 }
@@ -77,6 +81,8 @@ export const createEmptyQuestion = (config: ExamConfiguration = EXAM_CONFIG): Ad
   content_blocks: [{ type: 'text', text: '' }],
   major_category_code: config.categories.minor[0]!.major_category_value,
   category_code: config.categories.minor[0]!.value,
+  is_cultural_history: false,
+  is_art_history: false,
   explanation_blocks: [{ type: 'text', text: '' }],
   source_text: '',
   publication_status: 'draft',

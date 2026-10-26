@@ -10,11 +10,19 @@
 
 - ログインせずに問題を解き、回答後に正誤・正答・解説・出典を確認する
 - 会員登録・ログイン、回答履歴の保存、お気に入りの登録
+- 山川『世界史用語集』の19章・64節で問題を分類し、章節で絞り込んで演習する
+- 全章を横断する文化史のみ・美術史のみの演習（章節との組合せにも対応）
 - 管理者による問題の作成・編集・公開・削除
 - 文章・引用・穴埋め・表・プログラムを含む問題の表示
 - 任意で、一回払いの会員購入と有料問題の利用制限を有効にする
 
 複数正答・記述式・制限時間付きの受験セッション・試験全体の採点は追加機能です。選択肢の件数とラベルは設定できますが、各問題の正答は1件です。
+
+## 作業範囲とローカル専用資料
+
+エージェントの作業はこのリポジトリ内に限定します。`past-exam/`、`glossary.pdf`・`glossary*`、全文OCR等を含む `分析/` はローカル専用で、リモートへ送信しません。[配置と送信防止の手順](docs/local-only-materials.md)を参照してください。
+
+新しいチェックアウトでは、push前に `git config --local core.hooksPath .githooks` を設定し、`node scripts/check-private-sources.mjs` を実行します。既存フックがある場合は上書きせず整合させます。
 
 ## 起動
 
@@ -106,6 +114,8 @@ docker compose run --rm frontend \
   sh -c 'npm test && npm run typecheck && npm run build'
 ```
 
+- [進捗管理・セッション引き継ぎ](docs/workflow/README.md)
+- [分類・文化史・美術史の運用](docs/classification.md)
 - [カスタマイズ手順](docs/customization.md)
 - [API・DB・運用の概要](docs/architecture.md)
 - [Rails版からの移行・バックアップ・復元演習](docs/migration.md)

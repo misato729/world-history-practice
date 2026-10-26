@@ -43,6 +43,21 @@ function meta(page: number, perPage: number, total: number, atLeastOne = false) 
 const serializeChoice = (choice: ChoiceRecord) => ({ id: Number(choice.id), choice_label: choice.choice_label,
   content_blocks: choice.content_blocks, display_order: Number(choice.display_order) })
 
+/** Parameter names are allowlisted before their columns are used in SQL. */
+function questionFilters(params: Record<string, unknown>, conditions: string[], values: unknown[]) {
+  const major = params.major_category_code
+  const category = params.category_code
+  if (present(major) && (typeof major !== 'string' || !configuration.categories.major.some(item => item.value === major))) fail(400, 'bad_request', '大分類を正しく指定してください')
+  if (present(category) && (typeof category !== 'string' || !configuration.categories.minor.some(item => item.value === category && (!present(major) || item.major_category_value === major)))) fail(400, 'bad_request', '小分類を正しく指定してください')
+  for (const key of ['major_category_code', 'category_code']) {
+    if (present(params[key])) { values.push(params[key]); conditions.push(`${key}=$${values.length}`) }
+  }
+  const topic = present(params.history_topic) ? params.history_topic : 'all'
+  if (!['all', 'cultural_history', 'art_history'].includes(topic as string)) fail(400, 'bad_request', '演習テーマを正しく指定してください')
+  if (topic === 'cultural_history') conditions.push('is_cultural_history=true')
+  if (topic === 'art_history') conditions.push('is_art_history=true')
+}
+
 export async function authorizeExam(examNumber: number, user: User | null, db?: Database): Promise<void> {
   if (!paymentsEnabled || examNumber <= freeExamMax || await hasPaidAccess(user, db)) return
   if (user) fail(403, 'paid_membership_required', 'この模擬試験の利用にはプレミアム会員資格が必要です')
@@ -53,6 +68,7 @@ async function serializePublicQuestion(question: QuestionRecord, user: User | nu
   const payload: Record<string, unknown> = { id: question.id, exam_number: question.exam_number,
     question_number: question.question_number, content_blocks: question.content_blocks,
     major_category_code: question.major_category_code, category_code: question.category_code,
+    is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history,
     choices: question.choices.map(serializeChoice) }
   if (user) {
     const allowed = await hasPaidAccess(user, db)
@@ -71,6 +87,7 @@ export async function getQuestion(id: number, user: User | null, db: Database = 
 export async function nextQuestion(params: Record<string, unknown>, user: User | null, db: Database = getDatabase()) {
   const values: unknown[] = []
   const conditions = ["publication_status='published'"]
+  questionFilters(params, conditions, values)
   let order = 'exam_number,question_number'
   if (present(params.exam_number)) {
     const exam = integerParam(params.exam_number, 'exam_number')
@@ -118,8 +135,11 @@ export async function answerQuestion(id: number, selectedChoiceId: unknown, user
   }, db)
 }
 
-export async function listExams(user: User | null, db: Database = getDatabase()) {
-  const rows = await query<{ exam_number: number, question_numbers: number[], published_question_count: number }>("SELECT exam_number,array_agg(question_number ORDER BY question_number) AS question_numbers,COUNT(*)::integer AS published_question_count FROM questions WHERE publication_status='published' GROUP BY exam_number ORDER BY exam_number", [], db)
+export async function listExams(user: User | null, db: Database = getDatabase(), params: Record<string, unknown> = {}) {
+  const conditions = ["publication_status='published'"]
+  const values: unknown[] = []
+  questionFilters(params, conditions, values)
+  const rows = await query<{ exam_number: number, question_numbers: number[], published_question_count: number }>(`SELECT exam_number,array_agg(question_number ORDER BY question_number) AS question_numbers,COUNT(*)::integer AS published_question_count FROM questions WHERE ${conditions.join(' AND ')} GROUP BY exam_number ORDER BY exam_number`, values, db)
   const fullAccess = await hasPaidAccess(user, db)
   return { data: rows.map(row => ({ exam_number: Number(row.exam_number), question_numbers: row.question_numbers.map(Number),
     published_question_count: Number(row.published_question_count),
@@ -206,7 +226,8 @@ export async function listAdminQuestions(user: User | null, params: Record<strin
   checkAdmin(user)
   const conditions: string[] = []
   const values: unknown[] = []
-  for (const key of ['exam_number', 'major_category_code', 'category_code', 'publication_status']) {
+  questionFilters(params, conditions, values)
+  for (const key of ['exam_number', 'publication_status']) {
     if (!present(params[key])) continue
     if (typeof params[key] !== 'string' && typeof params[key] !== 'number') fail(400, 'bad_request', `${key}を正しく指定してください`)
     if (key === 'exam_number' && integer(params[key]) === undefined) fail(400, 'bad_request', `${key}を正しく指定してください`)
@@ -227,14 +248,16 @@ export async function listAdminQuestions(user: User | null, params: Record<strin
   const rows = await query<QuestionRecord>(`SELECT * FROM questions${where} ORDER BY exam_number,question_number,id LIMIT $${values.length + 1} OFFSET $${values.length + 2}`, [...values, perPage, (page - 1) * perPage], db)
   return { data: rows.map(question => ({ id: Number(question.id), exam_number: Number(question.exam_number), question_number: Number(question.question_number),
     summary: question.content_blocks.filter(block => ['text', 'quote', 'fill_in_text', 'fill_in_quote'].includes(block.type)).map(block => block.text ?? '').join(' ').replace(/\s+/g, ' ').trim() || '表・プログラムを含む問題',
-    major_category_code: question.major_category_code, category_code: question.category_code, publication_status: question.publication_status, updated_at: iso(question.updated_at) })),
+    major_category_code: question.major_category_code, category_code: question.category_code,
+    is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history,
+    publication_status: question.publication_status, updated_at: iso(question.updated_at) })),
   meta: meta(page, perPage, total, true) }
 }
 
 /** Dispatch only this service's endpoints; the root router owns auth and throttling. */
 export async function handleLearning(event: H3Event, parts: string[], user: User | null): Promise<unknown | undefined> {
   const method = getMethod(event)
-  if (parts.length === 1 && parts[0] === 'exams' && method === 'GET') return listExams(user)
+  if (parts.length === 1 && parts[0] === 'exams' && method === 'GET') return listExams(user, getDatabase(), getQuery(event))
   if (parts[0] === 'questions') {
     if (parts.length === 2 && parts[1] === 'next' && method === 'GET') return nextQuestion(getQuery(event), user)
     if (parts.length === 2 && method === 'GET') return getQuestion(idFrom(parts[1]), user)

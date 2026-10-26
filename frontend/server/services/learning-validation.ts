@@ -25,6 +25,8 @@ export type QuestionInput = {
   question_number: number
   major_category_code: string
   category_code: string
+  is_cultural_history: boolean
+  is_art_history: boolean
   publication_status: string
   content_blocks: Block[]
   explanation_blocks: Block[]
@@ -124,6 +126,12 @@ export function validateQuestionInput(value: unknown, config: ExamConfiguration 
   const major = config.categories.major.find(item => item.value === value.major_category_code)
   const category = config.categories.minor.find(item => item.value === value.category_code)
   if (!major || !category || category.major_category_value !== major.value) return invalid('入力内容を確認してください', { category_code: ['は有効な大分類・小分類の組合せを指定してください'] })
+  for (const key of ['is_cultural_history', 'is_art_history']) {
+    if (value[key] !== undefined && typeof value[key] !== 'boolean') return invalid('文化史・美術史の指定を確認してください', { [key]: ['は真偽値で指定してください'] })
+  }
+  const isCulturalHistory = value.is_cultural_history ?? false
+  const isArtHistory = value.is_art_history ?? false
+  if (isArtHistory && !isCulturalHistory) return invalid('美術史の問題は文化史にも指定してください', { is_cultural_history: ['美術史を指定するときは文化史も指定してください'] })
   if (typeof value.publication_status !== 'string' || !['draft', 'published', 'private'].includes(value.publication_status)) return invalid('入力内容を確認してください', { publication_status: ['は下書き・公開・非公開から指定してください'] })
   if (value.source_text !== null && typeof value.source_text !== 'string') return invalid('出典の形式を確認してください')
   const published = value.publication_status === 'published'
@@ -156,6 +164,7 @@ export function validateQuestionInput(value: unknown, config: ExamConfiguration 
   }
   return { exam_number: examNumber, question_number: questionNumber, major_category_code: major.value,
     category_code: category.value, publication_status: value.publication_status,
+    is_cultural_history: isCulturalHistory as boolean, is_art_history: isArtHistory as boolean,
     content_blocks: contentBlocks, explanation_blocks: explanationBlocks, source_text: value.source_text as string | null, choices }
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AdminQuestionInput } from '~/types/adminQuestion'
+import { changeHistoryFlag } from '~/utils/historyTopics'
 
 const props = defineProps<{
   initialValue: AdminQuestionInput
@@ -15,6 +16,14 @@ const emit = defineEmits<{
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
 const form = reactive<AdminQuestionInput>(clone(props.initialValue))
 const previewOpen = ref(false)
+const culturalHistory = computed({
+  get: () => form.is_cultural_history,
+  set: (checked: boolean) => Object.assign(form, changeHistoryFlag(form, 'is_cultural_history', checked)),
+})
+const artHistory = computed({
+  get: () => form.is_art_history,
+  set: (checked: boolean) => Object.assign(form, changeHistoryFlag(form, 'is_art_history', checked)),
+})
 
 watch(() => props.initialValue, (value) => Object.assign(form, clone(value)), { deep: true })
 
@@ -46,6 +55,14 @@ const submit = () => {
         <div class="admin-field"><label for="question-number">問番号</label><input id="question-number" v-model.number="form.question_number" type="number" min="1" :max="EXAM_CONFIG.exam.questions_per_exam" required></div>
         <div class="admin-field"><label for="question-major-category">大分類</label><select id="question-major-category" v-model="form.major_category_code" required><option v-for="item in MAJOR_CATEGORIES" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
         <div class="admin-field"><label for="question-category">小分類</label><select id="question-category" v-model="form.category_code" required><option v-for="item in categories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
+        <fieldset class="history-flags-field">
+          <legend>文化史・美術史</legend>
+          <p>章・節とは別に、問題の主題に応じて設定します。美術史は文化史に含まれます。</p>
+          <div>
+            <label><input v-model="culturalHistory" type="checkbox"><span>文化史</span></label>
+            <label><input v-model="artHistory" type="checkbox"><span>美術史</span></label>
+          </div>
+        </fieldset>
         <fieldset class="publication-field">
           <legend>公開状態</legend>
           <label v-for="item in PUBLICATION_STATUSES" :key="item.value" :class="[`status-${item.value}`, { selected: form.publication_status === item.value }]">
@@ -105,6 +122,12 @@ const submit = () => {
 
 <style scoped>
 .admin-question-form { display: grid; gap: 18px; padding-bottom: 86px; }
+.history-flags-field { grid-column: 1 / -1; margin: 0; padding: 14px 0; border: 0; border-top: 1px solid var(--admin-line); }
+.history-flags-field legend { padding: 0; color: var(--admin-text); font-size: .8125rem; font-weight: 800; }
+.history-flags-field p { margin: 0 0 12px; color: var(--admin-muted); font-size: .75rem; line-height: 1.7; }
+.history-flags-field > div { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.history-flags-field label { display: flex; align-items: center; gap: 8px; color: var(--admin-text); cursor: pointer; }
+.history-flags-field input { width: 18px; height: 18px; accent-color: var(--admin-accent); }
 .publication-field { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 2px 0 0; padding: 0; border: 0; }
 .publication-field legend { margin-bottom: 8px; color: #dbe5e7; font-size: 0.8125rem; font-weight: 800; }
 .publication-field label { min-height: 58px; display: grid; grid-template-columns: 17px 9px 1fr; align-items: center; gap: 9px; padding: 9px 12px; border: 1px solid var(--admin-line); border-radius: 5px; background: #111a1f; cursor: pointer; }

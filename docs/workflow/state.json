@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "revision": 2,
+  "updated_at": "2026-10-26T15:22:54.950Z",
+  "workspace_relative_to_repo": ".",
+  "active_context": "service",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T15-22-54-950Z-r2.json",
+  "contexts": [
+    {
+      "id": "product",
+      "title": "教材・サービスの方針",
+      "card": "docs/workflow/contexts/product.md"
+    },
+    {
+      "id": "sources",
+      "title": "出典資料・旧版の準備",
+      "card": "docs/workflow/contexts/sources.md"
+    },
+    {
+      "id": "audit",
+      "title": "過去問と用語集の照合",
+      "card": "docs/workflow/contexts/audit.md"
+    },
+    {
+      "id": "service",
+      "title": "世界史ラボの実装・運用",
+      "card": "docs/workflow/contexts/service.md"
+    }
+  ],
+  "watch_files": [
+    "AGENTS.md",
+    "README.md",
+    "config/exam.json",
+    "docs/classification.md",
+    "docs/verification.md",
+    "docs/workflow/README.md",
+    "scripts/context.mjs",
+    "scripts/context.test.mjs",
+    "docs/workflow/contexts/product.md",
+    "docs/workflow/contexts/sources.md",
+    "docs/workflow/contexts/audit.md",
+    "docs/workflow/contexts/service.md",
+    "分析/2025用語集総点検/2025_全30問_総点検.md",
+    "分析/2025用語集総点検/2025_全30問_総点検.json",
+    "docs/local-only-materials.md",
+    "scripts/check-private-sources.mjs",
+    "scripts/check-private-sources.test.mjs",
+    ".gitignore",
+    ".dockerignore",
+    ".githooks/pre-push"
+  ],
+  "tasks": [
+    {
+      "id": "audit_2025",
+      "context": "audit",
+      "title": "2025年過去問と現行用語集の全問総点検",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "この会話：2025過去問と用語集との全問総点検",
+      "authorization": "requested",
+      "next_action": "旧版のPDFを受領したら、現行版で未確認だった細部を追加照合する。新しい出典なしで同じ全冊OCRを繰り返さない。",
+      "evidence": [
+        "分析/2025用語集総点検/2025_全30問_総点検.md",
+        "分析/2025用語集総点検/検証範囲.json"
+      ],
+      "last_verified_at": "2026-10-26",
+      "verification_scope": "既存の完成報告：30問・80選択肢。消去法で解けるものを含め18問。今回の引き継ぎ整備は再照合ではない。"
+    },
+    {
+      "id": "chapter_topics",
+      "context": "service",
+      "title": "19章64節と文化史・美術史の管理・演習",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "この会話：山川の大分類・小分類と文化史・美術史フラグの依頼",
+      "authorization": "requested",
+      "next_action": "追加変更の依頼があれば既存差分を保護して対応する。未コミットの実装を新規作業として作り直さない。",
+      "evidence": [
+        "docs/classification.md",
+        "docs/verification.md"
+      ],
+      "last_verified_at": "2026-10-26",
+      "verification_scope": "既存記録：Dockerのフロント77件・API/DB69件、型検査・ビルド・PC/SP操作。ローカル確認のみ。未コミット差分あり。"
+    },
+    {
+      "id": "authoring_rules",
+      "context": "product",
+      "title": "作問・原典照合・実装ルールの整備",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "この会話：AGENTS.mdへの実装ルール・作問ノウハウ更新の追記依頼",
+      "authorization": "requested",
+      "next_action": "再利用可能な新しい合意が確定したとき、AGENTS.mdの該当節へ統合する。",
+      "evidence": [
+        "AGENTS.md"
+      ],
+      "last_verified_at": "2026-10-26",
+      "verification_scope": "文書・相対リンク・差分を確認。Prismaではなく現行pg/番号付きSQLに合わせた。"
+    },
+    {
+      "id": "context_workflow",
+      "context": "service",
+      "title": "進捗管理とセッション間引き継ぎの仕組み",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "この会話：進捗管理、セッション間引き継ぎ、複数コンテキストを自律的に理解する仕組みの作成依頼",
+      "authorization": "requested",
+      "next_action": "今回の仕組み作成は完了。次のセッションでは最新の依頼を優先してstatusと対象カードを読む。旧版資料は提供待ち、新規作問・コミット・push・公開は新たな依頼範囲を確認する。",
+      "evidence": [
+        "scripts/context.test.mjs",
+        "docs/workflow/README.md",
+        "scripts/context.mjs"
+      ],
+      "last_verified_at": "2026-10-26",
+      "verification_scope": "軽量な隔離Git環境の24テスト成功、失敗・スキップ0。状態・依存関係・根拠パス・変更検出・書込競合・読取専用動作を確認。Markdownリンクと差分も確認。アプリのビルド・DB操作・外部通信は未実施。 2026-10-27の階層変更ではリポジトリ基準と資料未配置への対応を28件、公開メタデータ対応の追加1件で検証した。"
+    },
+    {
+      "id": "old_sources",
+      "context": "sources",
+      "title": "旧課程用語集・旧新課程の日本語教科書の提供待ち",
+      "status": "waiting_for_material",
+      "depends_on": [],
+      "request_ref": "この会話：旧課程と新課程の両方を参照したいという方針",
+      "authorization": "requested",
+      "next_action": "ユーザーからPDFが届いたら版・奥付・欠落ページ・OCR可否を確認し、確認済み資料一覧を更新する。スキャン店の予約・購入を代行しない。",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "未受領の資料を確認済みにしない。資料の到着を自動で監視する設定はしていない。"
+    },
+    {
+      "id": "edition_comparison",
+      "context": "audit",
+      "title": "旧版・現行版の差分と追加の解答可能性の照合",
+      "status": "waiting_for_material",
+      "depends_on": [
+        "old_sources"
+      ],
+      "request_ref": "この会話：旧課程と新課程の両参照、消去法も解けると評価する方針",
+      "authorization": "requested",
+      "next_action": "資料受領後、2025年で未確認だった項目を優先し、見出し語と説明文を照合する。ザンジュの乱の旧版掲載は現時点で未確認。",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "旧版と現行版の総語数差だけから旧版固有語を推定しない。"
+    },
+    {
+      "id": "more_questions",
+      "context": "product",
+      "title": "新しい予想問題・問題セットの拡充",
+      "status": "waiting_for_request",
+      "depends_on": [],
+      "request_ref": null,
+      "authorization": "not_requested",
+      "next_action": "新しい作問依頼が来たら対象試験・問数・形式を確認し、既存資料と重複を踏まえ設計する。",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "候補であり、今回の仕組み作成から自動で作問・DB反映を開始しない。"
+    },
+    {
+      "id": "delivery",
+      "context": "service",
+      "title": "未コミット変更のコミット・push・公開",
+      "status": "waiting_for_request",
+      "depends_on": [],
+      "request_ref": null,
+      "authorization": "not_requested",
+      "next_action": "この変更について明示依頼があった場合だけ、対象差分とNetlify停止状態を確認し承認範囲まで進める。公開には別の明示指示が必要。",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "過去に完了したpushの承認を、今回の新しい差分への恒久的な許可として流用しない。"
+    },
+    {
+      "id": "repository_layout",
+      "context": "service",
+      "title": "作業範囲の一本化とローカル専用資料の送信防止",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "2026-10-27 この会話：親フォルダをユーザー専用としworld-history-practiceを使用、資料位置変更とpast-exam/glossaryのリモート送信禁止",
+      "authorization": "requested",
+      "next_action": "新しい依頼はリポジトリ直下を起点にstatusと対象カードから再開する。原資料と全文OCRはローカル専用を維持する。未受領の旧版資料は待機し、コミット・push・公開は新たな明示依頼の範囲を確認する。",
+      "evidence": [
+        "docs/local-only-materials.md",
+        "scripts/check-private-sources.test.mjs",
+        "scripts/context.test.mjs"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "軽量な引き継ぎテスト28件と追加の公開メタデータ回帰1件、送信防止テスト9件が成功。Git除外・手元の全履歴・有効化したpre-pushの実呼出し・リポジトリ内リンク・ローカルPython構文を確認。push・外部送信・DB操作・再OCR・アプリの重い検査は行っていない。"
+    }
+  ]
+}

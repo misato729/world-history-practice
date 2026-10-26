@@ -54,6 +54,22 @@ test('archives preserve Rails canonical checksums regardless of object attribute
   assert.equal(validateQuestions(optional)[0]!.content_blocks[0]!.title, '')
 })
 
+test('v1 archives retain omitted legacy flags and preserve explicit culture/art flags', () => {
+  const legacy = structuredClone(content.questions)
+  for (const question of legacy) { delete question.is_cultural_history; delete question.is_art_history }
+  const archivedLegacy = createArchive(legacy)
+  assert.deepEqual(archivedLegacy.questions, legacy)
+  assert.deepEqual(validateArchive(archivedLegacy), archivedLegacy)
+  const flagged = structuredClone(legacy)
+  flagged[0].is_cultural_history = true
+  flagged[0].is_art_history = true
+  const document = createArchive(flagged)
+  assert.equal(validateArchive(document).questions[0]!.is_art_history, true)
+  assert.notEqual(document.sha256, archivedLegacy.sha256)
+  flagged[0].is_cultural_history = false
+  assert.throws(() => createArchive(flagged), error => error instanceof ApiError && error.status === 422)
+})
+
 test('archive integrity rejects modified content, counts, unknown fields and duplicate coordinates before DB access', async () => {
   const changed = archive(); changed.questions[0]!.content_blocks = [{ type: 'text', text: 'changed' }]
   assert.throws(() => validateArchive(changed), OperationError)
@@ -112,7 +128,8 @@ test('fresh PostgreSQL migrations retain constraints and adopt existing Rails re
   await query('ALTER TABLE question_choices RENAME CONSTRAINT fk_choices_question TO fk_rails_preserved', [], db)
   await query('DELETE FROM nitro_schema_migrations', [], db)
   const report = await migrate(db)
-  assert.equal(report.applied.length, 1)
+  assert.ok(report.applied.includes('001_preserve_rails_schema.sql'))
+  assert.ok(report.applied.includes('002_question_history_topics.sql'))
   assert.deepEqual(await query('SELECT * FROM questions ORDER BY id', [], db), rows)
   assert.deepEqual(await query('SELECT id,question_id FROM question_choices ORDER BY id', [], db), ids)
   assert.equal((await query('SELECT id FROM users WHERE id=$1', [owner.id], db)).length, 1)
@@ -122,6 +139,57 @@ test('fresh PostgreSQL migrations retain constraints and adopt existing Rails re
   await query('SAVEPOINT constraint_test', [], db)
   await assert.rejects(query('UPDATE question_choices SET is_correct=true WHERE question_id=$1', [rows[0]!.id], db), error => (error as { code?: string }).code === '23505')
   await query('ROLLBACK TO SAVEPOINT constraint_test', [], db)
+}))
+
+test('Yamakawa taxonomy migration maps untouched legacy samples and preserves learning records while skipping edited choices', integration, async () => isolated(async db => {
+  await importContent(undefined, IMPORT_CONFIRMATION, db)
+  const owner = await user(db)
+  const oldCategories = [
+    ['economy', 'currency'], ['economy', 'currency'], ['economy', 'trade'],
+    ['culture', 'cross_cultural'], ['culture', 'arts'],
+  ]
+  for (let index = 0; index < oldCategories.length; index += 1) {
+    await query('UPDATE questions SET major_category_code=$1,category_code=$2,is_cultural_history=false,is_art_history=false WHERE exam_number=1 AND question_number=$3',
+      [...oldCategories[index]!, index + 1], db)
+  }
+  await query(`INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,created_at,updated_at)
+    SELECT $1,q.id,c.id,c.is_correct,NOW(),NOW() FROM questions q JOIN question_choices c ON c.question_id=q.id AND c.display_order=1`, [owner.id], db)
+  await query('INSERT INTO favorites(user_id,question_id,created_at,updated_at) SELECT $1,id,NOW(),NOW() FROM questions', [owner.id], db)
+  const preservedQuestions = await query('SELECT id,exam_number,question_number,content_blocks,explanation_blocks,source_text,publication_status,created_at FROM questions ORDER BY question_number', [], db)
+  const choicesBefore = await query('SELECT * FROM question_choices ORDER BY id', [], db)
+  const historiesBefore = await query('SELECT * FROM answer_histories ORDER BY id', [], db)
+  const favoritesBefore = await query('SELECT * FROM favorites ORDER BY id', [], db)
+  const verifyLearningRecords = async () => {
+    assert.deepEqual(await query('SELECT id,exam_number,question_number,content_blocks,explanation_blocks,source_text,publication_status,created_at FROM questions ORDER BY question_number', [], db), preservedQuestions)
+    assert.deepEqual(await query('SELECT * FROM answer_histories ORDER BY id', [], db), historiesBefore)
+    assert.deepEqual(await query('SELECT * FROM favorites ORDER BY id', [], db), favoritesBefore)
+  }
+  const applyTaxonomy = async () => {
+    await query("DELETE FROM nitro_schema_migrations WHERE version='003_yamakawa_question_categories.sql'", [], db)
+    assert.deepEqual(await migrate(db), { applied: ['003_yamakawa_question_categories.sql'] })
+  }
+  const classifications = () => query('SELECT question_number,major_category_code,category_code,is_cultural_history,is_art_history FROM questions ORDER BY question_number', [], db)
+  const expected = content.questions.map((question: any) => ({ question_number: question.question_number,
+    major_category_code: question.major_category_code, category_code: question.category_code,
+    is_cultural_history: question.is_cultural_history, is_art_history: question.is_art_history }))
+  await query('SAVEPOINT legacy_taxonomy', [], db)
+  await applyTaxonomy()
+  assert.deepEqual(await classifications(), expected)
+  assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), choicesBefore)
+  await verifyLearningRecords()
+  assert.deepEqual(await migrate(db), { applied: [] })
+
+  // Re-run the upgrade from the same legacy state with one author-edited choice.
+  await query('ROLLBACK TO SAVEPOINT legacy_taxonomy', [], db)
+  await query(`UPDATE question_choices SET content_blocks='[{"type":"text","text":"Author-edited choice retained"}]'::jsonb
+    WHERE question_id=(SELECT id FROM questions WHERE exam_number=1 AND question_number=3) AND display_order=1`, [], db)
+  const editedChoices = await query('SELECT * FROM question_choices ORDER BY id', [], db)
+  await applyTaxonomy()
+  const expectedWithEdit = structuredClone(expected)
+  expectedWithEdit[2] = { ...expectedWithEdit[2], major_category_code: 'economy', category_code: 'trade', is_cultural_history: false, is_art_history: false }
+  assert.deepEqual(await classifications(), expectedWithEdit)
+  assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), editedChoices)
+  await verifyLearningRecords()
 }))
 
 test('applied SQL checksums cannot be silently rewritten', integration, async () => isolated(async db => {

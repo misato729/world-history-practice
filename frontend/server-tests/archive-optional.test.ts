@@ -22,7 +22,8 @@ function questions(): QuestionInput[] {
   const category = configuration.categories.minor[0]!
   const rows: QuestionInput[] = [1, 2, 3].map(number => ({
     exam_number: 1, question_number: number,
-    major_category_code: category.major_category_value, category_code: category.value, publication_status: 'published',
+    major_category_code: category.major_category_value, category_code: category.value,
+    is_cultural_history: true, is_art_history: number === 1, publication_status: 'published',
     content_blocks: [{ type: 'text', text: `Archive sample ${number}` }], explanation_blocks: [{ type: 'text', text: 'Explanation' }],
     source_text: 'Self-authored sample | https://example.com/archive',
     choices: configuration.exam.choice_labels.map((label, index) => ({ choice_label: label, display_order: index + 1,

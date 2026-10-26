@@ -10,6 +10,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Reject local-only reference materials
+        run: node scripts/check-private-sources.mjs
       - name: Prepare isolated development settings
         run: cp .env.example .env
       - name: Validate template configuration and sample content

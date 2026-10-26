@@ -9,3 +9,10 @@
 **/.data/
 *.pem
 *.key
+
+# Copyrighted reference materials and derived full OCR/images: local only.
+**/past-exam/
+**/[gG][lL][oO][sS][sS][aA][rR][yY]*
+**/分析/
+歴検1級世界史_*.pdf
+歴検1級世界史_*.zip

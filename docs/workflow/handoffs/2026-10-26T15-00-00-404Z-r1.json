@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "state_hash": "0ccecbfa6121661ceeff443a19b98c644877c320b0c3b740f8cd441a55ea5017",
+  "recorded_at": "2026-10-26T15:00:00.404Z",
+  "timezone": "Asia/Tokyo",
+  "context": "service",
+  "task": "context_workflow",
+  "summary": "4文脈のカード、依存関係・依頼範囲付き進捗一覧、読取専用の開始・次作業案内、世代番号・排他制御付き引き継ぎ記録を整備。隔離Git環境の軽量24テストと文書リンク・差分の確認が成功。過去のアプリ検証は既存記録の参照として区別した。",
+  "next_action": "今回の仕組み作成は完了。次のセッションでは最新の依頼を優先してstatusと対象カードを読む。旧版資料は提供待ち、新規作問・コミット・push・公開は新たな依頼範囲を確認する。",
+  "git": {
+    "available": true,
+    "head": "ea655f1656244c5dd79cd5e6a7875518e34d8d55",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "README.md"
+      },
+      {
+        "status": " M",
+        "path": "config/exam.json"
+      },
+      {
+        "status": " M",
+        "path": "content/README.md"
+      },
+      {
+        "status": " M",
+        "path": "content/questions.json"
+      },
+      {
+        "status": " M",
+        "path": "docs/customization.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/verification.md"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionForm.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionPreview.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/questions/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/practice/[examNumber]/[questionNumber].vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/types/adminQuestion.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/utils/practiceSequence.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/archive-optional.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/learning.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/operations.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/timezone.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/content.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/restore-drill.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-validation.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-writer.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning.ts"
+      },
+      {
+        "status": " M",
+        "path": "scripts/check-template.mjs"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/classification.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/history-art-practice-mobile.png"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/history-topics-desktop.png"
+      },
+      {
+        "status": "??",
+        "path": "docs/screenshots/history-topics-mobile.png"
+      },
+      {
+        "status": "??",
+        "path": "docs/workflow/README.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/workflow/contexts/audit.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/workflow/contexts/product.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/workflow/contexts/sources.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/historyTopics.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/database/migrations/002_question_history_topics.sql"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/database/migrations/003_yamakawa_question_categories.sql"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/historyTopics.test.ts"
+      },
+      {
+        "status": "??",
+        "path": "scripts/context.mjs"
+      },
+      {
+        "status": "??",
+        "path": "scripts/context.test.mjs"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "d68bb5f74e0ffd16ee2679a3db6a292809ba8f2e094b6ec2970e19dccfb49d0e",
+    "world-history-practice/AGENTS.md": "f07f3619abcfea88239929dcc81e457f673e78246b66a376e0ca83f44c0c875a",
+    "world-history-practice/README.md": "d8406a0d40cba4aa168a91521d07fe9fc8f5356c416d7b8e464b98ba939520e9",
+    "world-history-practice/config/exam.json": "162142584dd521ff0b54da3b2791763fe3f161f4eff868e6b39948d9de9e24a9",
+    "world-history-practice/docs/classification.md": "479db5c42c5a762d757c2ff413cb30376a4730d4fa5d1379039b31b9a2f0ff42",
+    "world-history-practice/docs/verification.md": "c88956afa840fbe22deecdb2757b8606ad8fe8be94a34bb01600835eb89c110d",
+    "world-history-practice/docs/workflow/README.md": "a52810ad371f47920666f718e6d376c98fc03b84ae8dee89e0c529e5bc784d09",
+    "world-history-practice/scripts/context.mjs": "b9a1d46eba651ac3fd024f2e511697e4cb959e7cb9e713d8d2c45def41a0f3b1",
+    "world-history-practice/scripts/context.test.mjs": "aa96de704a20dd8d767b0754c38e16938a4f7052adebab1dec516a1428aac26a",
+    "world-history-practice/docs/workflow/contexts/product.md": "69b4ec14ec82c24de9e2144056c40afa5bf816e86c0e6a52072f3666dfbeaf26",
+    "world-history-practice/docs/workflow/contexts/sources.md": "bc1f37a25c201566fa84c1ee61dc2c64d408d1e23c3547eb5bbcb22a280733c5",
+    "world-history-practice/docs/workflow/contexts/audit.md": "0874758908c68c1887f6ba859311618a8c924fcb1eb3beeaa7ad51fd05ddf181",
+    "world-history-practice/docs/workflow/contexts/service.md": "492be151c8cabf3ec2925d7f36e0c6065ddb20ef7320e7c2137dc20c5f9f9eb8",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "9041165075086795bcae911ed23a1c4263e34cba53164d1bdeaf9ccd3b85ff3e",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa"
+  },
+  "verification_note": "ハッシュとGitの再確認であり、過去のテスト・出典照合の再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

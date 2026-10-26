@@ -46,6 +46,8 @@ for (const question of content.questions) {
   const category = config.categories.minor.find(item => item.value === question.category_code)
   assert(category && category.major_category_value === question.major_category_code, 'Question category mismatch')
   assert(['draft', 'published', 'private'].includes(question.publication_status), 'Invalid publication status')
+  for (const flag of ['is_cultural_history', 'is_art_history']) assert.equal(typeof question[flag], 'boolean', `${flag} must be a boolean`)
+  assert(!question.is_art_history || question.is_cultural_history, 'Art history must also be cultural history')
   assert(Array.isArray(question.content_blocks) && question.content_blocks.length, 'Question content is required')
   assert(Array.isArray(question.explanation_blocks) && question.explanation_blocks.length, 'Explanation is required')
   assert.equal(question.choices.length, config.exam.choice_labels.length, 'Choice count mismatch')

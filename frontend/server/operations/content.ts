@@ -14,6 +14,7 @@ export const MAX_CONTENT_BYTES = 64 * 1024 * 1024
 export const QUESTION_LOCK = 71514345
 export const defaultContentPath = fileURLToPath(new URL('../../../content/questions.json', import.meta.url))
 const QUESTION_KEYS = ['exam_number', 'question_number', 'major_category_code', 'category_code', 'content_blocks', 'explanation_blocks', 'source_text', 'publication_status', 'choices']
+const OPTIONAL_QUESTION_KEYS = ['is_cultural_history', 'is_art_history']
 const CHOICE_KEYS = ['choice_label', 'content_blocks', 'is_correct', 'display_order']
 const BLOCK_KEYS: Record<string, string[]> = {
   text: ['type', 'text'], quote: ['type', 'text', 'source'], fill_in_text: ['type', 'text'],
@@ -42,7 +43,7 @@ export function validateQuestions(value: unknown): QuestionInput[] {
   if (!Array.isArray(value)) throw new OperationError('問題は配列で指定してください')
   const coordinates = new Set<string>()
   return value.map(raw => {
-    if (!exactKeys(raw, QUESTION_KEYS) || !Array.isArray(raw.choices) || raw.choices.some((choice: unknown) => !exactKeys(choice, CHOICE_KEYS))) throw new OperationError('問題データの属性が不足しているか未対応の属性があります')
+    if (!object(raw) || QUESTION_KEYS.some(key => !Object.hasOwn(raw, key)) || Object.keys(raw).some(key => !QUESTION_KEYS.includes(key) && !OPTIONAL_QUESTION_KEYS.includes(key)) || !Array.isArray(raw.choices) || raw.choices.some((choice: unknown) => !exactKeys(choice, CHOICE_KEYS))) throw new OperationError('問題データの属性が不足しているか未対応の属性があります')
     if (!Number.isSafeInteger(raw.exam_number) || !Number.isSafeInteger(raw.question_number) || raw.choices.some((choice: any) => !Number.isSafeInteger(choice.display_order))) throw new OperationError('問題の番号と選択肢の表示順は整数で指定してください')
     validateBlocks(raw.content_blocks)
     validateBlocks(raw.explanation_blocks)
@@ -51,7 +52,7 @@ export function validateQuestions(value: unknown): QuestionInput[] {
     const coordinate = `${input.exam_number}/${input.question_number}`
     if (coordinates.has(coordinate)) throw new OperationError('試験ナンバーと問番号が重複しています')
     coordinates.add(coordinate)
-    // Preserve optional empty/null block attributes so existing Rails archive checksums remain valid.
+    // Preserve optional fields exactly, including omitted topic flags, so legacy v1 checksums remain valid.
     return structuredClone(raw) as QuestionInput
   })
 }
@@ -126,7 +127,7 @@ export async function exportArchive(path: string, db?: Database) {
   const archive = await transaction(async connection => {
     if (!db) await query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY', [], connection)
     const rows = await query<QuestionInput>(`SELECT q.exam_number, q.question_number, q.major_category_code, q.category_code,
-      q.content_blocks, q.explanation_blocks, q.source_text, q.publication_status,
+      q.content_blocks, q.explanation_blocks, q.source_text, q.publication_status, q.is_cultural_history, q.is_art_history,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('choice_label', c.choice_label, 'content_blocks', c.content_blocks,
         'is_correct', c.is_correct, 'display_order', c.display_order) ORDER BY c.display_order)
         FROM question_choices c WHERE c.question_id = q.id), '[]'::jsonb) AS choices

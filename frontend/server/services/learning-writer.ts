@@ -22,7 +22,7 @@ function canonical(value: unknown): unknown {
   return value
 }
 
-/** Publication status and record IDs do not change the meaning of an answer. */
+/** Visibility, topic flags and record IDs do not change the meaning of an answer. */
 export function materialDigest(question: QuestionInput | QuestionRecord): string {
   return createHash('sha256').update(JSON.stringify(canonical({
     exam_number: question.exam_number, question_number: question.question_number,
@@ -71,18 +71,19 @@ export async function saveQuestion(raw: QuestionInput, options: SaveOptions = {}
         await validateCompleteExam(input.exam_number, db, config, { id: options.id, question_number: input.question_number })
       }
       const values: unknown[] = [input.exam_number, input.question_number, input.major_category_code, input.category_code,
-        JSON.stringify(input.content_blocks), JSON.stringify(input.explanation_blocks), input.source_text, input.publication_status]
+        JSON.stringify(input.content_blocks), JSON.stringify(input.explanation_blocks), input.source_text, input.publication_status,
+        input.is_cultural_history, input.is_art_history]
       let id: number
       if (before) {
         values.push(before.id)
         const changed = materialDigest(before) !== materialDigest(input)
-        if (changed || before.publication_status !== input.publication_status) {
-          await query('UPDATE questions SET exam_number=$1, question_number=$2, major_category_code=$3, category_code=$4, content_blocks=$5::jsonb, explanation_blocks=$6::jsonb, source_text=$7, publication_status=$8, updated_at=NOW() WHERE id=$9', values, db)
+        if (changed || before.publication_status !== input.publication_status || before.is_cultural_history !== input.is_cultural_history || before.is_art_history !== input.is_art_history) {
+          await query('UPDATE questions SET exam_number=$1, question_number=$2, major_category_code=$3, category_code=$4, content_blocks=$5::jsonb, explanation_blocks=$6::jsonb, source_text=$7, publication_status=$8, is_cultural_history=$9, is_art_history=$10, updated_at=NOW() WHERE id=$11', values, db)
         }
         id = before.id
         if (changed) await query('DELETE FROM answer_histories WHERE question_id=$1', [id], db)
       } else {
-        const rows = await query<{ id: number }>('INSERT INTO questions (exam_number,question_number,major_category_code,category_code,content_blocks,explanation_blocks,source_text,publication_status,created_at,updated_at) VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,NOW(),NOW()) RETURNING id', values, db)
+        const rows = await query<{ id: number }>('INSERT INTO questions (exam_number,question_number,major_category_code,category_code,content_blocks,explanation_blocks,source_text,publication_status,is_cultural_history,is_art_history,created_at,updated_at) VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10,NOW(),NOW()) RETURNING id', values, db)
         id = Number(rows[0]!.id)
       }
       const choicePayload = (choices: ChoiceInput[]) => JSON.stringify(canonical(choices.map(choice => ({

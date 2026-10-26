@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { EXAM_CATALOG, QUESTIONS_PER_EXAM, FREE_EXAM_MAX } from '~/utils/examCatalog'
+import { EXAM_CATALOG, QUESTIONS_PER_EXAM, FREE_EXAM_MAX, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { HISTORY_TOPICS } from '~/utils/historyTopics'
 import {
   createPracticeSequence,
+  selectPracticePositions,
   shufflePracticeSequence,
   type PracticeOrder,
   type PracticePosition,
@@ -33,6 +35,8 @@ type Question = {
   content_blocks: ContentBlock[]
   major_category_code: string
   category_code: string
+  is_cultural_history: boolean
+  is_art_history: boolean
   choices: Choice[]
   is_favorite?: boolean
 }
@@ -85,9 +89,20 @@ const parseNumberSelection = (value: unknown, allowedNumbers: readonly number[])
 
 const examNumber = computed(() => Number(route.params.examNumber))
 const questionNumber = computed(() => Number(route.params.questionNumber))
-const hasConditionSelection = computed(() => (
-  route.query.exams !== undefined || route.query.questions !== undefined
+const practiceSubjectQuery = computed(() => Object.fromEntries(
+  ['major_category_code', 'category_code', 'history_topic']
+    .map(key => [key, route.query[key]])
+    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1] !== '' && !(entry[0] === 'history_topic' && entry[1] === 'all')),
 ))
+const hasSubjectFilter = computed(() => Object.keys(practiceSubjectQuery.value).length > 0)
+const hasConditionSelection = computed(() => (
+  route.query.exams !== undefined || route.query.questions !== undefined || hasSubjectFilter.value
+))
+const selectedSubjectLabel = computed(() => [
+  MAJOR_CATEGORIES.find(item => item.value === practiceSubjectQuery.value.major_category_code)?.label,
+  CATEGORIES.find(item => item.value === practiceSubjectQuery.value.category_code)?.label,
+  HISTORY_TOPICS.find(item => item.value === practiceSubjectQuery.value.history_topic)?.label,
+].filter(Boolean).join(' / '))
 const practiceOrder = computed<PracticeOrder>(() => (
   route.query.order === 'random' ? 'random' : 'sequential'
 ))
@@ -107,10 +122,21 @@ const selectedPracticeQuestionNumbers = computed(() => {
   if (selected.length > 0) return selected
   return [...allQuestionNumbers]
 })
-const basePracticeSequence = computed<PracticePosition[]>(() => createPracticeSequence(
-  selectedPracticeExamNumbers.value,
-  selectedPracticeQuestionNumbers.value,
-))
+const {
+  data: matchingCatalog,
+  status: catalogStatus,
+  error: catalogError,
+  refresh: refreshCatalog,
+} = await useFetch<ApiResponse<ExamCatalogEntry[]>>('/api/v1/exams', {
+  $fetch: api,
+  query: practiceSubjectQuery,
+  headers: authHeaders,
+  server: false,
+  lazy: true,
+})
+const basePracticeSequence = computed<PracticePosition[]>(() => hasSubjectFilter.value
+  ? selectPracticePositions(matchingCatalog.value?.data ?? [], selectedPracticeExamNumbers.value, selectedPracticeQuestionNumbers.value)
+  : createPracticeSequence(selectedPracticeExamNumbers.value, selectedPracticeQuestionNumbers.value))
 const isRandomPractice = computed(() => (
   hasConditionSelection.value
   && practiceOrder.value === 'random'
@@ -134,6 +160,7 @@ const practiceNavigationQuery = computed(() => {
     const query: Record<string, string> = {
       exams: selectedPracticeExamNumbers.value.join(','),
       questions: selectedPracticeQuestionNumbers.value.join(','),
+      ...practiceSubjectQuery.value,
     }
     if (isRandomPractice.value) {
       query.order = 'random'
@@ -143,17 +170,18 @@ const practiceNavigationQuery = computed(() => {
   }
   return {}
 })
-const validPosition = computed(() => (
+const validRoutePosition = computed(() => (
   Number.isInteger(examNumber.value)
   && allExamNumbers.includes(examNumber.value)
   && Number.isInteger(questionNumber.value)
   && allQuestionNumbers.includes(questionNumber.value)
-  && currentPracticeIndex.value >= 0
 ))
+const validPosition = computed(() => validRoutePosition.value && currentPracticeIndex.value >= 0)
 
 const requestQuery = computed(() => ({
-  exam_number: validPosition.value ? examNumber.value : 0,
-  after_question_number: validPosition.value ? questionNumber.value - 1 : -1,
+  exam_number: validRoutePosition.value ? examNumber.value : 0,
+  after_question_number: validRoutePosition.value ? questionNumber.value - 1 : -1,
+  ...practiceSubjectQuery.value,
 }))
 
 const {
@@ -224,7 +252,8 @@ const paywallRequired = computed(() => (
 const paywallNeedsLogin = computed(() => questionErrorStatus.value === 401)
 
 const loadErrorMessage = computed(() => {
-  if (!validPosition.value) return '試験ナンバーまたは問番号が正しくありません。'
+  if (hasSubjectFilter.value && catalogError.value) return '演習条件を確認できませんでした。もう一度お試しください。'
+  if (!validPosition.value) return hasSubjectFilter.value ? '指定された条件に合う公開問題が見つかりませんでした。' : '試験ナンバーまたは問番号が正しくありません。'
   if (paywallRequired.value) return ''
   if (questionError.value || (questionResponse.value && !question.value)) return '指定された公開問題が見つかりませんでした。'
   return ''
@@ -254,6 +283,9 @@ watch(
     route.query.questions,
     route.query.order,
     route.query.seed,
+    route.query.history_topic,
+    route.query.major_category_code,
+    route.query.category_code,
   ],
   () => {
     selectedChoiceId.value = null
@@ -424,7 +456,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
 <template>
   <div class="page-wrap practice-wrap">
-    <div v-if="status === 'idle' || status === 'pending'" class="state-panel" role="status" aria-live="polite" aria-busy="true">
+    <div v-if="status === 'idle' || status === 'pending' || (hasSubjectFilter && (catalogStatus === 'idle' || catalogStatus === 'pending'))" class="state-panel" role="status" aria-live="polite" aria-busy="true">
       <UIcon class="spin" name="i-lucide-loader-circle" aria-hidden="true" />
       <p>問題を読み込んでいます</p>
     </div>
@@ -445,7 +477,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
       <h1>問題を表示できません</h1>
       <p>{{ loadErrorMessage || '指定された公開問題が見つかりませんでした。' }}</p>
       <div class="state-actions">
-        <button class="secondary-link" type="button" @click="() => refresh()">再読み込み</button>
+        <button class="secondary-link" type="button" @click="() => { refresh(); if (hasSubjectFilter) refreshCatalog() }">再読み込み</button>
         <NuxtLink class="primary-link" to="/practice/1/1">問1から始める</NuxtLink>
       </div>
     </div>
@@ -458,6 +490,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
             <span v-if="practiceProgress" class="practice-progress">{{ practiceProgress }}</span>
           </div>
           <h1>問{{ question.question_number }}</h1>
+          <p v-if="selectedSubjectLabel" class="selected-subject">{{ selectedSubjectLabel }}</p>
         </div>
         <div class="practice-meta">
           <button
@@ -472,7 +505,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
           >
             <FavoriteStarIcon :filled="questionIsFavorite" :size="34" />
           </button>
-          <p>{{ majorCategoryLabel }} / {{ categoryLabel }}</p>
+          <div class="question-classification">
+            <p>{{ majorCategoryLabel }} / {{ categoryLabel }}</p>
+            <span v-if="question.is_cultural_history" class="history-topic-label">{{ question.is_art_history ? '文化史・美術史' : '文化史' }}</span>
+          </div>
         </div>
       </header>
 
@@ -616,7 +652,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 .practice-progress { padding-left: 12px; border-left: 1px solid #bdcbcd; color: var(--muted); font-size: 0.8125rem; font-weight: 800; }
 .practice-head h1 { margin: 5px 0 0; font-size: 2.25rem; }
 .practice-head p { margin: 0; color: var(--muted); }
-.practice-meta { display: flex; align-items: center; gap: 10px; }
+.practice-meta { min-width: 0; display: flex; align-items: center; gap: 10px; }
+.practice-head > div { min-width: 0; }
+.practice-head p.selected-subject { margin-top: 8px; font-size: .8125rem; line-height: 1.7; }
+.question-classification { min-width: 0; text-align: right; font-size: .8125rem; line-height: 1.7; }
+.history-topic-label { display: inline-block; margin-top: 5px; color: var(--teal-dark); font-weight: 800; }
 .favorite-button {
   width: 42px;
   height: 42px;

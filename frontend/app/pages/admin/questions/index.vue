@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AdminQuestion, AdminQuestionSummary, ApiResponse, PaginatedApiResponse } from '~/types/adminQuestion'
+import { HISTORY_TOPICS } from '~/utils/historyTopics'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
@@ -11,6 +12,7 @@ const filters = reactive({
   major_category_code: '',
   category_code: '',
   publication_status: '',
+  history_topic: 'all',
   keyword: '',
 })
 const appliedFilters = ref({ ...filters })
@@ -63,6 +65,7 @@ const clearFilters = () => {
     major_category_code: '',
     category_code: '',
     publication_status: '',
+    history_topic: 'all',
     keyword: '',
   })
   applyFilters()
@@ -184,6 +187,12 @@ const deleteQuestion = async () => {
             <option v-for="item in PUBLICATION_STATUSES" :key="item.value" :value="item.value">{{ item.label }}</option>
           </select>
         </div>
+        <div class="admin-field">
+          <label for="history-topic">文化史・美術史</label>
+          <select id="history-topic" v-model="filters.history_topic">
+            <option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.label }}</option>
+          </select>
+        </div>
         <div class="filter-actions">
           <button class="admin-secondary-button" type="button" @click="clearFilters">クリア</button>
           <button class="admin-primary-button" type="submit"><UIcon name="i-lucide-search" />検索</button>
@@ -215,7 +224,7 @@ const deleteQuestion = async () => {
                 <strong class="question-number">試験 {{ question.exam_number }} ・ 問{{ question.question_number }}</strong>
                 <p>{{ question.summary }}</p>
               </td>
-              <td data-label="分類"><span>{{ majorCategoryLabel(question.major_category_code) }}</span><small>{{ getCategoryLabel(question.category_code) }}</small></td>
+              <td data-label="分類"><span>{{ majorCategoryLabel(question.major_category_code) }}</span><small>{{ getCategoryLabel(question.category_code) }}</small><small v-if="question.is_cultural_history" class="history-topic-label">{{ question.is_art_history ? '文化史・美術史' : '文化史' }}</small></td>
               <td data-label="公開状態">
                 <div class="status-select-wrap" :class="statusClass(question.publication_status)">
                   <span class="status-dot" />
@@ -264,6 +273,7 @@ const deleteQuestion = async () => {
 .keyword-input :deep(svg) { position: absolute; top: 50%; left: 11px; width: 17px; height: 17px; color: #72858d; transform: translateY(-50%); }
 .keyword-input input { padding-left: 36px; }
 .filter-actions { display: flex; gap: 8px; }
+.question-table td small.history-topic-label { color: var(--admin-accent-hover); }
 .admin-inline-error { margin: 0 0 18px; }
 .result-head .admin-icon-button { width: 38px; min-height: 38px; padding: 0; border-color: var(--admin-line); background: transparent; color: var(--admin-muted); }
 .question-table-wrap { overflow-x: auto; }

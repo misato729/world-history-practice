@@ -42,43 +42,402 @@
   "categories": {
     "major": [
       {
-        "value": "politics",
-        "label": "政治・制度史"
+        "value": "chapter_01",
+        "label": "第1章 文明の成立と古代文明の特質"
       },
       {
-        "value": "economy",
-        "label": "経済・交易史"
+        "value": "chapter_02",
+        "label": "第2章 中央ユーラシアと東アジア世界"
       },
       {
-        "value": "culture",
-        "label": "文化・交流史"
+        "value": "chapter_03",
+        "label": "第3章 南アジア世界と東南アジア世界の展開"
+      },
+      {
+        "value": "chapter_04",
+        "label": "第4章 西アジアと地中海周辺の国家形成"
+      },
+      {
+        "value": "chapter_05",
+        "label": "第5章 イスラーム教の成立とヨーロッパ世界の形成"
+      },
+      {
+        "value": "chapter_06",
+        "label": "第6章 イスラーム教の伝播と西アジアの動向"
+      },
+      {
+        "value": "chapter_07",
+        "label": "第7章 ヨーロッパ世界の変容と展開"
+      },
+      {
+        "value": "chapter_08",
+        "label": "第8章 東アジア世界の展開とモンゴル帝国"
+      },
+      {
+        "value": "chapter_09",
+        "label": "第9章 大交易・大交流の時代"
+      },
+      {
+        "value": "chapter_10",
+        "label": "第10章 アジアの諸帝国の繁栄"
+      },
+      {
+        "value": "chapter_11",
+        "label": "第11章 近世ヨーロッパ世界の動向"
+      },
+      {
+        "value": "chapter_12",
+        "label": "第12章 産業革命と環大西洋革命"
+      },
+      {
+        "value": "chapter_13",
+        "label": "第13章 イギリスの優位と欧米国民国家の形成"
+      },
+      {
+        "value": "chapter_14",
+        "label": "第14章 アジア諸地域の動揺"
+      },
+      {
+        "value": "chapter_15",
+        "label": "第15章 帝国主義とアジアの民族運動"
+      },
+      {
+        "value": "chapter_16",
+        "label": "第16章 第一次世界大戦と世界の変容"
+      },
+      {
+        "value": "chapter_17",
+        "label": "第17章 第二次世界大戦と新しい国際秩序の形成"
+      },
+      {
+        "value": "chapter_18",
+        "label": "第18章 冷戦と第三世界の台頭"
+      },
+      {
+        "value": "chapter_19",
+        "label": "第19章 冷戦の終結と今日の世界"
       }
     ],
     "minor": [
       {
-        "value": "state",
-        "label": "国家と制度",
-        "major_category_value": "politics"
+        "value": "chapter_01_section_01",
+        "label": "1 文明の誕生",
+        "major_category_value": "chapter_01"
       },
       {
-        "value": "currency",
-        "label": "貨幣と金融",
-        "major_category_value": "economy"
+        "value": "chapter_01_section_02",
+        "label": "2 古代オリエント文明とその周辺",
+        "major_category_value": "chapter_01"
       },
       {
-        "value": "trade",
-        "label": "交易と都市",
-        "major_category_value": "economy"
+        "value": "chapter_01_section_03",
+        "label": "3 南アジアの古代文明",
+        "major_category_value": "chapter_01"
       },
       {
-        "value": "cross_cultural",
-        "label": "東西交流",
-        "major_category_value": "culture"
+        "value": "chapter_01_section_04",
+        "label": "4 中国の古代文明",
+        "major_category_value": "chapter_01"
       },
       {
-        "value": "arts",
-        "label": "美術と技術",
-        "major_category_value": "culture"
+        "value": "chapter_01_section_05",
+        "label": "5 南北アメリカ文明、アフリカとオセアニア",
+        "major_category_value": "chapter_01"
+      },
+      {
+        "value": "chapter_02_section_01",
+        "label": "1 中央ユーラシア――草原とオアシスの世界",
+        "major_category_value": "chapter_02"
+      },
+      {
+        "value": "chapter_02_section_02",
+        "label": "2 秦・漢帝国",
+        "major_category_value": "chapter_02"
+      },
+      {
+        "value": "chapter_02_section_03",
+        "label": "3 中国の動乱と変容",
+        "major_category_value": "chapter_02"
+      },
+      {
+        "value": "chapter_02_section_04",
+        "label": "4 東アジア文化圏の形成",
+        "major_category_value": "chapter_02"
+      },
+      {
+        "value": "chapter_03_section_01",
+        "label": "1 仏教の成立と南アジアの統一国家",
+        "major_category_value": "chapter_03"
+      },
+      {
+        "value": "chapter_03_section_02",
+        "label": "2 インド古典文化とヒンドゥー教の定着",
+        "major_category_value": "chapter_03"
+      },
+      {
+        "value": "chapter_03_section_03",
+        "label": "3 東南アジア世界の形成と展開",
+        "major_category_value": "chapter_03"
+      },
+      {
+        "value": "chapter_04_section_01",
+        "label": "1 イラン諸国家の興亡とイラン文明",
+        "major_category_value": "chapter_04"
+      },
+      {
+        "value": "chapter_04_section_02",
+        "label": "2 ギリシア人の都市国家",
+        "major_category_value": "chapter_04"
+      },
+      {
+        "value": "chapter_04_section_03",
+        "label": "3 ローマと地中海支配",
+        "major_category_value": "chapter_04"
+      },
+      {
+        "value": "chapter_04_section_04",
+        "label": "4 キリスト教の成立と発展",
+        "major_category_value": "chapter_04"
+      },
+      {
+        "value": "chapter_05_section_01",
+        "label": "1 アラブの大征服とイスラーム政権の成立",
+        "major_category_value": "chapter_05"
+      },
+      {
+        "value": "chapter_05_section_02",
+        "label": "2 ヨーロッパ世界の形成",
+        "major_category_value": "chapter_05"
+      },
+      {
+        "value": "chapter_06_section_01",
+        "label": "1 イスラーム教の諸地域への伝播",
+        "major_category_value": "chapter_06"
+      },
+      {
+        "value": "chapter_06_section_02",
+        "label": "2 西アジアの動向",
+        "major_category_value": "chapter_06"
+      },
+      {
+        "value": "chapter_07_section_01",
+        "label": "1 西ヨーロッパの封建社会とその展開",
+        "major_category_value": "chapter_07"
+      },
+      {
+        "value": "chapter_07_section_02",
+        "label": "2 東ヨーロッパ世界の展開",
+        "major_category_value": "chapter_07"
+      },
+      {
+        "value": "chapter_07_section_03",
+        "label": "3 西ヨーロッパ世界の変容",
+        "major_category_value": "chapter_07"
+      },
+      {
+        "value": "chapter_07_section_04",
+        "label": "4 西ヨーロッパの中世文化",
+        "major_category_value": "chapter_07"
+      },
+      {
+        "value": "chapter_08_section_01",
+        "label": "1 アジア諸地域の自立化と宋",
+        "major_category_value": "chapter_08"
+      },
+      {
+        "value": "chapter_08_section_02",
+        "label": "2 モンゴルの大帝国",
+        "major_category_value": "chapter_08"
+      },
+      {
+        "value": "chapter_09_section_01",
+        "label": "1 アジア交易世界の興隆",
+        "major_category_value": "chapter_09"
+      },
+      {
+        "value": "chapter_09_section_02",
+        "label": "2 ヨーロッパの海洋進出とアメリカ大陸の変容",
+        "major_category_value": "chapter_09"
+      },
+      {
+        "value": "chapter_10_section_01",
+        "label": "1 オスマン帝国とサファヴィー朝",
+        "major_category_value": "chapter_10"
+      },
+      {
+        "value": "chapter_10_section_02",
+        "label": "2 ムガル帝国の興隆",
+        "major_category_value": "chapter_10"
+      },
+      {
+        "value": "chapter_10_section_03",
+        "label": "3 清代の中国と隣接諸地域",
+        "major_category_value": "chapter_10"
+      },
+      {
+        "value": "chapter_11_section_01",
+        "label": "1 ルネサンス",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_11_section_02",
+        "label": "2 宗教改革",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_11_section_03",
+        "label": "3 主権国家体制の成立",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_11_section_04",
+        "label": "4 オランダ・イギリス・フランスの台頭",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_11_section_05",
+        "label": "5 北欧・東欧の動向",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_11_section_06",
+        "label": "6 科学革命と啓蒙思想",
+        "major_category_value": "chapter_11"
+      },
+      {
+        "value": "chapter_12_section_01",
+        "label": "1 産業革命",
+        "major_category_value": "chapter_12"
+      },
+      {
+        "value": "chapter_12_section_02",
+        "label": "2 アメリカ合衆国の独立と発展",
+        "major_category_value": "chapter_12"
+      },
+      {
+        "value": "chapter_12_section_03",
+        "label": "3 フランス革命とナポレオンの支配",
+        "major_category_value": "chapter_12"
+      },
+      {
+        "value": "chapter_12_section_04",
+        "label": "4 中南米諸国の独立",
+        "major_category_value": "chapter_12"
+      },
+      {
+        "value": "chapter_13_section_01",
+        "label": "1 ウィーン体制とヨーロッパの政治・社会の変動",
+        "major_category_value": "chapter_13"
+      },
+      {
+        "value": "chapter_13_section_02",
+        "label": "2 列強体制の動揺とヨーロッパの再編成",
+        "major_category_value": "chapter_13"
+      },
+      {
+        "value": "chapter_13_section_03",
+        "label": "3 アメリカ合衆国の発展",
+        "major_category_value": "chapter_13"
+      },
+      {
+        "value": "chapter_13_section_04",
+        "label": "4 19世紀欧米文化の展開と市民文化の繁栄",
+        "major_category_value": "chapter_13"
+      },
+      {
+        "value": "chapter_14_section_01",
+        "label": "1 西アジア地域の変容",
+        "major_category_value": "chapter_14"
+      },
+      {
+        "value": "chapter_14_section_02",
+        "label": "2 南アジア・東南アジアの植民地化",
+        "major_category_value": "chapter_14"
+      },
+      {
+        "value": "chapter_14_section_03",
+        "label": "3 東アジアの激動",
+        "major_category_value": "chapter_14"
+      },
+      {
+        "value": "chapter_15_section_01",
+        "label": "1 第2次産業革命と帝国主義",
+        "major_category_value": "chapter_15"
+      },
+      {
+        "value": "chapter_15_section_02",
+        "label": "2 列強の世界分割と列強体制の二分化",
+        "major_category_value": "chapter_15"
+      },
+      {
+        "value": "chapter_15_section_03",
+        "label": "3 アジア諸国の変革と民族運動",
+        "major_category_value": "chapter_15"
+      },
+      {
+        "value": "chapter_16_section_01",
+        "label": "1 第一次世界大戦とロシア革命",
+        "major_category_value": "chapter_16"
+      },
+      {
+        "value": "chapter_16_section_02",
+        "label": "2 ヴェルサイユ体制下の欧米諸国",
+        "major_category_value": "chapter_16"
+      },
+      {
+        "value": "chapter_16_section_03",
+        "label": "3 アジア・アフリカ地域の民族運動",
+        "major_category_value": "chapter_16"
+      },
+      {
+        "value": "chapter_17_section_01",
+        "label": "1 世界恐慌とヴェルサイユ体制の破壊",
+        "major_category_value": "chapter_17"
+      },
+      {
+        "value": "chapter_17_section_02",
+        "label": "2 第二次世界大戦",
+        "major_category_value": "chapter_17"
+      },
+      {
+        "value": "chapter_17_section_03",
+        "label": "3 新しい国際秩序の形成",
+        "major_category_value": "chapter_17"
+      },
+      {
+        "value": "chapter_18_section_01",
+        "label": "1 冷戦の展開",
+        "major_category_value": "chapter_18"
+      },
+      {
+        "value": "chapter_18_section_02",
+        "label": "2 第三世界の台頭とキューバ危機",
+        "major_category_value": "chapter_18"
+      },
+      {
+        "value": "chapter_18_section_03",
+        "label": "3 冷戦体制の動揺",
+        "major_category_value": "chapter_18"
+      },
+      {
+        "value": "chapter_19_section_01",
+        "label": "1 産業構造の変容",
+        "major_category_value": "chapter_19"
+      },
+      {
+        "value": "chapter_19_section_02",
+        "label": "2 冷戦の終結",
+        "major_category_value": "chapter_19"
+      },
+      {
+        "value": "chapter_19_section_03",
+        "label": "3 今日の世界",
+        "major_category_value": "chapter_19"
+      },
+      {
+        "value": "chapter_19_section_04",
+        "label": "4 現代文明の諸相",
+        "major_category_value": "chapter_19"
       }
     ]
   },
