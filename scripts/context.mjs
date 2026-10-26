@@ -4,11 +4,12 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { GateError, evaluateTask, recordAttempt, renderMermaid, taskGraph, validateWorkflow } from './workflow-policy.mjs'
 
 export const DEFAULT_REPO = fileURLToPath(new URL('../', import.meta.url))
 const STATE_PATH = 'docs/workflow/state.json'
 const HISTORY_PATH = 'docs/workflow/handoffs'
-const STATUSES = ['todo', 'doing', 'waiting_for_material', 'waiting_for_request', 'done']
+const STATUSES = ['todo', 'doing', 'waiting_for_material', 'waiting_for_request', 'needs_review', 'done']
 const hash = value => createHash('sha256').update(value).digest('hex')
 export class WorkflowError extends Error {}
 const required = (condition, message) => { if (!condition) throw new WorkflowError(message) }
@@ -76,11 +77,12 @@ export function readState(repo = DEFAULT_REPO) {
     required(typeof task.title === 'string' && typeof task.next_action === 'string' && typeof task.verification_scope === 'string', `作業の説明が不足しています: ${task.id}`)
     required(['requested', 'not_requested'].includes(task.authorization), `依頼範囲を確認してください: ${task.id}`)
     required(task.authorization !== 'requested' || (typeof task.request_ref === 'string' && task.request_ref.trim()), `依頼の根拠が必要です: ${task.id}`)
-    required(!['todo', 'doing'].includes(task.status) || task.authorization === 'requested', `未依頼の作業を着手対象にできません: ${task.id}`)
+    required(!['todo', 'doing', 'needs_review', 'done'].includes(task.status) || task.authorization === 'requested', `未依頼の作業を着手対象にできません: ${task.id}`)
     required(Array.isArray(task.depends_on) && task.depends_on.every(id => ids.has(id) && id !== task.id), `依存関係が不正です: ${task.id}`)
     required(Array.isArray(task.evidence), `検証根拠の一覧が必要です: ${task.id}`)
     required(task.status !== 'done' || (task.evidence.length > 0 && Number.isFinite(Date.parse(task.last_verified_at))), `完了作業には根拠と確認日が必要です: ${task.id}`)
     task.evidence.forEach(evidencePath)
+    for (const criterion of task.acceptance ?? []) (criterion.evidence ?? []).forEach(evidencePath)
   }
   const visiting = new Set(), visited = new Set()
   const visit = id => {
@@ -91,6 +93,7 @@ export function readState(repo = DEFAULT_REPO) {
     visiting.delete(id); visited.add(id)
   }
   state.tasks.forEach(t => visit(t.id))
+  validateWorkflow(state)
   required(unique(state.watch_files), '根拠ファイルが重複しています')
   state.watch_files.forEach(path => {
     required(PUBLIC_METADATA.has(path) || /\.(md|json|csv|ts|mjs|sql|vue)$/.test(path), '鮮度確認は小さな文書・ソースファイルに限定します')
@@ -140,9 +143,9 @@ export function freshness(repo, loaded = readState(repo)) {
   return { baseline: true, state_changed: checkpoint.state_hash !== loaded.raw_hash, changed_files, git_changed: JSON.stringify(checkpoint.git) !== JSON.stringify(currentGit), missing_local_files: loaded.missing_local_files, currentGit, currentFiles }
 }
 
-export function runnableTasks(state, context = state.active_context) {
+export function runnableTasks(state, context = state.active_context, gateOptions = {}) {
   const done = new Set(state.tasks.filter(t => t.status === 'done').map(t => t.id))
-  return state.tasks.filter(t => ['todo', 'doing'].includes(t.status) && t.authorization === 'requested' && t.depends_on.every(id => done.has(id)))
+  return state.tasks.filter(t => ['todo', 'doing'].includes(t.status) && t.authorization === 'requested' && t.depends_on.every(id => done.has(id)) && !['exhausted', 'waiting'].includes(evaluateTask(state, t, gateOptions).decision))
     .sort((a, b) => Number(b.context === context) - Number(a.context === context))
 }
 
@@ -158,18 +161,27 @@ export function createCheckpoint(repo, options) {
     required(state.contexts.some(c => c.id === options.context), '記録対象の文脈が存在しません')
     required(typeof options.summary === 'string' && options.summary.trim() && options.summary.length <= 2000, '引き継ぎ要約を1〜2000文字で指定してください')
     required(typeof options.next === 'string' && options.next.trim() && options.next.length <= 2000, '次の作業又は待機条件を指定してください')
+    const now = new Date()
     if (options.task) {
       const task = state.tasks.find(t => t.id === options.task)
       required(task && task.context === options.context, '作業と文脈が一致しません')
+      const evidenceExists = path => sourcePath(workspace, path, { allowMissingLocal: true }) !== null
+      if (options.outcome) {
+        required(!options.status, '試行記録と--statusは同時に指定できません')
+        recordAttempt(state, task, { outcome: options.outcome, summary: options.summary, at: now.toISOString() }, { evidenceExists })
+      }
       if (options.status) {
         required(STATUSES.includes(options.status), '指定した作業状態が不正です')
-        required(!['todo', 'doing'].includes(options.status) || task.authorization === 'requested', '未依頼の作業へ着手できません')
+        required(!['todo', 'doing', 'needs_review', 'done'].includes(options.status) || task.authorization === 'requested', '未依頼の作業へ着手できません')
         required(options.status !== 'done' || (task.evidence.length && Number.isFinite(Date.parse(task.last_verified_at))), '完了にする前に根拠・確認日・確認範囲をstate.jsonへ記録してください')
+        const gate = evaluateTask(state, task, { evidenceExists })
+        required(options.status !== 'done' || ['passed', 'legacy'].includes(gate.decision), `完了条件を満たしていません: ${gate.reasons.join('; ')}`)
+        required(!['todo', 'doing'].includes(options.status) || gate.decision !== 'exhausted', '試行上限に達しています。要レビューのまま原因と計画を見直してください')
         task.status = options.status
       }
       task.next_action = options.next
-    } else required(!options.status, '--statusには--taskが必要です')
-    const now = new Date()
+    } else required(!options.status && !options.outcome, '--status又は--outcomeには--taskが必要です')
+    validateWorkflow(state)
     const revision = state.revision + 1
     const name = `${now.toISOString().replaceAll(/[:.]/g, '-')}-r${revision}.json`
     const path = `${HISTORY_PATH}/${name}`
@@ -179,7 +191,8 @@ export function createCheckpoint(repo, options) {
       schema_version: 1, revision, state_hash: hash(encodedState), recorded_at: now.toISOString(), timezone: 'Asia/Tokyo', context: options.context,
       task: options.task ?? null, summary: options.summary, next_action: options.next,
       missing_local_files: loaded.missing_local_files, git: gitSnapshot(repo), file_hashes: fingerprints(workspace, state.watch_files),
-      verification_note: 'ハッシュとGitの再確認であり、過去のテスト・出典照合の再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。',
+      ...(options.outcome ? { attempt: { outcome: options.outcome, number: state.tasks.find(t => t.id === options.task).execution.attempts.length } } : {}),
+      verification_note: 'ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。',
     }
     required(checkpoint.git.available, 'Gitの状態を取得できないため記録を中断しました')
     required(hash(readFileSync(resolve(repo, STATE_PATH), 'utf8')) === loaded.raw_hash, '記録中に状態ファイルが変更されました。読み直してください')
@@ -200,7 +213,7 @@ function argumentsFor(argv) {
   for (let i = 1; i < argv.length; i++) {
     const key = argv[i]
     if (!key.startsWith('--')) { positionals.push(key); continue }
-    required(['--context', '--task', '--status', '--summary', '--next', '--expect-revision', '--json', '--strict'].includes(key), `未対応の引数です: ${key}`)
+    required(['--context', '--task', '--status', '--summary', '--next', '--expect-revision', '--outcome', '--format', '--json', '--strict'].includes(key), `未対応の引数です: ${key}`)
     if (['--json', '--strict'].includes(key)) { options[key.slice(2)] = true; continue }
     required(argv[i + 1] && !argv[i + 1].startsWith('--'), `${key}の値が必要です`)
     options[key.slice(2)] = argv[++i]
@@ -211,22 +224,38 @@ function argumentsFor(argv) {
 
 export function main(argv = process.argv.slice(2), repo = DEFAULT_REPO) {
   const { command, options, context } = argumentsFor(argv)
-  required(['status', 'start', 'next', 'check', 'checkpoint'].includes(command), 'コマンドはstatus/start/next/check/checkpointです')
-  if (command === 'checkpoint') {
-    const result = createCheckpoint(repo, { context, task: options.task, status: options.status, summary: options.summary, next: options.next, expectedRevision: options['expect-revision'] === undefined ? undefined : Number(options['expect-revision']) })
+  required(['status', 'start', 'next', 'check', 'checkpoint', 'attempt', 'gate', 'graph'].includes(command), 'コマンドはstatus/start/next/check/checkpoint/attempt/gate/graphです')
+  required(!options.outcome || command === 'attempt', '--outcomeはattempt専用です')
+  required(!options.format || command === 'graph', '--formatはgraph専用です')
+  if (['checkpoint', 'attempt'].includes(command)) {
+    required(command !== 'attempt' || (options.task && ['passed', 'failed'].includes(options.outcome) && !options.status), 'attemptには--taskと--outcome passed又はfailedが必要です（--statusは併用不可）')
+    const result = createCheckpoint(repo, { context, task: options.task, status: options.status, outcome: options.outcome, summary: options.summary, next: options.next, expectedRevision: options['expect-revision'] === undefined ? undefined : Number(options['expect-revision']) })
     console.log(`引き継ぎ記録: ${result.path}（世代${result.revision}）`)
     return 0
   }
   const loaded = readState(repo)
   const { state } = loaded
+  const gateOptions = { evidenceExists: path => sourcePath(loaded.workspace, path, { allowMissingLocal: true }) !== null }
+  if (command === 'gate') {
+    const task = state.tasks.find(t => t.id === options.task)
+    required(task, 'gateには存在する--taskを指定してください')
+    const result = evaluateTask(state, task, gateOptions)
+    console.log(JSON.stringify({ task: task.id, ...result }, null, 2))
+    return result.decision === 'passed' ? 0 : 2
+  }
+  if (command === 'graph') {
+    required(!options.format || ['mermaid', 'json'].includes(options.format), '--formatはmermaid又はjsonです')
+    console.log(options.format === 'json' || options.json ? JSON.stringify(taskGraph(state, gateOptions), null, 2) : renderMermaid(state, gateOptions))
+    return 0
+  }
   const selected = context ?? state.active_context
   required(state.contexts.some(c => c.id === selected), '指定した文脈が存在しません')
   const fresh = freshness(repo, loaded)
-  const next = runnableTasks(state, selected)
+  const next = runnableTasks(state, selected, gateOptions)
   const result = {
     revision: state.revision, active_context: state.active_context, selected_context: selected,
     last_checkpoint: state.last_checkpoint, freshness: { baseline: fresh.baseline, changed_files: fresh.changed_files, git_changed: fresh.git_changed, state_changed: fresh.state_changed, git_available: fresh.currentGit.available, missing_local_files: fresh.missing_local_files },
-    contexts: state.contexts.map(c => ({ ...c, tasks: state.tasks.filter(t => t.context === c.id).map(t => ({ id: t.id, title: t.title, status: t.status, last_verified_at: t.last_verified_at })) })),
+    contexts: state.contexts.map(c => ({ ...c, tasks: state.tasks.filter(t => t.context === c.id).map(t => ({ id: t.id, title: t.title, status: t.status, decision: evaluateTask(state, t, gateOptions).decision, last_verified_at: t.last_verified_at })) })),
     runnable: next.map(t => ({ id: t.id, context: t.context, next_action: t.next_action, request_ref: t.request_ref })),
   }
   if (options.json) console.log(JSON.stringify(result, null, 2))
@@ -234,7 +263,7 @@ export function main(argv = process.argv.slice(2), repo = DEFAULT_REPO) {
     console.log(`進捗・引き継ぎ 世代${state.revision} / 現在: ${state.active_context} / 参照: ${selected}`)
     for (const c of result.contexts) {
       console.log(`\n[${c.id}] ${c.title} — ${c.card}`)
-      for (const t of c.tasks) console.log(`  ${t.status.padEnd(20)} ${t.id}: ${t.title}`)
+      for (const t of c.tasks) console.log(`  ${t.status.padEnd(20)} ${t.id}: ${t.title} [${t.decision}]`)
     }
     console.log(`\n引き継ぎ: ${state.last_checkpoint ?? '初回記録前'}`)
     if (fresh.missing_local_files.length) console.log(`ローカル専用の根拠資料は未配置です（別の文脈は継続できます）: ${fresh.missing_local_files.join(', ')}`)
@@ -254,5 +283,5 @@ export function main(argv = process.argv.slice(2), repo = DEFAULT_REPO) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { process.exitCode = main() } catch (error) { console.error(error instanceof WorkflowError ? error.message : '進捗情報を処理できません。JSON形式・Git状態・ファイル権限を確認してください。秘密情報を含む詳細は出力しません。'); process.exitCode = 1 }
+  try { process.exitCode = main() } catch (error) { console.error(error instanceof WorkflowError || error instanceof GateError ? error.message : '進捗情報を処理できません。JSON形式・Git状態・ファイル権限を確認してください。秘密情報を含む詳細は出力しません。'); process.exitCode = 1 }
 }

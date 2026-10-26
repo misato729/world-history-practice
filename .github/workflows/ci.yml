@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Reject local-only reference materials
         run: node scripts/check-private-sources.mjs
+      - name: Check workflow gates and source protection regressions
+        run: node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/check-private-sources.test.mjs
       - name: Prepare isolated development settings
         run: cp .env.example .env
       - name: Validate template configuration and sample content

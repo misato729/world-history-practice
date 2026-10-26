@@ -56,6 +56,114 @@ function capture(action) {
   try { return { result: action(), output: output.join('\n') } } finally { console.log = original }
 }
 
+function gatedFixture(t, { max = 3, passed = false } = {}) {
+  const f = fixture(t)
+  f.state.gate_policy = { version: 1, legacy_task_ids: f.state.tasks.map(task => task.id) }
+  const checked_at = passed ? '2026-10-27T00:00:00Z' : null
+  const status = passed ? 'passed' : 'pending'
+  const task = f.task('gated', {
+    acceptance: [
+      { id: 'checks', kind: 'automated', description: 'Synthetic checks', verification: 'Check synthetic fixture', status, evidence: passed ? ['evidence.md'] : [], checked_at },
+      { id: 'review', kind: 'review', description: 'Independent review', verification: 'Review fixture', status, evidence: passed ? ['evidence.md'] : [], checked_at, reviewer: passed ? 'synthetic_reviewer' : null },
+    ],
+    execution: { worker: 'synthetic_worker', max_attempts: max, attempts: [] },
+  })
+  f.state.tasks.push(task); f.save()
+  const attempt = outcome => main(['attempt', '--context', 'service', '--task', 'gated', '--outcome', outcome, '--expect-revision', String(readState(f.repo).state.revision), '--summary', 'Synthetic evaluation', '--next', 'Continue synthetic work'], f.repo)
+  return { ...f, gated: task, attempt }
+}
+
+test('gate and graph are read-only, and legacy is distinct from passed', t => {
+  const f = gatedFixture(t)
+  const before = readFileSync(f.path, 'utf8')
+  const gate = capture(() => main(['gate', '--task', 'gated'], f.repo))
+  assert.equal(gate.result, 2)
+  assert.equal(JSON.parse(gate.output).decision, 'pending')
+  assert.equal(capture(() => main(['gate', '--task', 'finished'], f.repo)).result, 2)
+  const graph = JSON.parse(capture(() => main(['graph', '--format', 'json'], f.repo)).output)
+  assert(graph.edges.some(edge => edge.from === 'finished' && edge.to === 'ready'))
+  assert.match(capture(() => main(['graph'], f.repo)).output, /^flowchart TD/)
+  assert.equal(readFileSync(f.path, 'utf8'), before)
+  assert.deepEqual(readdirSync(f.history), [])
+})
+
+test('failed gate cannot create passed attempt or done checkpoint', t => {
+  const f = gatedFixture(t)
+  const before = readFileSync(f.path, 'utf8')
+  assert.throws(() => f.attempt('passed'), /完了条件/)
+  assert.throws(() => f.checkpoint({ task: 'gated', status: 'done' }), /根拠|完了条件/)
+  assert.equal(readFileSync(f.path, 'utf8'), before)
+  assert.deepEqual(readdirSync(f.history), [])
+  assert(!existsSync(f.lock))
+})
+
+test('passing attempt and completion use revisioned immutable checkpoints', t => {
+  const f = gatedFixture(t, { passed: true })
+  capture(() => f.attempt('passed'))
+  const evaluated = readState(f.repo).state
+  assert.equal(evaluated.revision, 1)
+  assert.equal(evaluated.tasks.at(-1).status, 'doing')
+  assert.equal(evaluated.tasks.at(-1).execution.attempts.length, 1)
+  assert.equal(capture(() => main(['gate', '--task', 'gated'], f.repo)).result, 0)
+  const saved = JSON.parse(readFileSync(f.path, 'utf8'))
+  saved.tasks.at(-1).evidence = ['evidence.md']
+  saved.tasks.at(-1).last_verified_at = '2026-10-27'
+  write(f.path, encoded(saved))
+  f.checkpoint({ task: 'gated', status: 'done' })
+  assert.equal(readState(f.repo).state.tasks.at(-1).status, 'done')
+  assert.equal(readdirSync(f.history).length, 2)
+  const attemptRecord = readdirSync(f.history).map(path => JSON.parse(readFileSync(join(f.history, path), 'utf8'))).find(record => record.attempt)
+  assert.deepEqual(attemptRecord.attempt, { outcome: 'passed', number: 1 })
+})
+
+test('attempt limit survives status edits and removes task from next candidates', t => {
+  const f = gatedFixture(t, { max: 1 })
+  capture(() => f.attempt('failed'))
+  const current = JSON.parse(readFileSync(f.path, 'utf8'))
+  assert.equal(current.tasks.at(-1).status, 'needs_review')
+  assert(!runnableTasks(current).some(task => task.id === 'gated'))
+  current.tasks.at(-1).status = 'doing'; write(f.path, encoded(current))
+  assert(!runnableTasks(readState(f.repo).state).some(task => task.id === 'gated'))
+  assert.throws(() => f.checkpoint({ task: 'gated', status: 'doing' }), /上限/)
+  assert.throws(() => f.attempt('failed'), /上限/)
+  assert.equal(readState(f.repo).state.tasks.at(-1).execution.attempts.length, 1)
+})
+
+test('unavailable local evidence keeps history readable without certifying current completion', t => {
+  const f = gatedFixture(t, { passed: true })
+  f.gated.status = 'done'; f.gated.evidence = ['evidence.md']; f.gated.last_verified_at = '2026-10-27'
+  f.gated.execution.attempts.push({ number: 1, outcome: 'passed', summary: 'Synthetic passing evaluation', at: '2026-10-27', failed_criteria: [] })
+  f.gated.acceptance[0].evidence = ['past-exam/absent.pdf']; f.save()
+  assert.deepEqual(readState(f.repo).missing_local_files, ['past-exam/absent.pdf'])
+  assert.equal(capture(() => main(['gate', '--task', 'gated'], f.repo)).result, 2)
+  const status = JSON.parse(capture(() => main(['status', '--json'], f.repo)).output)
+  assert(status.runnable.some(task => task.id === 'ready'))
+  assert.equal(capture(() => main(['start', 'sources'], f.repo)).result, 0)
+  assert.throws(() => f.checkpoint({ task: 'gated', status: 'done' }), /根拠|完了条件/)
+  f.gated.acceptance[0].evidence = ['evidence.md']; f.gated.depends_on = ['material']; f.save()
+  assert.throws(() => readState(f.repo), /完了ゲート/)
+  f.gated.depends_on = []; f.gated.acceptance[0].evidence = ['../outside.md']; f.save()
+  assert.throws(() => readState(f.repo), /パス/)
+})
+
+test('next excludes exhausted tasks with vanished local evidence but retains independent work', t => {
+  const f = gatedFixture(t, { max: 1, passed: true })
+  f.gated.execution.attempts.push({ number: 1, outcome: 'passed', summary: 'Synthetic evaluation', at: '2026-10-27', failed_criteria: [] })
+  f.gated.acceptance[0].evidence = ['past-exam/absent.pdf']; f.save()
+  const status = JSON.parse(capture(() => main(['next', '--json'], f.repo)).output)
+  assert(!status.runnable.some(task => task.id === 'gated'))
+  assert(status.runnable.some(task => task.id === 'ready'))
+  assert.equal(status.contexts.flatMap(context => context.tasks).find(task => task.id === 'gated').decision, 'exhausted')
+})
+
+test('attempt-specific options cannot be silently used by other commands', t => {
+  const f = gatedFixture(t)
+  assert.throws(() => main(['checkpoint', '--outcome', 'failed'], f.repo), /専用/)
+  assert.throws(() => main(['attempt', '--task', 'gated'], f.repo), /outcome/)
+  assert.throws(() => main(['status', '--format', 'json'], f.repo), /専用/)
+  assert.throws(() => main(['graph', '--format', 'invalid'], f.repo), /format/)
+})
+
 test('task selection respects requests, completed dependencies and context priority', t => {
   const f = fixture(t)
   f.state.tasks.push(f.task('other_ready', { context: 'sources' }))

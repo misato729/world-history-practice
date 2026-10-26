@@ -32,6 +32,7 @@
 - `doing`：作業中。中断時には実施済み範囲と次の一手を残す。
 - `waiting_for_material`：資料・回答待ち。資料がない部分を推測して進めず、独立した別の依頼済み作業へ移れる。
 - `waiting_for_request`：候補又は未承認の操作。依頼済みの作業と混同しない。
+- `needs_review`：評価回数の上限に到達した未完了作業。原因と計画の見直しまで自動再試行しない。
 - `done`：必要な成果物と検証がそろった状態。根拠と確認日を必須とする。
 
 `node scripts/context.mjs next` は、依頼済み・依存関係解消済みの候補だけを表示します。実際の操作を自動実行するコマンドではありません。自律性は「開始時に必要な情報を選び、依頼範囲内の次の作業へ進み、記録を更新する」ことで実現します。全て完了又は資料待ちなら、その状態を報告して終えます。
@@ -61,6 +62,49 @@ node scripts/context.mjs checkpoint \
 
 `checkpoint` は世代番号と更新ロックを検査し、新しい記録を作った後、状態ファイルを一括置換します。既存の引き継ぎ記録は上書きしません。書込中断で記録だけが残っても、`state.json` が指さない記録を最新と扱いません。
 
+## 新しいタスクの完了条件と修正ループ
+
+`gate_policy.version: 1` 以降の新しい着手対象には、開始時に検証可能な条件を決めます。既存タスクは `legacy_task_ids` に限定列挙し、新しく行う作業を追加してゲートを迂回しません。既存タスクも新契約を持たせれば新基準で検査されます。
+
+```json
+{
+  "acceptance": [
+    { "id": "checks", "kind": "automated", "description": "対象の検査が成功する", "verification": "変更範囲に必要な検査を順番に実行", "status": "pending", "evidence": [], "checked_at": null },
+    { "id": "review", "kind": "review", "description": "別担当が成果物を確認する", "verification": "受入条件と差分の独立レビュー", "status": "pending", "evidence": [], "checked_at": null, "reviewer": null }
+  ],
+  "execution": { "worker": "implementer", "max_attempts": 3, "attempts": [] }
+}
+```
+
+各条件は `pending`・`passed`・`failed` のいずれかです。実際に確認した後で結果を更新し、合格条件にはリポジトリ相対の根拠ファイルと確認日を設定します。レビューの合格には実装担当と異なる `reviewer` を記録します。検証方法は説明であり、シェルとして実行されません。担当名の違いだけで独立性を証明できるものではなく、実際に別担当が検査します。
+
+```sh
+node scripts/context.mjs gate --task task_id
+node scripts/context.mjs attempt --context service --task task_id \
+  --outcome failed --expect-revision 3 \
+  --summary '不合格の条件と原因を検証資料へ記録した' \
+  --next '指摘を修正して残り回数内で再評価する'
+```
+
+番号・ID・文章は現在の記録に合わせます。`attempt` は根拠を集める処理ではなく、実施済み評価をロック・世代確認・不変の引き継ぎ記録付きで保存する処理です。実際の検査に失敗した回も記録し、記録形式の入力エラーは評価回数に数えません。
+
+`max_attempts` は**初回を含む総評価回数**で1〜5回です。上限未満の不合格は `rework`、上限到達は `exhausted` と判定します。最後の不合格評価を記録すると状態を `needs_review` にします。読取専用の確認で根拠消失が分かった場合は、保存済みの状態を変更せず現在の未達判定を表示します。成功した過去の評価があっても現在の根拠が失われた場合は合格になりません。記録の消去や上限の引き上げでループを延命せず、原因と計画を見直します。依頼・条件が変われば旧記録を残して新しいタスクへ分けます。
+
+全条件と依存作業が確認できたら `--outcome passed` で合格評価を保存し、その後 `checkpoint --status done` を実行します。合格評価の保存時点では `doing` のままです。完了にする前にタスク全体の `evidence`・`last_verified_at`・`verification_scope` もそろえます。
+
+`gate` の終了コードは `passed` のとき0、未達・待機・既存記録は2、入力エラーは1です。`legacy` は過去の記録で、新基準の再検証済みではありません。保存済みの完了記録はローカル専用資料がなくても閲覧できますが、現在のゲートでは未達を表示し、その根拠が必要な後続作業を待機させます。独立した作業は継続できます。
+
+コードが判定するのは記録の構造・条件の充足・根拠の存在・依存関係です。歴史記述や引用の正確性、実際のテスト結果は、原典照合・検査・独立レビューで確かめます。自己申告を入力しただけで内容の正しさが証明される仕組みではありません。
+
+## 依存関係を見る
+
+```sh
+node scripts/context.mjs graph --format mermaid
+node scripts/context.mjs graph --format json
+```
+
+`depends_on` から依存元→後続タスクのグラフを生成し、状態と現在の判定を表示します。読取専用で、別のグラフ定義ファイルを正本にしません。グラフはタスク間の依存を表し、修正ループは各タスクの `execution.attempts` で追跡します。任意のエージェントやコマンドを実行するエンジンは追加していません。
+
 ## 複数エージェント・セッションの競合を防ぐ
 
 - `state.json` と引き継ぎ記録の更新担当を親エージェント1名に決める。分担担当は結果・変更ファイル・検証範囲を親へ返す。
@@ -84,7 +128,7 @@ node scripts/context.mjs checkpoint \
 ## 軽量な確認
 
 ```sh
-node --test scripts/context.test.mjs
+node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs
 node scripts/context.mjs check
 node scripts/context.mjs status --json
 ```
@@ -94,3 +138,5 @@ node scripts/context.mjs status --json
 初回の世代1は階層変更前の記録であり、その古いパスを現在の探索先に使いません。新しい記録はリポジトリ基準で作成します。
 
 この仕組みの確認でアプリ起動、DB操作、Docker起動、型検査、本番ビルド、外部通信を行う必要はありません。
+
+採用した考え方と見送った内容は [記事の検討・検証記録](improvements-20261027.md) を参照してください。

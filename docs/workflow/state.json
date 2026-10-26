@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 2,
-  "updated_at": "2026-10-26T15:22:54.950Z",
+  "revision": 7,
+  "updated_at": "2026-10-26T15:55:02.442Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T15-22-54-950Z-r2.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T15-55-02-442Z-r7-published.json",
   "contexts": [
     {
       "id": "product",
@@ -47,7 +47,10 @@
     "scripts/check-private-sources.test.mjs",
     ".gitignore",
     ".dockerignore",
-    ".githooks/pre-push"
+    ".githooks/pre-push",
+    "scripts/workflow-policy.mjs",
+    "scripts/workflow-policy.test.mjs",
+    "docs/workflow/improvements-20261027.md"
   ],
   "tasks": [
     {
@@ -158,15 +161,17 @@
     {
       "id": "delivery",
       "context": "service",
-      "title": "未コミット変更のコミット・push・公開",
-      "status": "waiting_for_request",
+      "title": "分類・引き継ぎ・資料保護のコミット・push",
+      "status": "done",
       "depends_on": [],
-      "request_ref": null,
-      "authorization": "not_requested",
-      "next_action": "この変更について明示依頼があった場合だけ、対象差分とNetlify停止状態を確認し承認範囲まで進める。公開には別の明示指示が必要。",
-      "evidence": [],
-      "last_verified_at": null,
-      "verification_scope": "過去に完了したpushの承認を、今回の新しい差分への恒久的な許可として流用しない。"
+      "request_ref": "2026-10-27 この会話：まずはコミット・pushしてください",
+      "authorization": "requested",
+      "next_action": "b9176ceのpushまで完了。別チャットの配色差分は未コミットのまま保持。公開は別の明示指示が必要。",
+      "evidence": [
+        "docs/workflow/improvements-20261027.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "b9176ceをorigin/mainへpushし差分0/0を確認。Netlifyの停止表示・世界史プロジェクト未登録を管理画面で確認。[skip netlify]併用。原資料保護、軽量38件・分類8件成功。配色と重複ファイルは除外。"
     },
     {
       "id": "repository_layout",
@@ -184,6 +189,101 @@
       ],
       "last_verified_at": "2026-10-27",
       "verification_scope": "軽量な引き継ぎテスト28件と追加の公開メタデータ回帰1件、送信防止テスト9件が成功。Git除外・手元の全履歴・有効化したpre-pushの実呼出し・リポジトリ内リンク・ローカルPython構文を確認。push・外部送信・DB操作・再OCR・アプリの重い検査は行っていない。"
+    },
+    {
+      "id": "harness_refinement",
+      "context": "service",
+      "title": "記事を踏まえた完了ゲート・修正ループ・依存グラフ",
+      "status": "done",
+      "depends_on": [
+        "context_workflow",
+        "repository_layout",
+        "delivery"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 この会話：4本の記事を精読して取り入れられる部分を採用する依頼",
+      "next_action": "記事反映分をコミット・pushする。配色差分・重複ファイル・ローカル原資料は含めない。公開は別の明示依頼が必要",
+      "evidence": [
+        "docs/workflow/improvements-20261027.md",
+        "scripts/context.test.mjs",
+        "scripts/workflow-policy.test.mjs"
+      ],
+      "last_verified_at": "2026-10-26T15:54:59.258Z",
+      "verification_scope": "修正後のCLI36件・純粋関数81件が成功、資料保護9件も成功。資料未配置時の独立再開と依存先待機、完了条件・総回数上限・安全なグラフ・不変記録を確認。別担当が再レビューし初回指摘2件解消。check/graph/資料保護/差分検査成功。アプリ・DB・画面・原典の再照合は対象外。",
+      "acceptance": [
+        {
+          "id": "gate_loop_graph",
+          "kind": "automated",
+          "description": "完了条件・依頼・根拠・独立レビューを検査し、総回数上限で停止、依存グラフを安全に表示する",
+          "verification": "context/workflow-policyの合成テスト、CLI check/gate/graph、git diff --check",
+          "status": "passed",
+          "evidence": [
+            "docs/workflow/improvements-20261027.md"
+          ],
+          "checked_at": "2026-10-26T15:54:59.258Z"
+        },
+        {
+          "id": "privacy",
+          "kind": "automated",
+          "description": "原資料・秘密情報を送信対象に含めず、別作業の差分を保持する",
+          "verification": "既存の保護テストと追跡・送信履歴検査、明示ファイルの差分確認",
+          "status": "passed",
+          "evidence": [
+            "docs/workflow/improvements-20261027.md"
+          ],
+          "checked_at": "2026-10-26T15:54:59.258Z"
+        },
+        {
+          "id": "independent_review",
+          "kind": "review",
+          "description": "別担当がCLI・判定・資料未配置・文書の整合を確認し、未解決の実装上の指摘をなくす",
+          "verification": "実装担当とは別のエージェントによる差分レビューと修正後の再確認",
+          "status": "passed",
+          "evidence": [
+            "docs/workflow/improvements-20261027.md"
+          ],
+          "checked_at": "2026-10-26T15:54:59.258Z",
+          "reviewer": "review_workflow_integration"
+        }
+      ],
+      "execution": {
+        "worker": "root_and_implement_workflow_gates",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回の独立レビューで、資料未配置が全体読込を止める点と候補選択で根拠消失を見逃す点を検出。修正と回帰検査を追加し、最終の再検証はこれから行う",
+            "at": "2026-10-26T15:50:54.073Z",
+            "failed_criteria": [
+              "gate_loop_graph",
+              "privacy",
+              "independent_review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "修正後の関連117件と資料保護9件が成功。別担当の再レビューで2件の指摘解消と文書の整合を確認した",
+            "at": "2026-10-26T15:55:00.597Z",
+            "failed_criteria": []
+          }
+        ]
+      }
     }
-  ]
+  ],
+  "gate_policy": {
+    "version": 1,
+    "legacy_task_ids": [
+      "audit_2025",
+      "chapter_topics",
+      "authoring_rules",
+      "context_workflow",
+      "old_sources",
+      "edition_comparison",
+      "more_questions",
+      "delivery",
+      "repository_layout"
+    ]
+  }
 }
