@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 21,
-  "updated_at": "2026-10-26T20:04:54.114Z",
+  "revision": 23,
+  "updated_at": "2026-10-26T22:35:17.264Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T20-04-54-114Z-r21.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T22-35-17-264Z-r23.json",
   "contexts": [
     {
       "id": "product",
@@ -61,7 +61,11 @@
     "frontend/tests/historyTopics.test.ts",
     "frontend/server-tests/learning.test.ts",
     "frontend/app/pages/index.vue",
-    "frontend/app/pages/admin/questions/index.vue"
+    "frontend/app/pages/admin/questions/index.vue",
+    "docs/workflow/policy.json",
+    "scripts/workspace-policy.mjs",
+    "scripts/workspace-policy.test.mjs",
+    "docs/workflow/template-parity-20261027.md"
   ],
   "tasks": [
     {
@@ -629,6 +633,62 @@
             "outcome": "passed",
             "summary": "旧コピー10件の除外をユーザーが選択し、残る全46ファイルをf757a1eとしてorigin/mainへpush。同期0/0、独立レビュー、設定・差分・原資料保護、Dockerフロント80件・隔離DB API/DB/運用73件、pre-pushとGitHub Actionsが成功。デプロイ未実施。",
             "at": "2026-10-26T20:04:53.332Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "template_harness_parity",
+      "context": "service",
+      "title": "テンプレート改善の世界史ラボ反映と検証",
+      "status": "done",
+      "depends_on": [
+        "harness_refinement"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: テンプレート側の改善を世界史ラボで検証し、修正後コミット・pushする",
+      "next_action": "承認済みのコミット・pushを行い、リモート同期とCIの実結果を確認する",
+      "evidence": [
+        "docs/workflow/template-parity-20261027.md",
+        "docs/verification.md"
+      ],
+      "last_verified_at": "2026-10-26T22:35:15.846Z",
+      "verification_scope": "テンプレート0dd9f8aと比較し共通安全対策・追加ポリシー・マージ全履歴検査・Node24の専用CIを反映。軽量168件、独立コードレビュー、形式・資料保護・除外11例・YAML解析・元16タスク/4文脈/既存22履歴/旧コピー10件の保持を確認。アプリ/DB/UI/原資料再照合は変更対象外。Netlify既存チームで世界史未登録・既存build停止を現在確認。コミット・pushとリモートCIはこの確認後の実施対象。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "関連する軽量検査・保護検査が成功し、既存状態・履歴・未追跡ファイルを保持する",
+          "verification": "4種類のハーネス回帰テスト、進捗の形式・根拠検査、Git追跡/全履歴、除外設定、変更範囲を直列確認",
+          "status": "passed",
+          "evidence": [
+            "docs/workflow/template-parity-20261027.md"
+          ],
+          "checked_at": "2026-10-26T22:35:15.846Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が共通化の反映漏れと世界史固有の保護の保持を確認する",
+          "verification": "移植差分・固定資料保護・CI・既存状態保持を独立レビューする",
+          "status": "passed",
+          "evidence": [
+            "docs/workflow/template-parity-20261027.md"
+          ],
+          "checked_at": "2026-10-26T22:35:15.846Z",
+          "reviewer": "audit_world_harness_parity"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "共通安全対策の移植、世界史資料の固定保護、軽量168件、独立レビュー、既存状態・履歴・旧コピーの保持を確認した",
+            "at": "2026-10-26T22:35:16.564Z",
             "failed_criteria": []
           }
         ]

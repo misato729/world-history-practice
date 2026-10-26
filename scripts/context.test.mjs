@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
@@ -255,6 +255,7 @@ test('checkpoints increment revision and preserve immutable history without coll
   assert.equal(first.revision, 1)
   const firstBytes = readFileSync(join(f.repo, first.path), 'utf8')
   const record = JSON.parse(firstBytes)
+  assert.equal(record.timezone, 'UTC')
   const current = readState(f.repo).state
   assert.equal(current.revision, 1)
   assert.equal(current.last_checkpoint, first.path)
@@ -434,4 +435,85 @@ test('only three public safeguard metadata paths may be watched and secret alias
   symlinkSync(join(f.repo, '.env'), join(f.repo, '.gitignore'))
   assert.throws(() => sourcePath(f.repo, '.gitignore'), /非公開/)
   assert.throws(() => readState(f.repo), /非公開/)
+})
+
+test('configured local-only directories and filename prefixes permit absent evidence', t => {
+  const f = fixture(t)
+  write(join(f.repo, 'docs/workflow/policy.json'), encoded({
+    schema_version: 1,
+    local_only: { directory_names: ['offline-reference'], filename_prefixes: ['local-catalog-'] },
+  }))
+  const paths = ['offline-reference/summary.md', 'nested/offline-reference/document.pdf', 'local-catalog-source.pdf']
+  for (const path of paths) assert.equal(sourcePath(f.repo, path, { allowMissingLocal: true }), null)
+  f.state.tasks[0].evidence.push(...paths)
+  f.state.watch_files.push('docs/workflow/policy.json')
+  f.save()
+  assert.deepEqual(readState(f.repo).missing_local_files, paths)
+  assert.throws(() => sourcePath(f.repo, 'ordinary-missing.pdf', { allowMissingLocal: true }), /見つかりません/)
+})
+
+test('invalid workspace policy fails even for ordinary existing evidence', t => {
+  const f = fixture(t)
+  write(join(f.repo, 'docs/workflow/policy.json'), encoded({ schema_version: 2 }))
+  assert.throws(() => sourcePath(f.repo, 'evidence.md'))
+  assert.throws(() => readState(f.repo))
+})
+
+test('normal operations source directories remain available as evidence', t => {
+  const f = fixture(t)
+  const path = 'frontend/server/operations/task.ts'
+  write(join(f.repo, path), '// Synthetic operations source fixture\n')
+  assert.equal(sourcePath(f.repo, path), join(f.repo, path))
+  f.state.watch_files.push(path)
+  f.save()
+  assert.doesNotThrow(() => readState(f.repo))
+})
+
+
+test('checkpoint rejects an external handoff directory before creating any output', t => {
+  const f = fixture(t)
+  const outside = join(f.temporary, 'outside-handoffs')
+  mkdirSync(outside)
+  rmSync(f.history, { recursive: true })
+  symlinkSync(outside, f.history)
+  assert.doesNotThrow(() => readState(f.repo))
+  const before = readFileSync(f.path, 'utf8')
+  assert.throws(() => createCheckpoint(f.repo, {
+    context: 'service', expectedRevision: 0, summary: 'Synthetic checkpoint', next: 'Continue',
+  }), /リポジトリ外/)
+  assert.deepEqual(readdirSync(outside), [])
+  assert.equal(readFileSync(f.path, 'utf8'), before)
+  assert(!existsSync(f.lock))
+})
+
+test('checkpoint rejects an external workflow directory before creating its lock', t => {
+  const f = fixture(t)
+  const workflow = join(f.repo, 'docs/workflow')
+  const outside = join(f.temporary, 'outside-workflow')
+  renameSync(workflow, outside)
+  symlinkSync(outside, workflow)
+  const before = readFileSync(f.path, 'utf8')
+  const entries = readdirSync(outside)
+  assert.throws(() => createCheckpoint(f.repo, {
+    context: 'service', expectedRevision: 0, summary: 'Synthetic checkpoint', next: 'Continue',
+  }), /リポジトリ外/)
+  assert.deepEqual(readdirSync(outside), entries)
+  assert.deepEqual(readdirSync(join(outside, 'handoffs')), [])
+  assert.equal(readFileSync(f.path, 'utf8'), before)
+  assert(!existsSync(join(outside, '.context.lock')))
+})
+
+
+test('checkpoint does not remove a preexisting temporary state file it did not create', t => {
+  const f = fixture(t)
+  const pending = join(f.repo, `docs/workflow/state.json.${process.pid}.tmp`)
+  const retained = 'Synthetic file from another interrupted update\n'
+  write(pending, retained)
+  const before = readFileSync(f.path, 'utf8')
+  assert.throws(() => createCheckpoint(f.repo, {
+    context: 'service', expectedRevision: 0, summary: 'Synthetic checkpoint', next: 'Continue',
+  }), /EEXIST/)
+  assert.equal(readFileSync(pending, 'utf8'), retained)
+  assert.equal(readFileSync(f.path, 'utf8'), before)
+  assert(!existsSync(f.lock))
 })

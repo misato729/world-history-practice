@@ -5,15 +5,28 @@ on:
 permissions:
   contents: read
 jobs:
+  harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Reject local-only materials in tracked files and history
+        run: node scripts/check-private-sources.mjs
+      - name: Check progress, completion gates, and source protection
+        run: node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/workspace-policy.test.mjs scripts/check-private-sources.test.mjs
+      - name: Validate workflow state and evidence references
+        run: node scripts/context.mjs check
   verify:
+    needs: harness
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Reject local-only reference materials
-        run: node scripts/check-private-sources.mjs
-      - name: Check workflow gates and source protection regressions
-        run: node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/check-private-sources.test.mjs
       - name: Prepare isolated development settings
         run: cp .env.example .env
       - name: Validate template configuration and sample content

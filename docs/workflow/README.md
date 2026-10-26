@@ -17,6 +17,7 @@
 | ファイル | 役割 |
 | --- | --- |
 | [state.json](state.json) | タスクID、状態、依存関係、依頼の根拠、確認範囲、次の行動の正本 |
+| [policy.json](policy.json) | 追加のローカル専用資料の保護対象。根拠の参照と送信検査で共用 |
 | [contexts/product.md](contexts/product.md) | 教材・サービスの方針と未決事項 |
 | [contexts/sources.md](contexts/sources.md) | 提供済み資料、版、未受領資料と電子化の範囲 |
 | [contexts/audit.md](contexts/audit.md) | 過去問照合の完成物と評価上の限界 |
@@ -60,7 +61,7 @@ node scripts/context.mjs checkpoint \
 
 これは初回用の例です。`--expect-revision` とタスクID・状態・文章は、必ず現在の一覧と実施内容に合わせます。依頼範囲の変更や新しいタスクは、人間の指示の参照先 `request_ref` とともに記録します。
 
-`checkpoint` は世代番号と更新ロックを検査し、新しい記録を作った後、状態ファイルを一括置換します。既存の引き継ぎ記録は上書きしません。書込中断で記録だけが残っても、`state.json` が指さない記録を最新と扱いません。
+`checkpoint` はロック作成前・記録書込前に保存先の実体がリポジトリ内か確認し、世代番号と更新ロックを検査して、新しい記録を作った後、状態ファイルを一括置換します。日時はUTCで保存し、既存の引き継ぎ記録は上書きしません。自分が作成していない一時ファイルも削除しません。書込中断で記録だけが残っても、`state.json` が指さない記録を最新と扱いません。
 
 ## 新しいタスクの完了条件と修正ループ
 
@@ -128,7 +129,7 @@ node scripts/context.mjs graph --format json
 ## 軽量な確認
 
 ```sh
-node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs
+node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/workspace-policy.test.mjs scripts/check-private-sources.test.mjs
 node scripts/context.mjs check
 node scripts/context.mjs status --json
 ```
@@ -140,3 +141,14 @@ node scripts/context.mjs status --json
 この仕組みの確認でアプリ起動、DB操作、Docker起動、型検査、本番ビルド、外部通信を行う必要はありません。
 
 採用した考え方と見送った内容は [記事の検討・検証記録](improvements-20261027.md) を参照してください。
+
+
+## 共通テンプレートとの整合
+
+[テンプレート改善の反映・検証](template-parity-20261027.md)を参照してください。進捗・文脈・過去の引き継ぎは世界史ラボの記録を保持し、テンプレートの空stateへ置き換えません。
+
+追加の保護対象は`policy.json`の`directory_names`（任意の階層のディレクトリ名）と`filename_prefixes`（ファイル名の接頭辞）で指定します。区切り・絶対パス・ワイルドカードは使用しません。設定不正時は確認を中断し、設定がなくても既定の`local-only/`を保護します。
+
+世界史資料の固定保護は別途必ず適用します。過去問・分析・`glossary*`は各階層、歴検PDF/ZIPは各階層の名前で検出し、追加設定から削除しても解除されません。通常の`frontend/server/operations/`のソースは根拠として参照できますが、秘密ファイル・DB・リポジトリ外へのリンクは引き続き参照しません。
+
+設定の変更は`.gitignore`・`.dockerignore`へ自動反映されないため、両方の除外もそろえます。CIは全履歴を取得し、Node.js 24の軽量検査と形式・根拠参照の検査に成功した後で既存のアプリ検査へ進みます。

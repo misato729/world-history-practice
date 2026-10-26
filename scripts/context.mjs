@@ -5,6 +5,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSyn
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GateError, evaluateTask, recordAttempt, renderMermaid, taskGraph, validateWorkflow } from './workflow-policy.mjs'
+import { isLocalOnlyPath, loadWorkspacePolicy } from './workspace-policy.mjs'
 
 export const DEFAULT_REPO = fileURLToPath(new URL('../', import.meta.url))
 const STATE_PATH = 'docs/workflow/state.json'
@@ -17,9 +18,7 @@ const inside = (base, path) => { const rel = relative(base, path); return rel ==
 const managed = path => path === STATE_PATH || path.startsWith(`${HISTORY_PATH}/`) || path.includes('/.context.lock') || /state\.json\.\d+\.tmp$/.test(path)
 
 const PUBLIC_METADATA = new Set(['.gitignore', '.dockerignore', '.githooks/pre-push'])
-const restrictedPath = path => !PUBLIC_METADATA.has(path) && path.split('/').some(part => part.startsWith('.') || ['node_modules', 'private', 'operations', 'secrets'].includes(part))
-
-const localOnlyPath = path => /^(?:past-exam|分析)\//.test(path) || /^glossary[^/]*$/.test(path)
+const restrictedPath = path => !PUBLIC_METADATA.has(path) && path.split('/').some(part => part.startsWith('.') || ['node_modules', 'private', 'secrets'].includes(part))
 
 /** Resolve only repository files; local-only evidence may be absent in a fresh checkout. */
 export function sourcePath(workspace, path, { allowMissingLocal = false } = {}) {
@@ -27,6 +26,7 @@ export function sourcePath(workspace, path, { allowMissingLocal = false } = {}) 
   required(!restrictedPath(path), '非公開・内部データは根拠一覧へ登録できません')
   required(!/\.(pem|key|p12|pfx|sqlite|db)$/i.test(path), '秘密情報・DBファイルは根拠一覧へ登録できません')
   const root = realpathSync(workspace)
+  const workspacePolicy = loadWorkspacePolicy(root)
   const full = resolve(root, path)
   required(inside(root, full), 'リポジトリ外のパスは参照しません')
   let existing = full
@@ -41,7 +41,7 @@ export function sourcePath(workspace, path, { allowMissingLocal = false } = {}) 
   required(!/\.(pem|key|p12|pfx|sqlite|db)$/i.test(real), '秘密情報・DBファイルへ向くリンクは参照しません')
   required(!restrictedPath(relative(root, real).split(sep).join('/')), '非公開ファイルへ向くシンボリックリンクは参照しません')
   if (!existsSync(full)) {
-    required(allowMissingLocal && localOnlyPath(path), `根拠ファイルが見つかりません: ${path}`)
+    required(allowMissingLocal && isLocalOnlyPath(path, workspacePolicy), `根拠ファイルが見つかりません: ${path}`)
     return null
   }
   required(statSync(full).isFile(), `ファイルを指定してください: ${path}`)
@@ -149,9 +149,25 @@ export function runnableTasks(state, context = state.active_context, gateOptions
     .sort((a, b) => Number(b.context === context) - Number(a.context === context))
 }
 
+/** Constrain output paths before creating directories, locks, or files. */
+function checkpointOutputPath(repo, path) {
+  const root = realpathSync(repo)
+  const full = resolve(root, path)
+  required(inside(root, full), 'リポジトリ外へ引き継ぎ記録を書き込みません')
+  let existing = full
+  while (!existsSync(existing)) {
+    required(!lstatSync(existing, { throwIfNoEntry: false })?.isSymbolicLink(), '参照先がないシンボリックリンクへ書き込みません')
+    const parent = dirname(existing)
+    required(parent !== existing && inside(root, parent), 'リポジトリ外へ引き継ぎ記録を書き込みません')
+    existing = parent
+  }
+  required(inside(root, realpathSync(existing)), 'リポジトリ外のシンボリックリンクへ書き込みません')
+  return full
+}
+
 export function createCheckpoint(repo, options) {
-  const directory = resolve(repo, 'docs/workflow')
-  const lock = resolve(directory, '.context.lock')
+  const lock = checkpointOutputPath(repo, 'docs/workflow/.context.lock')
+  checkpointOutputPath(repo, HISTORY_PATH)
   try { mkdirSync(lock) } catch { throw new WorkflowError('別の更新が進行中か、前回のロックが残っています。更新を重ねず、担当者と稼働状況を確認してください') }
   let temporary
   try {
@@ -188,7 +204,7 @@ export function createCheckpoint(repo, options) {
     state.revision = revision; state.updated_at = now.toISOString(); state.active_context = options.context; state.last_checkpoint = path
     const encodedState = JSON.stringify(state, null, 2) + '\n'
     const checkpoint = {
-      schema_version: 1, revision, state_hash: hash(encodedState), recorded_at: now.toISOString(), timezone: 'Asia/Tokyo', context: options.context,
+      schema_version: 1, revision, state_hash: hash(encodedState), recorded_at: now.toISOString(), timezone: 'UTC', context: options.context,
       task: options.task ?? null, summary: options.summary, next_action: options.next,
       missing_local_files: loaded.missing_local_files, git: gitSnapshot(repo), file_hashes: fingerprints(workspace, state.watch_files),
       ...(options.outcome ? { attempt: { outcome: options.outcome, number: state.tasks.find(t => t.id === options.task).execution.attempts.length } } : {}),
@@ -196,11 +212,15 @@ export function createCheckpoint(repo, options) {
     }
     required(checkpoint.git.available, 'Gitの状態を取得できないため記録を中断しました')
     required(hash(readFileSync(resolve(repo, STATE_PATH), 'utf8')) === loaded.raw_hash, '記録中に状態ファイルが変更されました。読み直してください')
-    mkdirSync(resolve(repo, HISTORY_PATH), { recursive: true })
-    writeFileSync(resolve(repo, path), JSON.stringify(checkpoint, null, 2) + '\n', { flag: 'wx' })
-    temporary = resolve(directory, `state.json.${process.pid}.tmp`)
-    writeFileSync(temporary, encodedState, { flag: 'wx' })
-    renameSync(temporary, resolve(repo, STATE_PATH))
+    const historyDirectory = checkpointOutputPath(repo, HISTORY_PATH)
+    const checkpointFile = checkpointOutputPath(repo, path)
+    const pendingState = checkpointOutputPath(repo, `docs/workflow/state.json.${process.pid}.tmp`)
+    const stateFile = checkpointOutputPath(repo, STATE_PATH)
+    mkdirSync(historyDirectory, { recursive: true })
+    writeFileSync(checkpointFile, JSON.stringify(checkpoint, null, 2) + '\n', { flag: 'wx' })
+    writeFileSync(pendingState, encodedState, { flag: 'wx' })
+    temporary = pendingState
+    renameSync(temporary, stateFile)
     return { path, revision }
   } finally {
     if (temporary) rmSync(temporary, { force: true })
