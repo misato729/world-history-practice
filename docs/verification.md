@@ -1,13 +1,13 @@
 # 世界史サービスの検証
 
-## 全未コミット変更の送信準備（2026年10月27日）
+## 全未コミット変更の送信（2026年10月27日）
 
-- ユーザーの「世界史ラボの未コミット分全部コミット・push」の依頼に従い、文化史4区分・004マイグレーション・管理／演習の表示と絞り込み・章節依存・承認済み文言・関連検査・資料・画面記録・引き継ぎをまとめて送信します。旧コピー10件は、ユーザー回答「旧コピーは手元に残して送信対象から除く」に従って除外し、削除・移動・内容変更をしません。
+- ユーザーの「世界史ラボの未コミット分全部コミット・push」の依頼に従い、文化史4区分・004マイグレーション・管理／演習の表示と絞り込み・章節依存・承認済み文言・関連検査・資料・画面記録・引き継ぎの46ファイルを `f757a1ed22a1e2ef0f1cd065fcfca920bc273902` として `origin/main` へpushしました。送信後の同期差分は0／0でした。旧コピー10件は、ユーザー回答「旧コピーは手元に残して送信対象から除く」に従って除外し、削除・移動・内容変更をしません。
 - 除外する旧コピーは `.github/workflows/ci 2.yml`、`.gitignore 2`、`AGENTS 2.md`、`frontend/Dockerfile 2`、`frontend/app/composables/useAuth 2.ts`、`frontend/app/utils/examConfig 2.ts`、`frontend/nuxt.config 2.ts`、`frontend/package 2.json`、`frontend/package-lock 2.json`、`frontend/tests/frontendAccess.test 2.ts` です。旧CIコピーは廃止済みのRailsサービスを実行するため、現行のCIとして送信しません。
 - 独立担当 `all_changes_review` は、4区分の設定・型・管理UI・公開表示・API・DB制約、移行時の既存ID／本文／日時／関係の保持、区分だけの変更時の履歴・選択肢・日時保持、旧入力／アーカイブ互換、章節連動・表示文言を確認し、未解決のコード上の指摘がありません。`untracked_review` は未追跡25件を確認し、秘密情報の検出0件、画面画像6件に原資料が含まれないこと、移行と引き継ぎ記録の送信範囲を確認しました。
 - 今回の設定・差分・原資料のGit追跡／履歴検査と、有効な `core.hooksPath=.githooks` を確認しました。Dockerのフロントエンド80件、末尾 `_test` の独立DBによるAPI／DB／運用73件が全件成功し、失敗・スキップ0件です。ローカルの型検査・本番ビルドは既存の成功記録と区別し、今回の再実行として数えていません。
 - Netlifyの `misato729` チーム一覧を今回読み取り、世界史プロジェクトが未登録で、登録済みの `johokyonin-lab` に「Builds are stopped」の表示があることを確認しました。他サービスの停止表示を世界史ラボの設定として扱いません。`[skip netlify]` を併用し、登録・設定変更・デプロイ・本番確認は行いません。
-- コミット・pushとCIの結果は、実施後に記録します。
+- コミット名は `feat: add cultural history categories and refined practice filters [skip netlify]`。送信時のpre-push検査と[GitHub Actions](https://github.com/misato729/world-history-practice/actions/runs/40392061509)が成功しました。CIでは原資料保護・進捗ゲート、設定、コンテナビルド、API／DB／運用、フロントエンド・型検査・本番ビルドを確認しています。完了記録は別の文書コミットで送信し、デプロイ・本番確認は行っていません。
 
 ## 文化史の絞り込みの文言（2026年10月27日）
 

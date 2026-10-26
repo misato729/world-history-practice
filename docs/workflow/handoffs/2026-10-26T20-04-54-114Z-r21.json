@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "revision": 21,
+  "state_hash": "6c3df82162157f64e3c5f5d7ba84712087f801acc7717b1c0720b57de399bebc",
+  "recorded_at": "2026-10-26T20:04:54.114Z",
+  "timezone": "Asia/Tokyo",
+  "context": "service",
+  "task": "culture_changes_delivery",
+  "summary": "世界史ラボの全未コミット実装・資料・画像・引き継ぎを送信済み。旧コピー10件はユーザー指定に従って手元に保持。全受入条件が合格し、デプロイ・本番確認は未実施。",
+  "next_action": "依頼された全変更は送信済み。新しい変更・公開は別の明示依頼を待つ。",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "f757a1ed22a1e2ef0f1cd065fcfca920bc273902",
+    "changes": [
+      {
+        "status": " M",
+        "path": "docs/verification.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "b1bf50ee26c217d7a1af007f187620b9242653f3660116f93d87e4ebbf0cf171",
+    "README.md": "52848a7b38e5d9fae499cc8f5f3744dcba614db310ad450b0af4c1da433809b4",
+    "config/exam.json": "328e17f24acad57dfecdb0ecaa2a1731be9f0f94c87593b08a000328b8bf2119",
+    "docs/classification.md": "1942c5d4390914aedc3c5c681c12af827b714f536a6857eef1006a5760c081e3",
+    "docs/verification.md": "7582540642a97c9e5df81781c9718835d2fff8ac99ea655934b882770f087014",
+    "docs/workflow/README.md": "a2a9103c04020c1159c8b93db47e41535eada176a7d2afae952108a75654b3c0",
+    "scripts/context.mjs": "6c678d3f6aeac19ec6b960c25d131b4fc0d0d0a48307bcb38f2f65356bdaed63",
+    "scripts/context.test.mjs": "45ae75edc0280e513e36ee65252053cea17376fee61eb33a4ba7058d461c71ca",
+    "docs/workflow/contexts/product.md": "cc25a8e658a340bd07e8a95f91c07a45536f4c1e7b5be5a418445f651fb6915c",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "c29f06afdadf67e6d6750913880134410ba36fe9c3647eef81cb5c96ac882740",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "e85284c6830280f8b6ed81acb8d729f45adf36e81b74df59b347b46a20921efd",
+    "scripts/check-private-sources.mjs": "eb4a3277a952c19cfd182b41b371a918c32e1598ea8f10ebed934274b26e86f2",
+    "scripts/check-private-sources.test.mjs": "1e3ed8da8552eb10d38c974d4e65ae23c5fe1c9bdb7da5adbff9c5e48c01d9dc",
+    ".gitignore": "0c57b76f803924064770c88a5154c9470140fdc113e7d46964813cd6804e0d61",
+    ".dockerignore": "58fcd073427254464edac55980e9d9572075c5ec03db99aa8be8390e054aff35",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a",
+    "content/questions.json": "2327e8637a79dc480d2bd85641156516376e0a025170a8d43113faad33614625",
+    "frontend/shared/examConfig.ts": "cabada6da1775c316dee62ccccba3fc0352a1a75ed4d36ef7b0e0e1118c02ecf",
+    "frontend/app/utils/historyTopics.ts": "557afbc23a2da1c4ba8ddaecbeefaecb92a8bddacb86c030740d1fdc9125caab",
+    "frontend/server/services/learning-validation.ts": "3bee7bebedda9130fcddd5e10ada8e4a4b0ec17546312617936f67c3b10494d0",
+    "frontend/server/services/learning-writer.ts": "490b1e3f463e7eb4a107197004900c6921d6f10fe1b8eeecef3802cb2221cb26",
+    "frontend/server/services/learning.ts": "15ec5ebd856df702f52b32f48ed3346566ef6aad979b308ff150a97fd63106e9",
+    "frontend/server/database/migrations/004_cultural_history_categories.sql": "efa1479a13c01ebca748846228752430845c7b5691c023cd395b3c3e3d2d1773",
+    "frontend/tests/historyTopics.test.ts": "8d8249a3ec79e980b233907e7ca083ae3d85c50ae5d1e691f0f9bcf3cca8f204",
+    "frontend/server-tests/learning.test.ts": "1f5e8eaf35d54eae79adf36356221755857dc57ba2989789812bbd7a13a1e5a7",
+    "frontend/app/pages/index.vue": "9d669d2ac76590cb73ceab3b6703b3e21971d3c323881fa3a283d7b5c48f3362",
+    "frontend/app/pages/admin/questions/index.vue": "bded02a715ab5082e62094abcafe4b6c734d655ab1c238c729edacfa5a5f2173"
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

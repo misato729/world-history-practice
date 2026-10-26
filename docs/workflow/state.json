@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 19,
-  "updated_at": "2026-10-26T20:01:31.409Z",
+  "revision": 21,
+  "updated_at": "2026-10-26T20:04:54.114Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T20-01-31-409Z-r19.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T20-04-54-114Z-r21.json",
   "contexts": [
     {
       "id": "product",
@@ -378,7 +378,7 @@
       ],
       "authorization": "requested",
       "request_ref": "2026-10-27 この会話：美術史・音楽史・文学史・その他の4区分を実装し、文化史全体と各区分で絞り込む依頼",
-      "next_action": "今回の実装は未コミット・未公開。音楽史・文学史は0問。追加作問や送信・公開は最新のユーザー依頼を確認して進める",
+      "next_action": "ユーザー承認により他の未コミット実装・記録とともにf757a1eとしてorigin/mainへpush済み。旧コピー10件は手元に保持。新しい変更・公開は別の明示依頼を待つ。",
       "evidence": [
         "docs/classification.md",
         "docs/verification.md",
@@ -387,7 +387,7 @@
         "frontend/tests/historyTopics.test.ts"
       ],
       "last_verified_at": "2026-10-26T19:28:58.457Z",
-      "verification_scope": "Docker内フロント80件・隔離PostgreSQL73件、型検査・設定検査・同期外の隔離ソースビルド成功。ローカル開発DBへ004だけ適用し既存全列と選択肢・日時・関連件数の保全を照合。PC1440px/SP390px・320pxで実APIの絞り込み・0件・回答・次問条件保持、読取専用合成応答で管理フォーム・一覧・プレビューを確認。別担当再レビュー済み。検査用DB・ビルド・合成サーバーは撤去した。未コミット・未公開。",
+      "verification_scope": "Docker内フロント80件・隔離PostgreSQL73件、型検査・設定検査・同期外の隔離ソースビルド成功。ローカル開発DBへ004だけ適用し既存全列と選択肢・日時・関連件数の保全を照合。PC1440px/SP390px・320pxで実APIの絞り込み・0件・回答・次問条件保持、読取専用合成応答で管理フォーム・一覧・プレビューを確認。別担当再レビュー済み。検査用DB・ビルド・合成サーバーは撤去した。未コミット・未公開。 実装時の検証後、ユーザー承認によりf757a1eとしてpushし同期0/0とCI成功を確認。デプロイ・本番確認は未実施。",
       "acceptance": [
         {
           "id": "integrity_and_filters",
@@ -460,7 +460,7 @@
       "depends_on": [],
       "request_ref": "2026-10-27 この会話：項目名を「文化史の絞り込み」にし、選択肢と補足文を提案どおりに変更する依頼",
       "authorization": "requested",
-      "next_action": "文言変更は完了。コミット・push・公開は別の明示依頼を待つ。",
+      "next_action": "ユーザー承認により他の未コミット実装・記録とともにf757a1eとしてorigin/mainへpush済み。旧コピー10件は手元に保持。新しい変更・公開は別の明示依頼を待つ。",
       "evidence": [
         "frontend/app/pages/index.vue",
         "frontend/app/pages/admin/questions/index.vue",
@@ -472,7 +472,7 @@
         "docs/screenshots/culture-filter-copy-mobile.jpg"
       ],
       "last_verified_at": "2026-10-27",
-      "verification_scope": "指定の項目名・6選択肢・補足文へ変更。関連5テスト・独立レビュー・差分検査が成功。ChromeでPC1280px／SP390px・320pxの表示、全6項目の切替と章節保持を確認。管理一覧はソース確認のみ。並行する章節依存の修正を保持。DB/API・全件テスト・型検査・本番ビルド・コミット・push・デプロイは今回未実施。",
+      "verification_scope": "指定の項目名・6選択肢・補足文へ変更。関連5テスト・独立レビュー・差分検査が成功。ChromeでPC1280px／SP390px・320pxの表示、全6項目の切替と章節保持を確認。管理一覧はソース確認のみ。並行する章節依存の修正を保持。DB/API・全件テスト・型検査・本番ビルド・コミット・push・デプロイは今回未実施。 実装時の検証後、ユーザー承認によりf757a1eとしてpushし同期0/0とCI成功を確認。デプロイ・本番確認は未実施。",
       "acceptance": [
         {
           "id": "checks",
@@ -522,14 +522,14 @@
       ],
       "authorization": "requested",
       "request_ref": "2026-10-27 この会話：大分類がすべての章の場合、小分類はすべての節しか選べないようにする依頼",
-      "next_action": "今回の修正はローカル反映・未コミット。並行する文化史文言の作業状態を保持し、追加依頼に従う",
+      "next_action": "ユーザー承認により他の未コミット実装・記録とともにf757a1eとしてorigin/mainへpush済み。旧コピー10件は手元に保持。新しい変更・公開は別の明示依頼を待つ。",
       "evidence": [
         "docs/verification.md",
         "docs/classification.md",
         "docs/screenshots/section-filter-no-chapter.jpg"
       ],
       "last_verified_at": "2026-10-26T19:45:21.014Z",
-      "verification_scope": "PC1440px・SP390pxで一般・管理の小分類候補数、無効状態、章選択・別章・全章復帰での節解除、管理検索を確認。一般は実画面、管理は読取専用合成応答で保存なし。設定・差分検査と独立レビュー成功。DB操作・重い全件検査・型検査・ビルド・コミット・pushは今回未実施。",
+      "verification_scope": "PC1440px・SP390pxで一般・管理の小分類候補数、無効状態、章選択・別章・全章復帰での節解除、管理検索を確認。一般は実画面、管理は読取専用合成応答で保存なし。設定・差分検査と独立レビュー成功。DB操作・重い全件検査・型検査・ビルド・コミット・pushは今回未実施。 実装時の検証後、ユーザー承認によりf757a1eとしてpushし同期0/0とCI成功を確認。デプロイ・本番確認は未実施。",
       "acceptance": [
         {
           "id": "dependent_selects",
@@ -573,16 +573,17 @@
       "id": "culture_changes_delivery",
       "context": "service",
       "title": "世界史ラボの全未コミット実装・記録のコミットとpush",
-      "status": "doing",
+      "status": "done",
       "depends_on": [],
       "request_ref": "2026-10-27 この会話：世界史ラボの未コミット分全部コミット・pushしてください",
       "authorization": "requested",
-      "next_action": "旧コピー10件を手元に残し、残りの全変更を[skip netlify]付きでコミット・pushし同期とCIを確認する。",
+      "next_action": "依頼された全変更は送信済み。新しい変更・公開は別の明示依頼を待つ。",
       "evidence": [
-        "docs/verification.md"
+        "docs/verification.md",
+        "docs/workflow/contexts/service.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "旧コピー10件の除外をユーザーが選択。全実装・未追跡ファイルの独立レビュー、設定・差分・原資料保護が成功。Docker内のフロント80件・独立DBのAPI/DB/運用73件が成功。Netlify未登録と既存プロジェクトの停止表示を現在確認。送信前。",
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "ユーザー指定の旧コピー10件を除く全46ファイルをf757a1eとしてorigin/mainへpushし同期差分0/0を確認。独立レビュー、設定・差分・原資料保護、Docker内フロント80件・独立DB API/DB/運用73件、pre-pushとGitHub Actionsが成功。Netlify未登録を現在確認し[skip netlify]を併用。デプロイ・本番確認は未実施。",
       "acceptance": [
         {
           "id": "checks",
@@ -612,15 +613,25 @@
           "kind": "automated",
           "description": "コミットをorigin/mainへ送信し同期差分0/0、デプロイ未実施を確認する",
           "verification": "Netlify現状確認、[skip netlify]、pre-push、pushとremote同期、自動検査結果を確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-27"
         }
       ],
       "execution": {
         "worker": "all_changes_delivery_owner",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "旧コピー10件の除外をユーザーが選択し、残る全46ファイルをf757a1eとしてorigin/mainへpush。同期0/0、独立レビュー、設定・差分・原資料保護、Dockerフロント80件・隔離DB API/DB/運用73件、pre-pushとGitHub Actionsが成功。デプロイ未実施。",
+            "at": "2026-10-26T20:04:53.332Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
