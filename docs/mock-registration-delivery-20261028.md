@@ -23,7 +23,7 @@
 
 ## 送信と残る範囲
 
-通常DBの11解説修正後も180問全件と全表不変の再検査が成功。関連ハーネス168件も成功。送信前の差分レビュー中。旧コピー10件は未追跡のまま保持し、原資料・分類表全文・問題草案・DB控えは送信対象外。履歴を含む私的資料保護検査と.githooks設定を確認する。
+通常DBの11解説修正後も180問全件と全表不変の再検査が成功。関連ハーネス168件も成功。92ファイルの独立レビューで未解決の指摘なし。`1e2b2230c27a3e64371f6f12048fa51fad27043b`をmainへ通常pushし、同期差分0/0を確認。[CI実行](https://github.com/misato729/world-history-practice/actions/runs/40575066363)はharness/verifyとも成功。資料保護・状態検査・設定・コンテナビルド・隔離DB・API/セキュリティ・フロント/型/本番ビルドを確認した。完了記録は後続の文書コミットへまとめる。旧コピー10件は未追跡のまま保持し、原資料・分類表全文・問題草案・DB控えは送信対象外。履歴を含む私的資料保護検査と.githooks設定を確認する。
 
 Netlifyのアクセス可能な一覧には世界史プロジェクトが存在せず、別サービスの停止表示だけを確認した。世界史の停止設定を確認済みとはせず、設定を変更しない。コミットには[skip netlify]を付ける。本番切替・デプロイは行わない。
 
@@ -127,3 +127,5 @@ Netlifyのアクセス可能な一覧には世界史プロジェクトが存在�
 | [frontend/tests/fixtures/essayRuleCases.ts](../frontend/tests/fixtures/essayRuleCases.ts) | 階層表示・論述採点・互換性の関連検査又は合成答案 |
 | [frontend/tests/groupedLearningPresentation.test.ts](../frontend/tests/groupedLearningPresentation.test.ts) | 階層表示・論述採点・互換性の関連検査又は合成答案 |
 | [docs/workflow/handoffs/2026-10-27T20-03-56-324Z-r116.json](../docs/workflow/handoffs/2026-10-27T20-03-56-324Z-r116.json) | 通常DB登録と検証の区切りを保存 |
+| [docs/workflow/handoffs/2026-10-27T20-09-19-375Z-r117.json](../docs/workflow/handoffs/2026-10-27T20-09-19-375Z-r117.json) | 登録・送信の最終評価と完了を記録 |
+| [docs/workflow/handoffs/2026-10-27T20-09-33-148Z-r118.json](../docs/workflow/handoffs/2026-10-27T20-09-33-148Z-r118.json) | 登録・送信の最終評価と完了を記録 |

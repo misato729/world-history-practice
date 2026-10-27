@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 116,
-  "updated_at": "2026-10-27T20:03:56.324Z",
+  "revision": 118,
+  "updated_at": "2026-10-27T20:09:33.148Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T20-03-56-324Z-r116.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T20-09-33-148Z-r118.json",
   "contexts": [
     {
       "id": "product",
@@ -2903,19 +2903,19 @@
       "id": "mock_registration_delivery_20261028",
       "context": "service",
       "title": "模擬試験6セット180問のDB登録と未コミット変更の送信",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "essay_rule_scoring_20261028",
         "mock_set06_draft_20261028"
       ],
       "authorization": "requested",
       "request_ref": "2026-10-28 ユーザー: コミット・push、DB登録。追答: 6セット180問をまとめて登録（論述12問を含み既存8問保持）。Netlify再開・デプロイ指示なし。",
-      "next_action": "レビュー後commit/push・CIを確認する",
+      "next_action": "本依頼は完了。デプロイなし。合計得点画面は仕様段階、追加依頼時に実装する。",
       "evidence": [
         "docs/mock-registration-delivery-20261028.md"
       ],
-      "last_verified_at": "2026-10-27T20:03:54.186Z",
-      "verification_scope": "通常ローカルDB6セット180/480、全件採点/正答秘匿/旧8/G1/対象外/反復全表不変、PC1440/SP390/320、front358(分割)/型/build、ハーネス168。送信レビュー/commit/push/CIは未完。",
+      "last_verified_at": "2026-10-27T20:09:18.466Z",
+      "verification_scope": "通常ローカルDB6セット24大問180/480、120選択48語句12論述、旧8/G1/対象外保持、全件原稿比較・正答秘匿・模範採点・反復全16表不変。PC1440/SP390/320、front358(分割)/型/build、harness168、独立レビュー合格。1e2b223通常pushとremote同期0/0、CI40575066363全工程成功。Netlify設定変更/デプロイなし。",
       "acceptance": [
         {
           "id": "registration",
@@ -2944,19 +2944,25 @@
           "kind": "automated",
           "description": "承認範囲を保護して通常pushしCIを確認",
           "verification": "NUL区切り明示stage、履歴含む私的資料検査、旧コピー除外、skip netlify、remoteSHA/差分/CI",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/mock-registration-delivery-20261028.md"
+          ],
+          "checked_at": "2026-10-27T20:09:18.466Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "登録と送信の別担当レビュー",
           "verification": "変換/既存保持/公開180件とstage差分を独立確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-registration-20261028/worker-independent-review.md",
+            "local-only/mock-registration-20261028/staged-independent-review.md",
+            "docs/mock-registration-delivery-20261028.md"
+          ],
+          "checked_at": "2026-10-27T20:07:07.573Z",
+          "reviewer": "registration_audit + delivery_review"
         }
       ],
       "execution": {
@@ -3010,6 +3016,13 @@
               "delivery",
               "review"
             ]
+          },
+          {
+            "number": 5,
+            "outcome": "passed",
+            "summary": "最終評価: 6セット180問登録・旧8保持・全件/反復/画面/関連検査/独立レビュー合格。1e2b223通常push、同期0/0、CI40575066363全工程成功。",
+            "at": "2026-10-27T20:09:19.375Z",
+            "failed_criteria": []
           }
         ]
       }
