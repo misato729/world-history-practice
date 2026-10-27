@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 71,
-  "updated_at": "2026-10-27T13:50:00.159Z",
+  "revision": 116,
+  "updated_at": "2026-10-27T20:03:56.324Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T13-50-00-159Z-r71.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T20-03-56-324Z-r116.json",
   "contexts": [
     {
       "id": "product",
@@ -84,7 +84,16 @@
     "frontend/app/utils/practicePassageState.ts",
     "frontend/tests/practicePassageState.test.ts",
     "docs/interaction-and-content-update-20261027.md",
-    "docs/grouped-changes-delivery-20261027.md"
+    "docs/grouped-changes-delivery-20261027.md",
+    "frontend/app/components/ExamSidebar.vue",
+    "frontend/app/utils/examCatalog.ts",
+    "frontend/app/utils/practiceSequence.ts",
+    "frontend/tests/catalogExamNavigation.test.ts",
+    "frontend/tests/examSidebarLayout.test.ts",
+    "frontend/tests/groupedLearningPresentation.test.ts",
+    "docs/mock-exam-hierarchy-20261027.md",
+    "docs/architecture.md",
+    "docs/customization.md"
   ],
   "tasks": [
     {
@@ -1980,6 +1989,1027 @@
             "summary": "94件の通常pushとSHA同期、旧コピー保持、全履歴保護・168軽量・独立review、対象CIの全20step成功を確認",
             "at": "2026-10-27T13:49:58.741Z",
             "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_exam_hierarchy_ui",
+      "context": "service",
+      "title": "模擬試験→大問→小問の階層でサイドバー・見出し・条件を整理",
+      "status": "done",
+      "depends_on": [
+        "grouped_questions_implementation",
+        "persistent_shared_passage",
+        "favorite_classification_position"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 模擬試験n→4大問→7/8小問で計30。sidebarは模擬試験nを開閉し大問m＋titleだけ、body h1も大問m＋title、条件から小問を除き模擬試験指定。追答: 表示/導線先行、残り22問は後で作成。配点参考案訂正: 選択3点×20/記述3点×8/論述8点×2で30問100点。公式配点とは扱わない。",
+      "next_action": "今回の表示/導線は完了。残り3大問22問、コミット/push/公開はそれぞれの明示依頼を待つ",
+      "evidence": [
+        "docs/mock-exam-hierarchy-20261027.md",
+        "local-only/mock-exam-hierarchy-20261027/verification.md",
+        "local-only/mock-exam-hierarchy-20261027/review.md",
+        "local-only/mock-exam-hierarchy-20261027/preservation.json"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "106フロント/型/最終build/3SFC/独立source+CSS review。通常8問と合成4大問30問を分けてPC1440/SP390/320でsidebar/h1/条件/大問境界/終了/ランダム/0件/旧URL/複数mockを確認。星位置/本文保持/参照を保持。通常DB全問題と非rate tables/旧コピー10件一致。合成_testだけ片付け、実問/score/本番変更なし。",
+      "acceptance": [
+        {
+          "id": "logic",
+          "kind": "automated",
+          "description": "親mockから全公開小問へ開始/継続しsidebarは実在大問だけ表示、旧小問指定URLは互換を保つ",
+          "verification": "純粋catalog/sequence検査、フロント全件/型/build順次、サーバー公開catalogと30問順序は隔離合成で確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-exam-hierarchy-20261027/frontend-tests.log",
+            "local-only/mock-exam-hierarchy-20261027/typecheck.log",
+            "local-only/mock-exam-hierarchy-20261027/build.log",
+            "local-only/mock-exam-hierarchy-20261027/sfc-check.log",
+            "local-only/mock-exam-hierarchy-20261027/api-check.json",
+            "local-only/mock-exam-hierarchy-20261027/source-check-final.json"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "sidebar親=模擬試験n、子=大問m＋titleで小問なし。h1と条件も指定どおり、PC/SPの既存操作と0件/アクセスを維持",
+          "verification": "通常8問と隔離合成4大問30問を区別しPC1440/SP390/320、開閉/開始/大問境界/条件/ランダム/0件/参照/入力/星を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-exam-hierarchy-20261027/verification.md",
+            "local-only/mock-exam-hierarchy-20261027/ui-checks.json",
+            "local-only/mock-exam-hierarchy-20261027/live-measurements.json",
+            "local-only/mock-exam-hierarchy-20261027/conditions.json",
+            "local-only/mock-exam-hierarchy-20261027/preservation.json"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外が構成/公開順/対象外保持/配点の出典境界をレビュー",
+          "verification": "rootとgroup_data_auditの独立レビュー、DB/原資料/旧コピー保持の確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-exam-hierarchy-20261027/review.md",
+            "local-only/mock-exam-hierarchy-20261027/data-audit.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "group_data_audit"
+        }
+      ],
+      "execution": {
+        "worker": "implement_admin/implement_practice/root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "106件/型/build/API30問と独立ソースレビュー成功。実データPCの長い大問名で末尾1字だけ折返すため見出し幅を再調整する",
+            "at": "2026-10-27T14:26:41.009Z",
+            "failed_criteria": [
+              "logic",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "106件/型/最終buildと実8問PCSP・合成30問全API/大問境界/条件/旧URL、保持比較と独立最終レビューが合格",
+            "at": "2026-10-27T14:42:54.336Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "continued_mock_authoring_20261027",
+      "context": "product",
+      "title": "現行利用枠内で模擬試験草案を継続作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 表示整理後、現在の利用枠が尽きるまで作問継続（クレジット不使用）。各set2大問は時事、リード1本も可、論述は問題/解答まで。set終了時得点表示仕様とAI API以外の論述採点案。",
+      "next_action": "ユーザーの確認待ち。追加作業・再開・DB登録・外部送信を自動実行しない。",
+      "evidence": [
+        "local-only/mock-authoring-20261027/README.md",
+        "local-only/mock-authoring-20261027/verification.md",
+        "local-only/mock-authoring-20261027/final-audit.json",
+        "local-only/mock-authoring-20261027/delivery-check.json",
+        "local-only/mock-authoring-20261027/usage-observations.json",
+        "docs/mock-score-display-spec-20261027.md"
+      ],
+      "last_verified_at": "2026-10-27T17:57:45.066Z",
+      "verification_scope": "ローカル草案6セット180問（新172＋既存8）、各20選択/8語句/2論述と時事2大問、24大問の作問者外原典レビュー、全480肢・短答48・論述12・参照先340・冊子/ハッシュの集計検査。得点表示仕様を別担当レビュー済み。利用枠は73→93％消費、クレジット残高は観測中不変、0を狙わず停止。DB投入・公開・コミット/push/deployなし。",
+      "acceptance": [
+        {
+          "id": "outputs",
+          "kind": "automated",
+          "description": "完成/未完成の各セットと原典照合/課題を区別して保存",
+          "verification": "セット別gateと一覧/件数/時事2テーマ/確認範囲を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/final-audit.json",
+            "local-only/mock-authoring-20261027/README.md",
+            "local-only/mock-authoring-20261027/verification.md"
+          ],
+          "checked_at": "2026-10-27T17:57:45.066Z"
+        },
+        {
+          "id": "quota",
+          "kind": "automated",
+          "description": "クレジットを使わず現在の含み枠内で継続し停止条件を記録",
+          "verification": "usage toolを定期確認し90%新分担抑制/95%停止、balanceの増減と最終状態を非公開記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/usage-observations.json",
+            "local-only/mock-authoring-20261027/run-policy.json"
+          ],
+          "checked_at": "2026-10-27T17:57:45.066Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が完成セット/制約/出力を確認",
+          "verification": "セット単位の独立レビューを確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-01/verification.md",
+            "local-only/mock-authoring-20261027/set-02/verification.md",
+            "local-only/mock-authoring-20261027/set-03/verification.md",
+            "local-only/mock-authoring-20261027/set-04/verification.md",
+            "local-only/mock-authoring-20261027/set-05/verification.md",
+            "local-only/mock-authoring-20261027/set-06/verification.md",
+            "local-only/mock-authoring-20261027/scoring-spec-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T17:57:45.066Z",
+          "reviewer": "scoring_spec_author / author_set01_g2 / author_set01_g3 / root（各大問で作問者以外を配置、24大問の現行JSONまで確認）"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "ローカル草案6セット180問（新172＋既存8）と得点表示仕様を完成。24大問の作問者外原典レビュー、最終集計・全参照・冊子検査を通過。最終枠93％消費、残高不変、課金切替を避け終了。",
+            "at": "2026-10-27T17:57:45.390Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set01_draft_20261027",
+      "context": "product",
+      "title": "既存8問を保ち模擬試験1の残22問草案を完成",
+      "status": "done",
+      "depends_on": [
+        "difficult_short_answers",
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 表示整理後、現在の利用枠が尽きるまで作問継続（クレジット不使用）。各set2大問は時事、リード1本も可、論述は問題/解答まで。set終了時得点表示仕様とAI API以外の論述採点案。",
+      "next_action": "現行利用枠を監視しつつ模擬試験2以降の作問を継続する",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-01/問題.md",
+        "local-only/mock-authoring-20261027/set-01/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-01/verification.md",
+        "local-only/mock-authoring-20261027/set-01/manifest.json",
+        "local-only/mock-authoring-20261027/set-01/format-check.json"
+      ],
+      "last_verified_at": "2026-10-27T15:24:28.108Z",
+      "verification_scope": "4大問30問/20択8語句2論述/時事2。80肢、短答①②/表記/非露出、論述字数/参考8点、全問根拠と作者外レビュー、旧8問保持を確認。ローカル草案だけでDB/公開未変更。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問/20択8語句2論述/時事2大問、旧8問は内容保全",
+          "verification": "独自JSON構造/全肢正答数/表示原稿/字数/旧稿一致を検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-01/format-check.json",
+            "local-only/mock-authoring-20261027/set-01/manifest.json",
+            "local-only/mock-authoring-20261027/set-01/verification.md"
+          ],
+          "checked_at": "2026-10-27T15:24:28.108Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全問・全肢・解説・模範解答・頻度の原典照合記録と確認済み時事資料が揃う",
+          "verification": "自動は全件の参照充足と書誌分離を検査し、史実と原典一致は作者の原画像確認および別担当の独立レビューで確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-01/verification.md",
+            "local-only/mock-authoring-20261027/set-01/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T15:24:28.108Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-01/verification.md",
+            "local-only/mock-authoring-20261027/set-01/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-01/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T15:24:28.108Z",
+          "reviewer": "G1/G4: scoring_spec_author; G2: author_set01_g3; G3: author_set01_g2"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回原稿の補助説明・短答表記と字数・セット内判断点の重複を独立/統合レビューで検出した記録",
+            "at": "2026-10-27T15:23:39.069Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "修正後の全30問を原典・独立レビュー・形式・旧8問保持で再評価し合格",
+            "at": "2026-10-27T15:24:28.590Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_scoring_spec_20261027",
+      "context": "service",
+      "title": "模擬試験終了時の点数表示と論述採点候補の仕様",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 表示整理後、現在の利用枠が尽きるまで作問継続（クレジット不使用）。各set2大問は時事、リード1本も可、論述は問題/解答まで。set終了時得点表示仕様とAI API以外の論述採点案。",
+      "next_action": "模試1の統合確認を締め、模試2以降の作問と利用枠監視を継続",
+      "evidence": [
+        "docs/mock-score-display-spec-20261027.md",
+        "local-only/mock-authoring-20261027/scoring-spec-review.md",
+        "local-only/mock-authoring-20261027/scoring-spec-independent-review.md"
+      ],
+      "last_verified_at": "2026-10-27T15:20:36.845Z",
+      "verification_scope": "仕様全文/現行コード/100・84・24・69・82・82.1%・67字を検算。ETS一次資料/独立レビュー。実装・DB・画面は未変更。",
+      "acceptance": [
+        {
+          "id": "spec",
+          "kind": "automated",
+          "description": "配点参考案・完了条件・部分/未採点・試行/版/再回答の扱いを具体化",
+          "verification": "現行コード差分/成立条件/画面例/点数計算例/保留範囲を文書で検査",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-score-display-spec-20261027.md",
+            "local-only/mock-authoring-20261027/scoring-spec-review.md",
+            "local-only/mock-authoring-20261027/scoring-spec-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T15:20:36.845Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が実装済みと提案・公式と仮定・論述候補を点検",
+          "verification": "root又は独立担当が仕様と例をレビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-score-display-spec-20261027.md",
+            "local-only/mock-authoring-20261027/scoring-spec-review.md",
+            "local-only/mock-authoring-20261027/scoring-spec-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T15:20:36.845Z",
+          "reviewer": "root (spec author: scoring_spec_author)"
+        }
+      ],
+      "execution": {
+        "worker": "scoring_spec_author",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "得点表示仕様の現行コード照合・計算・一次資料・独立レビューが合格",
+            "at": "2026-10-27T15:21:19.026Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set02_draft_20261028",
+      "context": "product",
+      "title": "模擬試験2の新規30問草案を原典照合付きで作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27〜28 ユーザー: 現行利用枠内でクレジット不使用の継続作問。各セット4大問30問/時事2大問/論述問題と解答まで。",
+      "next_action": "模試3と4を継続作成。DB投入と公開は行わない",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-02/問題.md",
+        "local-only/mock-authoring-20261027/set-02/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-02/verification.md",
+        "local-only/mock-authoring-20261027/set-02/manifest.json",
+        "local-only/mock-authoring-20261027/set-02/format-check.json"
+      ],
+      "last_verified_at": "2026-10-27T16:20:00.353Z",
+      "verification_scope": "全新規4大問30問/20択8語句2論述/時事2。80肢と各補助説明、語句①②/表記正規化/非露出、論述88/100と99/120字/参考8点、全問根拠と作問者外レビュー。DB/公開未変更。 追加年代整序検査の失敗を保存し誤答1肢のみ修正後再検査、全て合格。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問（8/7/8/7）、20択8語句2論述、時事2大問、全て独自の問題文",
+          "verification": "作問JSONの全件/全肢/正答数/字数/公開書誌と私的根拠/全冊子を検査。年代整序の列多数決と大問間の正答列一致も検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-02/format-check.json",
+            "local-only/mock-authoring-20261027/set-02/verification.md"
+          ],
+          "checked_at": "2026-10-27T16:20:00.353Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全問・全肢・解説・模範解答・頻度の原典照合記録と確認済み時事資料が揃う",
+          "verification": "自動は全件の参照充足と書誌分離、史実と原典一致は作者と別担当の原画像目視で確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-02/verification.md",
+            "local-only/mock-authoring-20261027/set-02/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T16:20:00.353Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-02/verification.md",
+            "local-only/mock-authoring-20261027/set-02/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-02/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T16:20:00.353Z",
+          "reviewer": "G1: author_set01_g3; G2/G3: root; G4: author_set01_g2"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回レビューで語句許容形のNFKC後重複を検出した記録を保持",
+            "at": "2026-10-27T15:55:30.456Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "修正後の模試2全30問が形式・原典・独立レビュー・非露出で合格",
+            "at": "2026-10-27T15:56:23.256Z",
+            "failed_criteria": []
+          },
+          {
+            "number": 3,
+            "outcome": "failed",
+            "summary": "拡張した列多数決検査で模試2G4の年代整序1問の配置上の手掛かりを検出",
+            "at": "2026-10-27T16:12:46.845Z",
+            "failed_criteria": [
+              "format"
+            ]
+          },
+          {
+            "number": 4,
+            "outcome": "passed",
+            "summary": "年代整序の配置を修正し別担当の原典再照合と拡張形式検査が合格",
+            "at": "2026-10-27T16:20:01.216Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set03_draft_20261028",
+      "context": "product",
+      "title": "模擬試験3の新規30問草案を原典照合付きで作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27〜28 ユーザー: 現行利用枠内でクレジット不使用の継続作問。各セット4大問30問/時事2大問/論述問題と解答まで。",
+      "next_action": "模試4と5を継続、DB/公開は変更しない",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-03/問題.md",
+        "local-only/mock-authoring-20261027/set-03/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-03/verification.md",
+        "local-only/mock-authoring-20261027/set-03/manifest.json",
+        "local-only/mock-authoring-20261027/set-03/format-check.json"
+      ],
+      "last_verified_at": "2026-10-27T16:27:49.597Z",
+      "verification_scope": "全新規4大問30問/20択8語句2論述/時事2。80肢と全説明・語句①②/字数/非露出・論述107/120と117/120字/参考8点・全4大問作問者外の原画像レビュー。DB/公開未変更。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問（8/7/8/7）、20択8語句2論述、時事2大問、全て独自の問題文",
+          "verification": "作問JSONの全件/全肢/正答数/字数/公開書誌と私的根拠/全冊子を検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-03/verification.md",
+            "local-only/mock-authoring-20261027/set-03/format-check.json"
+          ],
+          "checked_at": "2026-10-27T16:27:49.597Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全手掛かり/全肢/解説/模範解答/頻度を原典と確認済み時事資料で照合",
+          "verification": "自動は全件参照と書誌分離。史実は全肢・手掛かり・訂正・モデルを作者と別担当が原画像実読で照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-03/verification.md",
+            "local-only/mock-authoring-20261027/set-03/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T16:27:49.597Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-03/verification.md",
+            "local-only/mock-authoring-20261027/set-03/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-03/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T16:27:49.597Z",
+          "reviewer": "G1/G2: author_set01_g3; G3: author_set01_g2; G4: root"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回独立点検で造営対象の曖昧さ・解答露出・年代整序の手掛かり・航海法の範囲を指摘した記録を保存",
+            "at": "2026-10-27T16:26:55.497Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "模試3全30問の原典再照合・独立レビュー・形式と非露出検査が合格",
+            "at": "2026-10-27T16:27:51.379Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set04_draft_20261028",
+      "context": "product",
+      "title": "模擬試験4の新規30問草案を原典照合付きで作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27〜28 ユーザー: 現行利用枠内でクレジット不使用の継続作問。各セット4大問30問/時事2大問/論述問題と解答まで。",
+      "next_action": "模試5/6の全問と独立レビューを仕上げる",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-04/問題.md",
+        "local-only/mock-authoring-20261027/set-04/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-04/manifest.json",
+        "local-only/mock-authoring-20261027/set-04/verification.md"
+      ],
+      "last_verified_at": "2026-10-27T17:10:35.042Z",
+      "verification_scope": "4大問7/8/7/8・新30問20択8語句2論述・時事2。全80肢と短答/論述原典、作者外レビュー、修正後書誌/参照/非露出/字数/正答列検査。DB未変更。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問（各7又は8問）、20択8語句2論述、時事2大問、全て独自の問題文",
+          "verification": "作問JSONの全件/全肢/正答数/字数/公開書誌と私的根拠/全冊子を検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-04/format-check.json",
+            "local-only/mock-authoring-20261027/set-04/verification.md",
+            "local-only/mock-authoring-20261027/set-04/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:10:35.042Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全手掛かり/全肢/解説/模範解答/頻度を原典と確認済み時事資料で照合",
+          "verification": "PDF原画像と版/通し頁/独立した公開書誌、時事URL/公表日/確認日を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-04/format-check.json",
+            "local-only/mock-authoring-20261027/set-04/verification.md",
+            "local-only/mock-authoring-20261027/set-04/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:10:35.042Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-04/format-check.json",
+            "local-only/mock-authoring-20261027/set-04/verification.md",
+            "local-only/mock-authoring-20261027/set-04/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-04/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T17:10:35.042Z",
+          "reviewer": "independent authors/root rotation"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回独立点検で規制範囲の一般化・論述の必要年齢条件・根拠アンカーの不足を検出した記録を保存",
+            "at": "2026-10-27T16:59:10.829Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "綿布規制/年齢条件等を修正して全30問を再照合。HTMLアンカーは資料欠落でなく検査器対応不足だったと訂正。4独立レビューと統合検査合格",
+            "at": "2026-10-27T17:10:35.287Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set05_draft_20261028",
+      "context": "product",
+      "title": "模擬試験5の新規30問草案を原典照合付きで作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27〜28 ユーザー: 現行利用枠内でクレジット不使用の継続作問。各セット4大問30問/時事2大問/論述問題と解答まで。",
+      "next_action": "作成中の模試6の原典独立レビューと統合検査を仕上げる",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-05/問題.md",
+        "local-only/mock-authoring-20261027/set-05/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-05/manifest.json",
+        "local-only/mock-authoring-20261027/set-05/verification.md"
+      ],
+      "last_verified_at": "2026-10-27T17:26:08.506Z",
+      "verification_scope": "4大問8/7/8/7新30問20択8語句2論述。時事2、全80肢/短答/モデル原典照合、説明文内語句を親頻度と区別、独立修正再評価/統合検査。DB未反映。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問（各7又は8問）、20択8語句2論述、時事2大問、全て独自の問題文",
+          "verification": "作問JSONの全件/全肢/正答数/字数/公開書誌と私的根拠/全冊子を検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-05/format-check.json",
+            "local-only/mock-authoring-20261027/set-05/verification.md",
+            "local-only/mock-authoring-20261027/set-05/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:26:08.506Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全手掛かり/全肢/解説/模範解答/頻度を原典と確認済み時事資料で照合",
+          "verification": "PDF原画像と版/通し頁/独立した公開書誌、時事URL/公表日/確認日を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-05/format-check.json",
+            "local-only/mock-authoring-20261027/set-05/verification.md",
+            "local-only/mock-authoring-20261027/set-05/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:26:08.506Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-05/format-check.json",
+            "local-only/mock-authoring-20261027/set-05/verification.md",
+            "local-only/mock-authoring-20261027/set-05/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-05/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T17:26:08.506Z",
+          "reviewer": "independent authors/root rotation"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "独立原典レビューでコロヌス従属の未確認年代補足と、ゴンパーズの政治活動を一律否定しうる手掛かりを検出し記録",
+            "at": "2026-10-27T17:14:26.528Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "独立4指摘を修正し全原典と30問を再点検。説明文内人名/親頻度を区別、全4独立レビュー/相互非露出/統合検査合格",
+            "at": "2026-10-27T17:26:09.538Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_set06_draft_20261028",
+      "context": "product",
+      "title": "模擬試験6の新規30問草案を原典照合付きで作成",
+      "status": "done",
+      "depends_on": [
+        "mock_exam_hierarchy_ui"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27〜28 ユーザー: 現行利用枠内でクレジット不使用の継続作問。各セット4大問30問/時事2大問/論述問題と解答まで。",
+      "next_action": "6セット180問の最終集計、変更一覧、残枠・クレジット保護の最終確認を行う。",
+      "evidence": [
+        "local-only/mock-authoring-20261027/set-06/問題.md",
+        "local-only/mock-authoring-20261027/set-06/解答と解説.md",
+        "local-only/mock-authoring-20261027/set-06/manifest.json",
+        "local-only/mock-authoring-20261027/set-06/verification.md"
+      ],
+      "last_verified_at": "2026-10-27T17:44:58.402Z",
+      "verification_scope": "4大問8/7/8/7新30問20択8語句2論述。時事2、全80肢/短答/論述原典と作者外レビュー、修正後統合/非露出/字数/参照検査合格。DB未反映。",
+      "acceptance": [
+        {
+          "id": "format",
+          "kind": "automated",
+          "description": "4大問30問（各7又は8問）、20択8語句2論述、時事2大問、全て独自の問題文",
+          "verification": "作問JSONの全件/全肢/正答数/字数/公開書誌と私的根拠/全冊子を検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-06/format-check.json",
+            "local-only/mock-authoring-20261027/set-06/verification.md",
+            "local-only/mock-authoring-20261027/set-06/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:44:58.402Z"
+        },
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "全手掛かり/全肢/解説/模範解答/頻度を原典と確認済み時事資料で照合",
+          "verification": "PDF原画像と版/通し頁/独立した公開書誌、時事URL/公表日/確認日を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-06/format-check.json",
+            "local-only/mock-authoring-20261027/set-06/verification.md",
+            "local-only/mock-authoring-20261027/set-06/group-01-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-02-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-03-source-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-04-source-review.md"
+          ],
+          "checked_at": "2026-10-27T17:44:58.402Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作問者以外が全問の史実/一意性/説明/配分を点検",
+          "verification": "分担間の独立原典レビュー＋rootの統合確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-authoring-20261027/set-06/format-check.json",
+            "local-only/mock-authoring-20261027/set-06/verification.md",
+            "local-only/mock-authoring-20261027/set-06/group-01-independent-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-02-independent-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-03-independent-review.md",
+            "local-only/mock-authoring-20261027/set-06/group-04-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T17:44:58.402Z",
+          "reviewer": "independent authors/root rotation"
+        }
+      ],
+      "execution": {
+        "worker": "root/authors",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回独立レビューで人口問題の論理的不自然な誤文と、海戦整序の既存2判断反復を検出し修正記録を保持",
+            "at": "2026-10-27T17:32:01.837Z",
+            "failed_criteria": [
+              "format",
+              "sources",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "初回4指摘を修正・原典再照合し全4独立レビューと30問統合検査合格。時事2/20択8語句2論述、冊子とmanifest保存",
+            "at": "2026-10-27T17:44:59.129Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "essay_rule_scoring_20261028",
+      "context": "service",
+      "title": "作成済み12論述の非AI要素採点ルールと通常演習対応",
+      "status": "done",
+      "depends_on": [
+        "mock_scoring_spec_20261027"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28 ユーザー: 作成済み論述12問の非AI要素別採点ルールを作り検証し実装。追答: 通常演習の論述採点機能と12問ルールまで、問題DB登録は後。",
+      "next_action": "ユーザー確認待ち。実答案での精度測定・12問DB登録・模試合計結果は自動着手しない。",
+      "evidence": [
+        "docs/essay-rule-scoring-20261028.md",
+        "local-only/essay-scoring-20261028/verification.md",
+        "local-only/essay-scoring-20261028/checks-final.json",
+        "local-only/essay-scoring-20261028/normal-preservation.json"
+      ],
+      "last_verified_at": "2026-10-27T19:29:08.102Z",
+      "verification_scope": "12プロフィール53要素、230合成答案、12元モデル8点と原稿不変。フロント358/隔離server86/最終essay統合3、型/build、実HTTP12モデル/権限/秘匿/再送/保留、PC1440/SP390/320、管理の選択/版/プレビュー/反復保存/履歴復元を確認。4領域の実装担当外レビュー合格。通常DB007のみ適用し既存8問24肢/関係保持と再適用無変化。12問登録・合計結果画面・実答案精度・送信/公開は未実施。",
+      "acceptance": [
+        {
+          "id": "rules",
+          "kind": "automated",
+          "description": "12問53要素の参考配点と許容/逆転/否定/未知を判定",
+          "verification": "全モデル8点、各問の正例/変形/誤答/保留例を軽量テストし、元問題は不変",
+          "status": "passed",
+          "evidence": [
+            "local-only/essay-scoring-20261028/profiles-independent-check.json",
+            "local-only/essay-scoring-20261028/profile-preservation.json",
+            "local-only/essay-scoring-20261028/frontend-tests-final-current.log"
+          ],
+          "checked_at": "2026-10-27T19:29:08.102Z"
+        },
+        {
+          "id": "integration",
+          "kind": "automated",
+          "description": "通常演習のessay入力・採点・履歴/管理・保護を統合",
+          "verification": "独立_testDBで新SQL/公開前秘匿/認証/版/再送/再読込/Writer/旧形式互換を検証",
+          "status": "passed",
+          "evidence": [
+            "local-only/essay-scoring-20261028/checks-final.json",
+            "local-only/essay-scoring-20261028/api-check.json",
+            "local-only/essay-scoring-20261028/normal-preservation.json"
+          ],
+          "checked_at": "2026-10-27T19:29:08.102Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPの入力と要素別結果・保留が使える",
+          "verification": "フロント/型/buildを順実行しPC1440/SP390/320の実操作",
+          "status": "passed",
+          "evidence": [
+            "local-only/essay-scoring-20261028/ui-checks.json",
+            "local-only/essay-scoring-20261028/checks-final.json"
+          ],
+          "checked_at": "2026-10-27T19:29:08.102Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装者以外がルール・誤判定と統合差分を確認",
+          "verification": "独立レビューと必要修正の再確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/essay-scoring-20261028/engine-independent-review.md",
+            "local-only/essay-scoring-20261028/profiles-independent-review.md",
+            "local-only/essay-scoring-20261028/backend-independent-review.md",
+            "local-only/essay-scoring-20261028/ui-independent-review.md"
+          ],
+          "checked_at": "2026-10-27T19:29:08.102Z",
+          "reviewer": "essay_backend（engine）/ essay_engine（profiles・UI）/ essay_profiles（backend）：それぞれ作成者と異なる担当"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "隔離DBサーバー86件成功。フロント355件中354成功、HTTPS依存検査1件はローカルポート権限制限で失敗。テストを変更せず許可した環境で再検証し、型/build/PCSPを続ける。",
+            "at": "2026-10-27T19:02:33.451Z",
+            "failed_criteria": [
+              "rules",
+              "integration",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "12論述53要素の非AI採点を通常演習/管理/履歴へ実装。230合成答案・12元モデル8点、front358/server86/最終essay3・型/build・実API/PCSP・担当外レビューを確認。通常DB007のみ適用、既存8問24肢保持。",
+            "at": "2026-10-27T19:29:09.247Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_registration_delivery_20261028",
+      "context": "service",
+      "title": "模擬試験6セット180問のDB登録と未コミット変更の送信",
+      "status": "doing",
+      "depends_on": [
+        "essay_rule_scoring_20261028",
+        "mock_set06_draft_20261028"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28 ユーザー: コミット・push、DB登録。追答: 6セット180問をまとめて登録（論述12問を含み既存8問保持）。Netlify再開・デプロイ指示なし。",
+      "next_action": "レビュー後commit/push・CIを確認する",
+      "evidence": [
+        "docs/mock-registration-delivery-20261028.md"
+      ],
+      "last_verified_at": "2026-10-27T20:03:54.186Z",
+      "verification_scope": "通常ローカルDB6セット180/480、全件採点/正答秘匿/旧8/G1/対象外/反復全表不変、PC1440/SP390/320、front358(分割)/型/build、ハーネス168。送信レビュー/commit/push/CIは未完。",
+      "acceptance": [
+        {
+          "id": "registration",
+          "kind": "automated",
+          "description": "6セット各4大問30問/20選択8語句2論述を登録し既存8を保持",
+          "verification": "原稿との全件比較、公開検査、172追加/480選択肢、既存ID内容日時/本文/履歴お気に入り、同一操作反復を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-registration-delivery-20261028.md"
+          ],
+          "checked_at": "2026-10-27T20:03:54.186Z"
+        },
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "設定と実API/PCSPを確認",
+          "verification": "set_count6、主/関連分類整合、正答秘匿/論述採点、front/型/build/隔離DBを変更に応じ順実行",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-registration-delivery-20261028.md"
+          ],
+          "checked_at": "2026-10-27T20:03:54.186Z"
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "承認範囲を保護して通常pushしCIを確認",
+          "verification": "NUL区切り明示stage、履歴含む私的資料検査、旧コピー除外、skip netlify、remoteSHA/差分/CI",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "登録と送信の別担当レビュー",
+          "verification": "変換/既存保持/公開180件とstage差分を独立確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "隔離DB初回: 草案scriptとDB列挙値の不一致。通常DB未変更、rollbackを確認。変換へ対応付けを追加。",
+            "at": "2026-10-27T19:52:52.007Z",
+            "failed_criteria": [
+              "registration",
+              "checks",
+              "delivery",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "隔離DB第2回: 草案の一部出典確認日がISO日時で日付validatorと不一致。rollback後、全出典を元日時の日付へ対応付け。172件入力検査と55許容表記検査は成功。",
+            "at": "2026-10-27T19:53:02.532Z",
+            "failed_criteria": [
+              "registration",
+              "checks",
+              "delivery",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "failed",
+            "summary": "画面確認で11論述の解説に草案時点の自動採点未実装という文末が残存。歴史記述・モデルを変えず現況の参考採点へ更新する。",
+            "at": "2026-10-27T20:00:29.148Z",
+            "failed_criteria": [
+              "registration",
+              "checks",
+              "delivery",
+              "review"
+            ]
+          },
+          {
+            "number": 4,
+            "outcome": "failed",
+            "summary": "限定修正の隔離検証でJSONキー順を内容差と誤認する検査に失敗しrollback。深い内容比較へ修正。フロントの接続環境制限は許可後の対象再実行で成功。",
+            "at": "2026-10-27T20:00:30.279Z",
+            "failed_criteria": [
+              "registration",
+              "checks",
+              "delivery",
+              "review"
+            ]
           }
         ]
       }

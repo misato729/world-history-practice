@@ -2,6 +2,10 @@ import type { ExamConfiguration, CulturalHistoryCategoryCode } from '../../share
 import type { AnswerType, LearningBlock, InputConstraints, SourceReference, TopicLink, PassageReference, PassageInline } from '../../shared/types/learning.ts'
 import { configuration } from '../core/config.ts'
 import { fail } from '../core/errors.ts'
+import type { EssayQuestionConfig } from '../../shared/types/essay.ts'
+import { gradeEssay } from './essay-scoring.ts'
+import { getEssayRuleProfile } from '../data/essay-rule-profiles.ts'
+import { essayProfileDigest, hasUnsupportedEssayCharacters } from './essay-profile.ts'
 export type Block = LearningBlock
 export type ChoiceInput = { id?: number; choice_label: string; content_blocks: Block[]; is_correct: boolean; display_order: number }
 export type QuestionInput = {
@@ -9,12 +13,12 @@ export type QuestionInput = {
   is_cultural_history: boolean; is_art_history: boolean; cultural_history_category: CulturalHistoryCategoryCode | null
   publication_status: string; content_blocks: Block[]; explanation_blocks: Block[]; source_text: string | null; choices: ChoiceInput[]
   group_id?: number | null; group_question_number?: number | null; answer_type?: AnswerType
-  accepted_answers?: string[]; input_constraints?: InputConstraints; related_topics?: TopicLink[]
+  accepted_answers?: string[]; input_constraints?: InputConstraints; essay_config?: EssayQuestionConfig | Record<string, never>; related_topics?: TopicLink[]
   source_references?: SourceReference[]; passage_references?: PassageReference[]; lock_version?: number
 }
 export type NormalizedQuestionInput = QuestionInput & {
   group_id: number | null; group_question_number: number | null; answer_type: AnswerType
-  accepted_answers: string[]; input_constraints: InputConstraints; related_topics: TopicLink[]
+  accepted_answers: string[]; input_constraints: InputConstraints; essay_config: EssayQuestionConfig | Record<string, never>; related_topics: TopicLink[]
   source_references: SourceReference[]; passage_references: PassageReference[]
 }
 export type BlockContext = 'question' | 'explanation' | 'choice'
@@ -142,6 +146,24 @@ export function checkTextConstraints(value:string,rules:InputConstraints):boolea
     &&(rules.script!=='kanji'||/^[\p{Script=Han}々〇]+$/u.test(text))
     &&(rules.script!=='katakana'||/^[\p{Script=Katakana}ー・＝=\s]+$/u.test(text))
 }
+export function validateEssayConfig(value:unknown,answerType:AnswerType,published=false):EssayQuestionConfig|Record<string,never> {
+  const raw=value??{}
+  if(!record(raw))return invalid('論述の採点設定を確認してください')
+  if(answerType!=='essay'){
+    if(Object.keys(raw).length)return invalid('論述以外に論述の採点設定は登録できません')
+    return {}
+  }
+  if(!Object.keys(raw).length&&!published)return {}
+  if(Object.keys(raw).some(k=>!['model_answer','profile_id','profile_version','profile_digest'].includes(k))||!key(raw.profile_id)||!Number.isSafeInteger(raw.profile_version)||raw.profile_version<1||typeof raw.model_answer!=='string'||raw.model_answer.length>4000||hasUnsupportedEssayCharacters(raw.model_answer))return invalid('論述の採点基準・版・模範解答を確認してください')
+  const profile=getEssayRuleProfile(raw.profile_id,raw.profile_version)
+  if(!profile)return invalid('登録済みの論述採点基準と版を選択してください')
+  const out:EssayQuestionConfig={profile_id:raw.profile_id,profile_version:raw.profile_version,model_answer:raw.model_answer,profile_digest:essayProfileDigest(profile)}
+  if(published){
+    const result=gradeEssay(profile,out.model_answer)
+    if(result.grading_status!=='complete'||result.score!==8)return invalid('公開する論述には字数・指定語・全採点要素を満たす模範解答が必要です')
+  }
+  return out
+}
 export function validateQuestionInput(value:unknown,config:ExamConfiguration=configuration,preserveOptionalAttributes=true):NormalizedQuestionInput {
   if(!record(value))return invalid('問題の入力内容を確認してください')
   const examNumber=integer(value.exam_number),questionNumber=integer(value.question_number)
@@ -163,8 +185,9 @@ export function validateQuestionInput(value:unknown,config:ExamConfiguration=con
   if(value.is_art_history!==undefined&&value.is_art_history!==art)return invalid('美術史と文化史の区分が一致しません')
   if(!['draft','published','private'].includes(value.publication_status))return invalid('公開状態を確認してください')
   const answerType=value.answer_type??'single_choice'
-  if(!['single_choice','short_text'].includes(answerType))return invalid('回答形式を確認してください')
+  if(!['single_choice','short_text','essay'].includes(answerType))return invalid('回答形式を確認してください')
   const published=value.publication_status==='published',flexibleDraft=groupId!==null&&!published
+  const essayConfig=validateEssayConfig(value.essay_config,answerType,published)
   const contentBlocks=validateBlocks(value.content_blocks,'question',published,preserveOptionalAttributes),explanationBlocks=validateBlocks(value.explanation_blocks,'explanation',published,preserveOptionalAttributes)
   const sourceText=value.source_text===undefined||value.source_text===null?null:value.source_text
   if(sourceText!==null&&typeof sourceText!=='string')return invalid('出典の形式を確認してください')
@@ -176,7 +199,8 @@ export function validateQuestionInput(value:unknown,config:ExamConfiguration=con
   const rawChoices=value.choices??[]
   if(!Array.isArray(rawChoices))return invalid('選択肢を配列で指定してください')
   const labels=config.exam.choice_labels
-  if(answerType==='short_text'&&rawChoices.length)return invalid('語句記述には選択肢を登録しないでください')
+  if(answerType!=='single_choice'&&rawChoices.length)return invalid('記述・論述には選択肢を登録しないでください')
+  if(answerType==='essay'&&(accepted.length||rules.exact_length||rules.max_length||(rules.script&&rules.script!=='any')))return invalid('論述では採点基準の字数・指定語を使います。語句記述の正答・入力条件を空にしてください')
   if(answerType==='single_choice'&&(!flexibleDraft?rawChoices.length!==labels.length:rawChoices.length>labels.length))return invalid(`選択肢は${labels.length}件入力してください`,{choices:[`は${labels.length}件必要です`]})
   const choices:ChoiceInput[]=rawChoices.map((raw,index)=>{
     if(!record(raw))return invalid('選択肢の形式を確認してください')
@@ -199,11 +223,11 @@ export function validateQuestionInput(value:unknown,config:ExamConfiguration=con
     const fillChoices=choices.map(c=>c.content_blocks.filter(b=>b.type==='fill_in_choice'))
     if(blanks.length||fillChoices.some(b=>b.length)){const expected=['①','②','③','④','⑤','⑥'].slice(0,blanks.length);if(!blanks.length||JSON.stringify(blanks)!==JSON.stringify(expected)||fillChoices.some(b=>b.length!==1||b[0]?.cells?.length!==blanks.length))return invalid('空欄ラベルと全選択肢のセル数を一致させてください')}
   }
-  return {exam_number:examNumber,question_number:questionNumber,major_category_code:major.value,category_code:category.value,is_cultural_history:culture,is_art_history:art,cultural_history_category:cultureCategory,publication_status:value.publication_status,content_blocks:contentBlocks,explanation_blocks:explanationBlocks,source_text:sourceText,choices,group_id:groupId,group_question_number:groupNumber,answer_type:answerType,accepted_answers:[...accepted],input_constraints:rules,related_topics:validateTopics(value.related_topics,config),source_references:sourceReferences,passage_references:references,...(value.lock_version!==undefined?{lock_version:Number(value.lock_version)}:{})}
+  return {exam_number:examNumber,question_number:questionNumber,major_category_code:major.value,category_code:category.value,is_cultural_history:culture,is_art_history:art,cultural_history_category:cultureCategory,publication_status:value.publication_status,content_blocks:contentBlocks,explanation_blocks:explanationBlocks,source_text:sourceText,choices,group_id:groupId,group_question_number:groupNumber,answer_type:answerType,accepted_answers:[...accepted],input_constraints:rules,essay_config:essayConfig,related_topics:validateTopics(value.related_topics,config),source_references:sourceReferences,passage_references:references,...(value.lock_version!==undefined?{lock_version:Number(value.lock_version)}:{})}
 }
 export function sanitizeQuestionInput(value:unknown,config:ExamConfiguration=configuration):NormalizedQuestionInput {
   if(!record(value))return fail(400,'bad_request','questionを指定してください')
-  const raw=structuredClone(value);const flexible=Boolean(raw.group_id)||raw.answer_type==='short_text'
+  const raw=structuredClone(value);const flexible=Boolean(raw.group_id)||['short_text','essay'].includes(raw.answer_type)
   for(const field of ['content_blocks','explanation_blocks'])if(!Array.isArray(raw[field])||(!flexible&&!raw[field].length))return invalid('表示ブロックを1件以上入力してください')
   raw.source_text=nonblank(raw.source_text)?raw.source_text:null
   if(Array.isArray(raw.choices))raw.choices=raw.choices.map((v,index)=>{if(!record(v))return invalid('選択肢を確認してください');const falseValues=new Set([false,0,'0','f','F','false','FALSE','off','OFF','',null,undefined]);return {...v,is_correct:!falseValues.has(v.is_correct),display_order:index+1}})

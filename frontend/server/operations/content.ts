@@ -126,7 +126,7 @@ export async function exportArchive(path: string, db?: Database) {
     if (!db) await query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY', [], connection)
     const rows = await query<QuestionInput>(`SELECT q.exam_number, q.question_number, q.major_category_code, q.category_code,
       q.content_blocks, q.explanation_blocks, q.source_text, q.publication_status, q.is_cultural_history, q.is_art_history, q.cultural_history_category,
-      q.group_id,q.group_question_number,q.answer_type,q.accepted_answers,q.input_constraints,q.source_references,
+      q.group_id,q.group_question_number,q.answer_type,q.accepted_answers,q.input_constraints,q.source_references,q.essay_config,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('major_category_code',t.major_category_code,'category_code',t.category_code) ORDER BY t.major_category_code,t.category_code) FROM question_topic_links t WHERE t.question_id=q.id AND NOT (t.major_category_code=q.major_category_code AND t.category_code=q.category_code)), '[]'::jsonb) AS related_topics,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('passage_id',r.passage_id,'anchor_id',r.anchor_id) ORDER BY r.passage_id,r.anchor_id) FROM question_passage_references r WHERE r.question_id=q.id), '[]'::jsonb) AS passage_references,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('choice_label', c.choice_label, 'content_blocks', c.content_blocks,

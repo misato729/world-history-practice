@@ -3,6 +3,10 @@ import {hasPaidAccess,type User} from '../core/auth.ts'
 import {configuration,freeExamMax,paymentsEnabled} from '../core/config.ts'
 import {getDatabase,query,transaction,type Database} from '../core/db.ts'
 import {fail} from '../core/errors.ts'
+import type {EssayGrade} from '../../shared/types/essay.ts'
+import {gradeEssay} from './essay-scoring.ts'
+import {essayRuleProfiles} from '../data/essay-rule-profiles.ts'
+import {requireCurrentEssayProfile,hasUnsupportedEssayCharacters} from './essay-profile.ts'
 import {excerptFrom,integer,sanitizeQuestionInput,normalizeAnswerText,checkTextConstraints,record} from './learning-validation.ts'
 import {deleteQuestion,loadQuestion,saveQuestion,QUESTION_WRITE_LOCK,type ChoiceRecord,type QuestionRecord} from './learning-writer.ts'
 import {loadExamSet,loadQuestionGroup,listExamSets,saveExamSet,createQuestionGroup,saveQuestionGroup,deleteQuestionGroup,validateExamSet,publishExamSet} from './learning-structure.ts'
@@ -36,6 +40,10 @@ export async function authorizeExam(examNumber:number,user:User|null,db?:Databas
 async function visible(id:number,db:Database){const [row]=await query(`SELECT 1 FROM questions WHERE id=$1 AND ${questionVisibility()}`,[id],db);if(!row)return notFound()}
 async function serializePublicQuestion(q:QuestionRecord,user:User|null,db:Database){
  const payload:Record<string,any>={id:q.id,exam_number:q.exam_number,question_number:q.question_number,content_blocks:q.content_blocks,major_category_code:q.major_category_code,category_code:q.category_code,is_cultural_history:q.is_cultural_history,is_art_history:q.is_art_history,cultural_history_category:q.cultural_history_category,choices:q.choices.map(serializeChoice),answer_type:q.answer_type,input_constraints:q.input_constraints,question_version:q.content_version,group_question_number:q.group_question_number,group:null,shared_passages:[],passage_references:q.passage_references}
+ if(q.answer_type==='essay'){
+  const profile=requireCurrentEssayProfile(q.essay_config)
+  payload.essay_constraints={max_characters:profile.max_characters,required_terms:profile.required_terms}
+ }
  if(q.group_id!==null){
   const group=await loadQuestionGroup(q.group_id,db);const qs=(group.questions??[]).filter(v=>v.publication_status==='published')
   payload.group={id:group.id,group_number:group.group_number,title:group.title,question_numbers:qs.map(v=>v.question_number)}
@@ -65,8 +73,9 @@ export async function nextQuestion(params:Record<string,unknown>,user:User|null,
  if(!rows[0])rows=await query(`${base} ORDER BY ${order} LIMIT 1`,values,db)
  if(!rows[0])return notFound();return getQuestion(Number(rows[0].id),user,db)
 }
-function answerResult(q:QuestionRecord,row:{id?:number;answer_type:string;submitted_text?:string|null;selected_choice_id?:number|null;is_correct:boolean}){
+function answerResult(q:QuestionRecord,row:{id?:number;answer_type:string;submitted_text?:string|null;selected_choice_id?:number|null;is_correct:boolean|null;essay_result?:EssayGrade|null}){
  const base={question_id:q.id,answer_type:row.answer_type,question_version:q.content_version,is_correct:row.is_correct,explanation_blocks:q.explanation_blocks,source_text:q.source_text,source_references:q.source_references,answer_history_id:row.id?Number(row.id):null}
+ if(row.answer_type==='essay')return {...base,submitted_text:row.submitted_text,essay_result:row.essay_result??null,model_answer:q.essay_config&&'model_answer' in q.essay_config?q.essay_config.model_answer:''}
  return row.answer_type==='short_text'?{...base,submitted_text:row.submitted_text,correct_answer:q.accepted_answers[0]}:{...base,selected_choice_id:row.selected_choice_id,correct_choice:serializeChoice(q.choices.find(c=>c.is_correct)!)}
 }
 export async function answerQuestion(id:number,answer:unknown,user:User|null,db?:Database){
@@ -81,11 +90,15 @@ export async function answerQuestion(id:number,answer:unknown,user:User|null,db?
   }else if(!internal&&(!q.legacy_answer_compatible||q.content_version!==1||q.answer_type!=='single_choice'))fail(409,'content_conflict','新しい回答形式で再読込してください')
   const submissionKey=body.submission_key
   if(typed&&(typeof submissionKey!=='string'||!/^[A-Za-z0-9:_-]{8,120}$/.test(submissionKey)))fail(422,'validation_error','回答の送信キーを確認してください')
-  let selected:number|null=null,text:string|null=null,isCorrect=false
+  let selected:number|null=null,text:string|null=null,isCorrect:boolean|null=false,essayResult:EssayGrade|null=null
   if(q.answer_type==='short_text'){
    if(!q.accepted_answers.length)return notFound()
    if(typeof body.submitted_text!=='string'||!checkTextConstraints(body.submitted_text,q.input_constraints))fail(422,'validation_error','文字種・文字数の入力条件を確認してください',{submitted_text:['入力条件を満たす回答を入力してください']})
    text=body.submitted_text;isCorrect=q.accepted_answers.some(a=>normalizeAnswerText(a)===normalizeAnswerText(text!))
+  }else if(q.answer_type==='essay'){
+   const profile=requireCurrentEssayProfile(q.essay_config)
+   if(typeof body.submitted_text!=='string'||!body.submitted_text.trim()||body.submitted_text.length>4000||hasUnsupportedEssayCharacters(body.submitted_text))fail(422,'validation_error','論述の回答を4000文字以内で入力してください',{submitted_text:['空でない回答を4000文字以内で入力してください']})
+   text=body.submitted_text;essayResult=gradeEssay(profile,text);isCorrect=null
   }else{
    if(!q.choices.some(c=>c.is_correct))return notFound()
    const choice=q.choices.find(c=>c.id===integer(body.selected_choice_id));if(!choice)fail(422,'validation_error','選択肢を確認してください',{selected_choice_id:['この問題の選択肢を指定してください']})
@@ -95,8 +108,8 @@ export async function answerQuestion(id:number,answer:unknown,user:User|null,db?
    const [previous]=await query<any>('SELECT * FROM answer_histories WHERE user_id=$1 AND submission_key=$2',[user.id,submissionKey],connection)
    if(previous){if(previous.question_id!==id||previous.question_version!==q.content_version||previous.selected_choice_id!==selected||previous.submitted_text!==text)fail(409,'submission_conflict','同じ送信キーを別の回答には使用できません');return {data:answerResult(q,previous)}}
   }
-  const [history]=user?await query<any>('INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,answer_type,submitted_text,question_version,submission_key,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW()) RETURNING *',[user.id,q.id,selected,isCorrect,q.answer_type,text,q.content_version,typed?submissionKey:null],connection):[]
-  return {data:answerResult(q,history??{answer_type:q.answer_type,submitted_text:text,selected_choice_id:selected,is_correct:isCorrect})}
+  const [history]=user?await query<any>('INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,answer_type,submitted_text,question_version,submission_key,essay_result,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,NOW(),NOW()) RETURNING *',[user.id,q.id,selected,isCorrect,q.answer_type,text,q.content_version,typed?submissionKey:null,essayResult?JSON.stringify(essayResult):null],connection):[]
+  return {data:answerResult(q,history??{answer_type:q.answer_type,submitted_text:text,selected_choice_id:selected,is_correct:isCorrect,essay_result:essayResult})}
  },db)
 }
 export async function listExams(user:User|null,db:Database=getDatabase(),params:Record<string,unknown>={}){
@@ -109,12 +122,13 @@ export async function listExams(user:User|null,db:Database=getDatabase(),params:
  }
  return {data:result}
 }
-type HistoryRow={id:number;is_correct:boolean;answered_at:Date|string;question:QuestionRecord;selected_choice:ChoiceRecord|null;answer_type:string;submitted_text:string|null;question_version:number;visible:boolean}
-const historySelect=`SELECT ah.id,ah.is_correct,ah.created_at AS answered_at,ah.answer_type,ah.submitted_text,ah.question_version,(to_jsonb(q) || jsonb_build_object('group_number',(SELECT group_number FROM question_groups WHERE id=q.group_id))) AS question,row_to_json(c) AS selected_choice,(${questionVisibility('q')}) AS visible FROM answer_histories ah JOIN questions q ON q.id=ah.question_id LEFT JOIN question_choices c ON c.id=ah.selected_choice_id`
+type HistoryRow={id:number;is_correct:boolean|null;essay_result:EssayGrade|null;answered_at:Date|string;question:QuestionRecord;selected_choice:ChoiceRecord|null;answer_type:string;submitted_text:string|null;question_version:number;visible:boolean}
+const historySelect=`SELECT ah.id,ah.is_correct,ah.created_at AS answered_at,ah.answer_type,ah.submitted_text,ah.question_version,ah.essay_result,(to_jsonb(q) || jsonb_build_object('group_number',(SELECT group_number FROM question_groups WHERE id=q.group_id))) AS question,row_to_json(c) AS selected_choice,(${questionVisibility('q')}) AS visible FROM answer_histories ah JOIN questions q ON q.id=ah.question_id LEFT JOIN question_choices c ON c.id=ah.selected_choice_id`
 function serializeHistory(row:HistoryRow,full:boolean){
  const q=row.question;const base={id:Number(row.id),question:{id:Number(q.id),exam_number:Number(q.exam_number),question_number:Number(q.question_number),group_id:q.group_id,group_question_number:q.group_question_number,group_number:(q as any).group_number??null},answered_at:iso(row.answered_at)}
  if(!row.visible||(q.exam_number>freeExamMax&&!full))return {...base,locked:true}
- return {...base,locked:false,question:{...base.question,body_excerpt:excerptFrom(q.content_blocks),major_category_code:q.major_category_code,category_code:q.category_code},answer_type:row.answer_type,submitted_text:row.submitted_text,question_version:row.question_version,selected_choice:row.selected_choice?{id:Number(row.selected_choice.id),choice_label:row.selected_choice.choice_label,body_excerpt:excerptFrom(row.selected_choice.content_blocks)}:null,is_correct:row.is_correct}
+ if(row.answer_type==='essay')requireCurrentEssayProfile(q.essay_config)
+ return {...base,locked:false,question:{...base.question,body_excerpt:excerptFrom(q.content_blocks),major_category_code:q.major_category_code,category_code:q.category_code},answer_type:row.answer_type,submitted_text:row.submitted_text,question_version:row.question_version,selected_choice:row.selected_choice?{id:Number(row.selected_choice.id),choice_label:row.selected_choice.choice_label,body_excerpt:excerptFrom(row.selected_choice.content_blocks)}:null,is_correct:row.is_correct,...(row.answer_type==='essay'?{essay_result:row.essay_result}: {})}
 }
 export async function listHistory(user:User|null,params:Record<string,unknown>,db:Database=getDatabase()){
  const current=requireUser(user);const {page,perPage}=pagination(params);const [count]=await query<any>('SELECT COUNT(*)::integer AS total FROM answer_histories WHERE user_id=$1',[current.id],db)
@@ -167,6 +181,7 @@ async function dispatchLearning(event:H3Event,parts:string[],user:User|null):Pro
  if(parts.length===1&&parts[0]==='favorites'&&method==='GET')return listFavorites(user,getQuery(event))
  if(parts[0]==='admin'){
   checkAdmin(user)
+  if(parts.length===2&&parts[1]==='essay_profiles'&&method==='GET')return {data:essayRuleProfiles.map(({id,version,title,max_characters,required_terms,elements})=>({id,version,title,max_characters,required_terms,elements:elements.map(({id,label,points})=>({id,label,points}))}))}
   if(parts[1]==='exams'){
    if(parts.length===2&&method==='GET')return {data:await listExamSets(db)}
    const n=idFrom(parts[2]);if(n>configuration.exam.set_count)return notFound()

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EssayGrade } from '../../shared/types/essay'
 definePageMeta({ middleware: 'auth' })
 
 type HistoryItem = {
@@ -14,14 +15,15 @@ type HistoryItem = {
     group_number?: number
     group_question_number?: number
   }
-  answer_type?: 'single_choice' | 'short_text'
+  answer_type?: 'single_choice' | 'short_text' | 'essay'
+  essay_result?: EssayGrade
   submitted_text?: string
   selected_choice?: {
     id: number
     choice_label: string
     body_excerpt: string
   } | null
-  is_correct?: boolean
+  is_correct?: boolean | null
   answered_at: string
 }
 
@@ -140,7 +142,8 @@ const historyLink = (history: HistoryItem) => ({
         <article v-for="history in histories" :key="history.id" class="history-card">
           <NuxtLink v-if="!history.locked" :to="historyLink(history)">
             <div class="history-card-head">
-              <span class="result-badge" :class="{ correct: history.is_correct }">
+              <span v-if="history.answer_type === 'essay'" class="result-badge essay-badge"><UIcon name="i-lucide-clipboard-check" />{{ history.essay_result?.score !== null && history.essay_result?.score !== undefined ? `参考 ${history.essay_result.score} / ${history.essay_result.max_points}点` : '論述・判定保留' }}</span>
+              <span v-else class="result-badge" :class="{ correct: history.is_correct }">
                 <UIcon :name="history.is_correct ? 'i-lucide-circle-check' : 'i-lucide-circle-x'" />
                 {{ history.is_correct ? '正解' : '不正解' }}
               </span>
@@ -157,8 +160,8 @@ const historyLink = (history: HistoryItem) => ({
             </div>
 
             <div class="selected-answer">
-              <span>{{ history.answer_type === 'short_text' ? '入力した解答' : '選択した解答' }}</span>
-              <p v-if="history.answer_type === 'short_text'" class="written-answer">{{ history.submitted_text }}</p>
+              <span>{{ ['short_text', 'essay'].includes(history.answer_type ?? '') ? '入力した解答' : '選択した解答' }}</span>
+              <p v-if="['short_text', 'essay'].includes(history.answer_type ?? '')" class="written-answer">{{ history.submitted_text }}</p>
               <p v-else><b>{{ history.selected_choice?.choice_label }}</b>{{ history.selected_choice?.body_excerpt }}</p>
             </div>
 
@@ -188,6 +191,7 @@ const historyLink = (history: HistoryItem) => ({
 </template>
 
 <style scoped>
+.essay-badge { color: var(--teal-dark); background: var(--surface-tint); }
 .empty-icon { width: 34px; height: 34px; color: var(--teal); }
 .error-icon { color: var(--coral); }
 .history-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; color: var(--muted); }

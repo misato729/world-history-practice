@@ -3,6 +3,8 @@ import type { NitroFetchOptions } from 'nitropack/types'
 import { EXAM_CATALOG, FREE_EXAM_MAX, publishedQuestionNumbers, type ExamCatalogEntry } from '~/utils/examCatalog'
 import type { LearningBlock as ContentBlock, GroupPassage, PassageReference, InputConstraints, SourceReference as StructuredSource } from '../../../../shared/types/learning'
 import { presentSources, shortAnswerIssue } from '~/utils/learningPresentation'
+import { essayAnswerIssue, type EssayConstraints } from '~/utils/essayPresentation'
+import type { EssayGrade } from '../../../../shared/types/essay'
 import { canRetainPassageContext, isCurrentPracticeRequest, reconcilePassageContext, type PracticePassageContext, type PracticeRequestTag } from '~/utils/practicePassageState'
 import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
 import { culturalHistoryLabel, HISTORY_TOPICS } from '~/utils/historyTopics'
@@ -31,7 +33,8 @@ type Question = {
   is_art_history: boolean
   cultural_history_category: CulturalHistoryCategoryCode | null
   choices: Choice[]
-  answer_type?: 'single_choice' | 'short_text'
+  answer_type?: 'single_choice' | 'short_text' | 'essay'
+  essay_constraints?: EssayConstraints
   input_constraints?: InputConstraints
   question_version?: number
   group_question_number?: number | null
@@ -49,7 +52,9 @@ type AnswerResult = {
   correct_answer?: string
   question_version?: number
   source_references?: StructuredSource[]
-  is_correct: boolean
+  is_correct: boolean | null
+  essay_result?: EssayGrade
+  model_answer?: string
   correct_choice?: Choice | null
   explanation_blocks: ContentBlock[]
   source_text: string | null
@@ -65,7 +70,9 @@ type AnswerHistoryDetail = {
   correct_answer?: string
   question_version?: number
   source_references?: StructuredSource[]
-  is_correct: boolean
+  is_correct: boolean | null
+  essay_result?: EssayGrade
+  model_answer?: string
   correct_choice?: Choice | null
   explanation_blocks: ContentBlock[]
   source_text: string | null
@@ -144,6 +151,7 @@ const selectedPracticeExamNumbers = computed(() => {
   return selected.length > 0 ? selected : [examNumber.value]
 })
 const selectedPracticeQuestionNumbers = computed(() => {
+  if (route.query.questions === undefined) return undefined
   const selected = parseNumberSelection(route.query.questions, allQuestionNumbers.value)
   if (selected.length > 0) return selected
   return [...allQuestionNumbers.value]
@@ -184,9 +192,9 @@ const practiceNavigationQuery = computed(() => {
   if (hasConditionSelection.value) {
     const query: Record<string, string> = {
       exams: selectedPracticeExamNumbers.value.join(','),
-      questions: selectedPracticeQuestionNumbers.value.join(','),
       ...practiceSubjectQuery.value,
     }
+    if (selectedPracticeQuestionNumbers.value !== undefined) query.questions = selectedPracticeQuestionNumbers.value.join(',')
     if (isRandomPractice.value) {
       query.order = 'random'
       query.seed = String(practiceSeed.value)
@@ -320,9 +328,9 @@ const completionHeading = computed(() => (
 ))
 const completionMessage = computed(() => {
   if (hasConditionSelection.value) {
-    return `${selectedPracticeExamNumbers.value.length}セット、全${practiceSequence.value.length}問の演習が完了しました。`
+    return `${selectedPracticeExamNumbers.value.length}件の模擬試験、全${practiceSequence.value.length}問の演習が完了しました。`
   }
-  return `演習セット ${examNumber.value} の公開問題をすべて解き終えました。`
+  return `模擬試験 ${examNumber.value} の公開問題をすべて解き終えました。`
 })
 
 const resetAnswer = () => {
@@ -380,7 +388,7 @@ watch(questionErrorStatus, (errorStatus) => {
 
 const submitAnswer = async () => {
   if (!question.value || submitting.value || answerResult.value) return
-  if (question.value.answer_type === 'short_text' ? Boolean(shortAnswerIssue(submittedText.value, question.value.input_constraints)) : selectedChoiceId.value === null) return
+  if (question.value.answer_type === 'essay' ? Boolean(essayAnswerIssue(submittedText.value, question.value.essay_constraints)) : question.value.answer_type === 'short_text' ? Boolean(shortAnswerIssue(submittedText.value, question.value.input_constraints)) : selectedChoiceId.value === null) return
   const currentId = question.value.id
   const currentVersion = question.value.question_version ?? 1
   const requestVersion = ++answerRequestVersion
@@ -397,7 +405,7 @@ const submitAnswer = async () => {
       {
         method: 'POST',
         headers: authHeaders.value,
-        body: { answer_type: question.value.answer_type ?? 'single_choice', question_version: currentVersion, submission_key: submissionKey.value, ...(question.value.answer_type === 'short_text' ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) },
+        body: { answer_type: question.value.answer_type ?? 'single_choice', question_version: currentVersion, submission_key: submissionKey.value, ...(['short_text', 'essay'].includes(question.value.answer_type ?? '') ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) },
       },
     )
     if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value) return
@@ -467,6 +475,8 @@ const restoreAnswerHistory = async () => {
       question_version: history.question_version,
       source_references: history.source_references,
       is_correct: history.is_correct,
+      essay_result: history.essay_result,
+      model_answer: history.model_answer,
       correct_choice: history.correct_choice,
       explanation_blocks: history.explanation_blocks,
       source_text: history.source_text,
@@ -556,9 +566,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
     <div v-else-if="paywallRequired" class="state-panel paywall-panel">
       <UIcon name="i-lucide-lock-keyhole" />
-      <h1>演習セット{{ examNumber }}はプレミアム会員向けです</h1>
-      <p v-if="paywallNeedsLogin">演習セット{{ FREE_EXAM_MAX + 1 }}以降を利用するには、ログインしてプレミアム会員資格を確認してください。</p>
-      <p v-else>{{ PRICE_LABEL }}の買い切りで、演習セット{{ FREE_EXAM_MAX + 1 }}以降の公開問題を利用できます。</p>
+      <h1>模擬試験{{ examNumber }}はプレミアム会員向けです</h1>
+      <p v-if="paywallNeedsLogin">模擬試験{{ FREE_EXAM_MAX + 1 }}以降を利用するには、ログインしてプレミアム会員資格を確認してください。</p>
+      <p v-else>{{ PRICE_LABEL }}の買い切りで、模擬試験{{ FREE_EXAM_MAX + 1 }}以降の公開問題を利用できます。</p>
       <div class="state-actions">
         <NuxtLink v-if="paywallNeedsLogin" class="secondary-link" :to="{ path: '/login', query: { redirect: route.fullPath } }">ログイン</NuxtLink>
         <NuxtLink class="primary-link" to="/premium">プレミアム会員について確認する</NuxtLink>
@@ -579,11 +589,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
       <header class="practice-head">
         <div>
           <div class="practice-context">
-            <span class="exam-label">演習セット {{ examNumber }}</span>
+            <span class="exam-label">模擬試験 {{ examNumber }}</span>
             <span v-if="practiceProgress" class="practice-progress">{{ practiceProgress }}</span>
           </div>
-          <h1><span v-if="displayedGroup">大問{{ displayedGroup.group_number }}・</span>問{{ displayedQuestionNumber }}</h1>
-          <p v-if="displayedGroup" class="group-title">{{ displayedGroup.title }}</p>
+          <h1 v-if="displayedGroup"><span class="group-number">大問{{ displayedGroup.group_number }}</span> {{ displayedGroup.title }}</h1>
+          <h1 v-else>模擬試験 {{ examNumber }}</h1>
           <p v-if="selectedSubjectLabel" class="selected-subject">{{ selectedSubjectLabel }}</p>
         </div>
         <div class="practice-meta">
@@ -614,6 +624,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
       <div class="practice-columns">
       <SharedPassagePanel v-if="retainedPassageContext" :key="`${retainedPassageContext.scope}:${retainedPassageContext.key}`" ref="sharedPassagePanel" :passages="retainedPassageContext.passages" />
       <section class="question-panel" :aria-busy="questionLoading">
+        <h2 class="question-number">問{{ displayedQuestionNumber }}</h2>
         <div v-if="questionLoading" class="question-loading" role="status" aria-live="polite">
           <UIcon class="spin" name="i-lucide-loader-circle" aria-hidden="true" />
           <p>問題を読み込んでいます</p>
@@ -630,22 +641,28 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
         <div v-if="question.passage_references?.length" class="passage-references" aria-label="参照する本文">
           <button v-for="reference in question.passage_references" :key="`${reference.passage_id}-${reference.anchor_id ?? 'all'}`" type="button" @click="showReference(reference)">{{ referenceLabel(reference) }}を確認</button>
         </div>
-        <QuestionAnswerForm v-model:selected-choice-id="selectedChoiceId" v-model:submitted-text="submittedText" :answer-type="question.answer_type" :choices="question.choices" :constraints="question.input_constraints" :disabled="Boolean(answerResult)" :submitting="submitting" :correct-choice-id="answerResult?.correct_choice?.id" :is-correct="answerResult?.is_correct" @submit="submitAnswer" />
+        <QuestionAnswerForm v-model:selected-choice-id="selectedChoiceId" v-model:submitted-text="submittedText" :answer-type="question.answer_type" :choices="question.choices" :constraints="question.input_constraints" :essay-constraints="question.essay_constraints" :disabled="Boolean(answerResult)" :submitting="submitting" :correct-choice-id="answerResult?.correct_choice?.id" :is-correct="answerResult?.is_correct" @submit="submitAnswer" />
 
         <p v-if="answerError" class="inline-error" role="alert">{{ answerError }}</p>
 
         <section
           v-if="answerResult"
           class="answer-result"
-          :class="{ correct: answerResult.is_correct }"
+          :class="{ correct: answerResult.is_correct, essay: answerResult.answer_type === 'essay' }"
           aria-live="polite"
         >
-          <div class="result-heading">
+          <div v-if="answerResult.answer_type !== 'essay'" class="result-heading">
             <UIcon :name="answerResult.is_correct ? 'i-lucide-circle-check' : 'i-lucide-circle-x'" />
             <strong>{{ answerResult.is_correct ? '正解です' : '不正解です' }}</strong>
           </div>
 
-          <div class="result-section">
+          <template v-else>
+            <div class="result-heading essay-heading"><UIcon name="i-lucide-clipboard-check" /><strong>論述の採点結果</strong></div>
+            <EssayScoringResult v-if="answerResult.essay_result" :result="answerResult.essay_result" :model-answer="answerResult.model_answer" :submitted-text="answerResult.submitted_text" />
+            <p v-else>採点結果を取得できませんでした。履歴を再読み込みしてください。</p>
+          </template>
+
+          <div v-if="answerResult.answer_type !== 'essay'" class="result-section">
             <h2>正答</h2>
             <p v-if="answerResult.answer_type === 'short_text'" class="correct-short-answer">{{ answerResult.correct_answer }}</p>
             <div v-else-if="answerResult.correct_choice" class="correct-answer">
@@ -739,13 +756,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 .correct-short-answer { font-size: 1.25rem; font-weight: 800; overflow-wrap: anywhere; }.submitted-answer { color: var(--muted); overflow-wrap: anywhere; }
 
 .practice-head { padding: 46px 0 22px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
-.practice-head > div:first-child { flex: 1 1 0; }
+.practice-head > div:first-child { flex: 3 1 0; }
 .practice-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
 .practice-head .exam-label { color: var(--teal); font-size: 0.875rem; font-weight: 800; }
 .practice-progress { padding-left: 12px; border-left: 1px solid var(--line-strong); color: var(--muted); font-size: 0.8125rem; font-weight: 800; }
 .practice-head h1 { margin: 5px 0 0; font-size: 2.25rem; }
+.group-number { white-space: nowrap; }
 .practice-head p { margin: 0; color: var(--muted); }
-.practice-meta { min-width: 0; min-height: 42px; flex: 1 1 0; align-self: stretch; display: flex; align-items: flex-start; justify-content: flex-end; gap: 10px; }
+.practice-meta { min-width: 0; min-height: 42px; flex: 2 1 0; align-self: stretch; display: flex; align-items: flex-start; justify-content: flex-end; gap: 10px; }
 .practice-head > div { min-width: 0; }
 .practice-head p.selected-subject { margin-top: 8px; font-size: .8125rem; line-height: 1.7; }
 .question-classification { min-width: 0; flex: 1 1 0; overflow-wrap: anywhere; text-align: right; font-size: .8125rem; line-height: 1.7; }
@@ -767,6 +785,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 .favorite-button.active { color: #f0b323; }
 .favorite-button:disabled { opacity: .6; cursor: wait; }
 .question-panel { min-width: 0; padding: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.question-number { margin: 0 0 18px; font-size: 1.25rem; font-weight: 800; }
 .question-text { margin: 0; font-size: 1.1875rem; font-weight: 700; line-height: 1.8; }
 .question-loading { min-height: 220px; display: grid; place-content: center; justify-items: center; gap: 12px; color: var(--muted); }
 .choices { display: grid; gap: 10px; margin-top: 28px; }
@@ -787,9 +806,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 .next-button:disabled { opacity: .45; cursor: not-allowed; }
 .inline-error { margin: 16px 0 0; color: #a23b2a; font-weight: 700; }
 .answer-result { margin-top: 28px; padding: 24px; border-left: 4px solid var(--coral); background: #fff8f6; }
+.answer-result.essay { border-color: var(--teal); background: var(--surface-tint); }
 .answer-result.correct { border-color: var(--success); background: var(--success-soft); }
 .result-heading { display: flex; align-items: center; gap: 10px; color: var(--coral); }
 .correct .result-heading { color: var(--success); }
+.essay .essay-heading { color: var(--teal-dark); }
 .result-heading :deep(svg) { width: 26px; height: 26px; }
 .result-heading strong { font-size: 1.375rem; }
 .result-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }

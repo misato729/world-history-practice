@@ -15,7 +15,7 @@ const exact = (value: unknown, keys: string[]): value is Record<string, any> => 
 const positive = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) > 0
 const status = (value: unknown) => ['draft', 'published', 'private'].includes(String(value))
 const fail = (): never => { throw new OperationError('大問アーカイブの属性・所属・参照・件数を確認してください') }
-const questionKeys = ['exam_number','question_number','major_category_code','category_code','content_blocks','explanation_blocks','source_text','publication_status','choices','is_cultural_history','is_art_history','cultural_history_category','group_id','group_question_number','answer_type','accepted_answers','input_constraints','related_topics','source_references','passage_references']
+const questionKeys = ['exam_number','question_number','major_category_code','category_code','content_blocks','explanation_blocks','source_text','publication_status','choices','is_cultural_history','is_art_history','cultural_history_category','group_id','group_question_number','answer_type','accepted_answers','input_constraints','related_topics','source_references','passage_references','essay_config']
 const blockKeys: Record<string, string[]> = {
   text:['type','id','text','inlines'],quote:['type','id','text','inlines','source'],fill_in_text:['type','id','text','inlines'],fill_in_quote:['type','id','text','inlines'],
   table:['type','id','headers','rows'],code:['type','id','title','code'],code_group:['type','id','items'],fill_in_choice:['type','id','cells'],
@@ -59,6 +59,7 @@ export function createArchiveV2(input: { exam_sets: unknown; groups: unknown; qu
       strictBlocks(choice.content_blocks,'choice')
     }
     if (raw.source_references !== undefined && (!Array.isArray(raw.source_references) || raw.source_references.some((source: unknown) => !only(source,['kind','title','publisher','edition','publication_year','section','locator','url','checked_at'])))) return fail()
+    if (raw.essay_config !== undefined && !only(raw.essay_config,['profile_id','profile_version','model_answer','profile_digest'])) return fail()
     if (raw.input_constraints !== undefined && !only(raw.input_constraints,['script','exact_length','max_length','hint'])) return fail()
     for (const [field,keys] of [['related_topics',['major_category_code','category_code']],['passage_references',['passage_id','anchor_id']]] as const) if (raw[field]!==undefined && (!Array.isArray(raw[field]) || raw[field].some((item: unknown)=>!exact(item,[...keys])))) return fail()
     let value: QuestionInput
@@ -75,6 +76,8 @@ export function createArchiveV2(input: { exam_sets: unknown; groups: unknown; qu
       }
     } else if (value.passage_references?.length) return fail()
     else if(sets.find(set=>set.exam_number===value.exam_number)?.format_code!=='legacy_practice')return fail()
+    // Omit the new empty field so pre-essay v2 archives retain their checksum.
+    if(value.answer_type!=='essay')delete value.essay_config
     return value as QuestionInput
   })
   for(const set of sets){

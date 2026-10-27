@@ -1,4 +1,5 @@
 import { EXAM_CONFIG, type CulturalHistoryCategoryCode, type ExamConfiguration } from '../utils/examConfig.ts'
+import type { EssayQuestionConfig } from '../../shared/types/essay.ts'
 import type { AnswerType, InputConstraints, PassageInline, PassageReference, SourceReference, TopicLink, GroupPassage } from '../../shared/types/learning.ts'
 
 export type ContentBlockType =
@@ -50,6 +51,7 @@ export type AdminQuestionInput = {
   group_question_number?: number | null
   answer_type?: AnswerType
   answer_type_locked?: boolean
+  essay_config?: Partial<EssayQuestionConfig>
   accepted_answers?: string[]
   input_constraints?: InputConstraints
   related_topics?: TopicLink[]
@@ -111,6 +113,7 @@ export const createEmptyQuestion = (config: ExamConfiguration = EXAM_CONFIG): Ad
   group_id: null,
   group_question_number: null,
   answer_type: 'single_choice',
+  essay_config: {},
   accepted_answers: [],
   input_constraints: {},
   related_topics: [],

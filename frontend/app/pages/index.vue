@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FREE_EXAM_MAX, publishedQuestionNumbers, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, type ExamCatalogEntry } from '~/utils/examCatalog'
 import { HISTORY_TOPICS, type HistoryTopic } from '~/utils/historyTopics'
 import {
   createPracticeSeed,
@@ -21,7 +21,7 @@ useSeoMeta({
 })
 
 const { data: publicCatalog, status: publicCatalogStatus, error: publicCatalogError, refresh: refreshPublicCatalog } = await usePublicExamCatalog()
-const questionNumbers = computed(() => publishedQuestionNumbers(publicCatalog.value?.data ?? []))
+const catalogExams = computed(() => (publicCatalog.value?.data ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined))
 
 const { user, authHeaders } = useAuth()
 const { $api: api } = useNuxtApp()
@@ -45,13 +45,12 @@ watch([selectedMajorCategory, selectedCategory, selectedHistoryTopic], () => {
 const hasFullAccess = computed(() => (
   hasFullExamAccess(user.value)
 ))
-const freeExams = computed(() => (publicCatalog.value?.data ?? []).filter(exam => exam.access !== 'paid_membership_required' && exam.exam_number <= FREE_EXAM_MAX))
+const freeExams = computed(() => catalogExams.value.filter(exam => exam.access !== 'paid_membership_required' && exam.exam_number <= FREE_EXAM_MAX))
 const availableExams = computed(() => (
-  hasFullAccess.value ? (publicCatalog.value?.data ?? []).filter(exam => exam.access !== 'paid_membership_required') : freeExams.value
+  hasFullAccess.value ? catalogExams.value.filter(exam => exam.access !== 'paid_membership_required') : freeExams.value
 ))
 const availableExamNumbers = computed(() => availableExams.value.map(exam => exam.exam_number))
 const selectedExamNumbers = ref<number[]>([...availableExamNumbers.value])
-const selectedQuestionNumbers = ref<number[]>([...questionNumbers.value])
 
 const allExamsSelected = computed({
   get: () => (
@@ -66,35 +65,20 @@ const allExamsSelected = computed({
 const someExamsSelected = computed(() => (
   selectedExamNumbers.value.length > 0 && !allExamsSelected.value
 ))
-const allQuestionsSelected = computed({
-  get: () => (
-    selectedQuestionNumbers.value.length === questionNumbers.value.length
-    && questionNumbers.value.every(questionNumber => selectedQuestionNumbers.value.includes(questionNumber))
-  ),
-  set: (selected: boolean) => {
-    selectedQuestionNumbers.value = selected ? [...questionNumbers.value] : []
-  },
-})
-const someQuestionsSelected = computed(() => (
-  selectedQuestionNumbers.value.length > 0 && !allQuestionsSelected.value
-))
 const sortedSelectedExamNumbers = computed(() => (
   [...selectedExamNumbers.value].sort((left, right) => left - right)
-))
-const sortedSelectedQuestionNumbers = computed(() => (
-  [...selectedQuestionNumbers.value].sort((left, right) => left - right)
 ))
 const selectedQuestionCount = computed(() => (
   conditionSequence.value.length
 ))
 const conditionSequence = computed(() => selectPracticePositions(
-  publicCatalog.value?.data ?? [], sortedSelectedExamNumbers.value, sortedSelectedQuestionNumbers.value,
+  catalogExams.value, sortedSelectedExamNumbers.value,
 ))
 const hasConditionSelection = computed(() => conditionSequence.value.length > 0)
 
 const examIsLocked = (examNumber: number) => examNumber > FREE_EXAM_MAX && !hasFullAccess.value
-const examTarget = (examNumber: number) => (
-  examIsLocked(examNumber) ? '/premium' : `/practice/${examNumber}/${publicCatalog.value?.data.find(exam => exam.exam_number === examNumber)?.question_numbers[0] ?? 1}`
+const examTarget = (exam: ExamCatalogEntry) => (
+  examIsLocked(exam.exam_number) ? '/premium' : `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)!}`
 )
 const startConditionalPractice = async (order: PracticeOrder) => {
   if (!hasConditionSelection.value || startingPractice.value) return
@@ -103,7 +87,6 @@ const startConditionalPractice = async (order: PracticeOrder) => {
 
   const query: Record<string, string> = {
     exams: sortedSelectedExamNumbers.value.join(','),
-    questions: sortedSelectedQuestionNumbers.value.join(','),
   }
   if (selectedMajorCategory.value) query.major_category_code = selectedMajorCategory.value
   if (selectedCategory.value) query.category_code = selectedCategory.value
@@ -120,7 +103,7 @@ const startConditionalPractice = async (order: PracticeOrder) => {
           history_topic: selectedHistoryTopic.value,
         },
       })
-      sequence = selectPracticePositions(result.data, sortedSelectedExamNumbers.value, sortedSelectedQuestionNumbers.value)
+      sequence = selectPracticePositions(result.data, sortedSelectedExamNumbers.value)
     }
     if (order === 'random') {
       const seed = createPracticeSeed()
@@ -130,7 +113,7 @@ const startConditionalPractice = async (order: PracticeOrder) => {
     }
     const firstPosition = sequence[0]
     if (!firstPosition) {
-      practiceStartError.value = 'この条件に合う公開問題はまだありません。分野や対象演習セットを変更してください。'
+      practiceStartError.value = 'この条件に合う公開問題はまだありません。分野や対象模擬試験を変更してください。'
       return
     }
     await navigateTo({
@@ -156,10 +139,6 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
     : selectedExamNumbers.value.filter(examNumber => examNumbers.includes(examNumber))
 })
 
-watch(questionNumbers, (numbers, previousNumbers) => {
-  const allSelected = previousNumbers.length === 0 || previousNumbers.every(number => selectedQuestionNumbers.value.includes(number))
-  selectedQuestionNumbers.value = allSelected ? [...numbers] : selectedQuestionNumbers.value.filter(number => numbers.includes(number))
-})
 </script>
 
 <template>
@@ -179,8 +158,8 @@ watch(questionNumbers, (numbers, previousNumbers) => {
     </section>
 
     <section id="practice-launcher" class="practice-launcher" aria-labelledby="practice-launcher-title">
-      <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開中の演習セットを読み込んでいます。</p>
-      <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">演習セットを読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
+      <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開中の模擬試験を読み込んでいます。</p>
+      <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">模擬試験を読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
       <p v-else-if="!availableExams.length" role="status">現在利用できる公開問題はありません。</p>
       <div class="launcher-heading">
         <div>
@@ -188,7 +167,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
             <span>問題演習を始める</span>
           </h2>
         </div>
-        <p>公開中の演習セットを1問ずつ解いて、理解を確かめられます。章・節や文化史の区分を指定した演習にも取り組めます。</p>
+        <p>公開中の模擬試験を1問ずつ解いて、理解を確かめられます。章・節や文化史の区分を指定した演習にも取り組めます。</p>
       </div>
 
       <div class="launcher-tabs" role="tablist" aria-label="問題演習の開始方法">
@@ -202,7 +181,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
           @click="launcherMode = 'exam'"
         >
           <UIcon name="i-lucide-files" />
-          演習セットを選ぶ
+          模擬試験を選ぶ
         </button>
         <button
           id="conditions-mode-tab"
@@ -226,23 +205,23 @@ watch(questionNumbers, (numbers, previousNumbers) => {
         aria-labelledby="exam-mode-tab"
       >
         <div class="exam-grid-heading">
-          <p><strong>公開中 {{ publicCatalog?.data.length ?? 0 }}セット</strong><span>教材ごとの構成で演習</span></p>
+          <p><strong>公開中 {{ catalogExams.length }}回</strong><span>大問の順に演習</span></p>
           <NuxtLink v-if="!hasFullAccess" class="premium-info-link" to="/premium">
             <UIcon name="i-lucide-lock-keyhole" />
-            演習セット{{ FREE_EXAM_MAX + 1 }}以降はプレミアム会員向けです
+            模擬試験{{ FREE_EXAM_MAX + 1 }}以降はプレミアム会員向けです
           </NuxtLink>
         </div>
         <div class="exam-grid">
           <NuxtLink
-            v-for="exam in publicCatalog?.data ?? []"
+            v-for="exam in catalogExams"
             :key="exam.exam_number"
             class="exam-card"
-            :to="examTarget(exam.exam_number)"
-            :aria-label="examIsLocked(exam.exam_number) ? `演習セット${exam.exam_number}はプレミアム会員向けです` : `演習セット${exam.exam_number}を始める`"
+            :to="examTarget(exam)"
+            :aria-label="examIsLocked(exam.exam_number) ? `模擬試験${exam.exam_number}はプレミアム会員向けです` : `模擬試験${exam.exam_number}を始める`"
           >
             <span class="exam-card-copy">
-              <strong>{{ exam.title || `演習セット ${exam.exam_number}` }}</strong>
-              <span>{{ exam.question_numbers.length }}問・{{ exam.format_code === 'legacy_practice' || !exam.format_code ? `${CHOICE_LABELS.length}択の問題` : exam.format_code === 'group_practice' ? '大問演習' : '4大問の模試' }}</span>
+              <strong>{{ catalogExamLabel(exam.exam_number) }}</strong>
+              <span>{{ exam.groups?.length ? `${exam.groups.length}大問・` : '' }}{{ exam.question_numbers.length }}問収録</span>
             </span>
             <UIcon :name="examIsLocked(exam.exam_number) ? 'i-lucide-lock-keyhole' : 'i-lucide-arrow-right'" aria-hidden="true" />
           </NuxtLink>
@@ -269,7 +248,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
               <p class="condition-help">文化史全般には、美術史・音楽史・文学史も含まれます。選んだ範囲の知識を使う横断問題も含みます。</p>
             </fieldset>
             <fieldset class="condition-fieldset" :disabled="startingPractice">
-              <legend>対象演習セット</legend>
+              <legend>対象模擬試験</legend>
               <div class="condition-field-heading">
                 <p>複数選択できます</p>
                 <label class="all-selector">
@@ -293,57 +272,29 @@ watch(questionNumbers, (numbers, previousNumbers) => {
                     name="exam-numbers"
                     :value="exam.exam_number"
                   >
-                  <span>{{ exam.exam_number }}</span>
+                  <span>{{ catalogExamLabel(exam.exam_number) }}</span>
                 </label>
               </div>
             </fieldset>
 
-            <fieldset class="condition-fieldset" :disabled="startingPractice">
-              <legend>問題番号</legend>
-              <div class="condition-field-heading">
-                <p>問題番号を選択してください</p>
-                <label class="all-selector">
-                  <input
-                    v-model="allQuestionsSelected"
-                    type="checkbox"
-                    :indeterminate="someQuestionsSelected"
-                  >
-                  <span>全選択</span>
-                </label>
-              </div>
-              <div class="number-checkbox-grid question-number-grid">
-                <label
-                  v-for="questionNumber in questionNumbers"
-                  :key="questionNumber"
-                  :class="{ selected: selectedQuestionNumbers.includes(questionNumber) }"
-                >
-                  <input
-                    v-model="selectedQuestionNumbers"
-                    type="checkbox"
-                    name="question-numbers"
-                    :value="questionNumber"
-                  >
-                  <span>問{{ questionNumber }}</span>
-                </label>
-              </div>
-            </fieldset>
+
           </div>
 
           <p v-if="practiceStartError" class="practice-start-error" role="alert">{{ practiceStartError }}</p>
           <div class="condition-submit">
             <p v-if="hasConditionSelection">
               <span>選択中</span>
-              {{ sortedSelectedExamNumbers.length }}セット・選択した公開問題
+              {{ sortedSelectedExamNumbers.length }}回の模擬試験・選択した公開問題
               <strong>{{ hasSubjectFilter ? `最大${selectedQuestionCount}問から条件で絞り込み` : `全${selectedQuestionCount}問` }}</strong>
             </p>
             <p v-else class="selection-required">
               <span>選択内容を確認してください</span>
-              対象演習セットと問題番号を1つ以上選択してください
+              模擬試験を1つ以上選択してください
             </p>
             <div class="condition-actions">
               <button class="primary-link" type="submit" :disabled="!hasConditionSelection || startingPractice">
                 <UIcon name="i-lucide-list-ordered" />
-                {{ startingPractice ? '確認中です' : '問題番号順に始める' }}
+                {{ startingPractice ? '確認中です' : '順番に始める' }}
               </button>
               <button
                 class="secondary-link"
@@ -368,7 +319,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
       </div>
       <dl class="usage-details">
         <div class="usage-row">
-          <dt>{{ PAYMENTS_ENABLED ? (FREE_EXAM_MAX > 0 ? `演習セット1〜${FREE_EXAM_MAX}は無料` : '会員資格に応じて演習') : 'すべての公開問題を無料で演習' }}</dt>
+          <dt>{{ PAYMENTS_ENABLED ? (FREE_EXAM_MAX > 0 ? `模擬試験1〜${FREE_EXAM_MAX}は無料` : '会員資格に応じて演習') : 'すべての公開問題を無料で演習' }}</dt>
           <dd>
             <p>{{ PAYMENTS_ENABLED && FREE_EXAM_MAX === 0 ? '問題の演習にはプレミアム会員資格が必要です。' : '無料の公開問題はログインなしで利用できます。' }}解答履歴の保存にはログインが必要です。</p>
           </dd>
@@ -376,7 +327,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
         <div v-if="PAYMENTS_ENABLED" class="usage-row">
           <dt>{{ PRICE_LABEL }}の買い切り</dt>
           <dd>
-            <p>プレミアム会員は演習セット{{ FREE_EXAM_MAX + 1 }}以降も利用できます。月額料金や自動更新はありません。</p>
+            <p>プレミアム会員は模擬試験{{ FREE_EXAM_MAX + 1 }}以降も利用できます。月額料金や自動更新はありません。</p>
             <NuxtLink class="usage-premium-link" to="/premium">
               <span>プレミアム会員について</span>
               <UIcon name="i-lucide-arrow-right" aria-hidden="true" />
@@ -497,7 +448,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
   cursor: pointer;
 }
 .all-selector input { width: 17px; height: 17px; margin: 0; accent-color: var(--teal); }
-.number-checkbox-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px; }
+.number-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
 .number-checkbox-grid label {
   min-width: 0;
   min-height: 48px;
@@ -517,8 +468,6 @@ watch(questionNumbers, (numbers, previousNumbers) => {
 .number-checkbox-grid label:hover { border-color: var(--teal); }
 .number-checkbox-grid label.selected { border-color: var(--teal); background: var(--surface-selected); color: var(--teal-dark); }
 .number-checkbox-grid input { width: 16px; height: 16px; flex: 0 0 16px; margin: 0; accent-color: var(--teal); }
-.question-number-grid label { gap: 4px; padding-inline: 4px; }
-.question-number-grid label span { white-space: nowrap; }
 .condition-submit {
   min-height: 82px;
   display: flex;
@@ -588,12 +537,7 @@ watch(questionNumbers, (numbers, previousNumbers) => {
 .usage-premium-link:focus-visible { outline: 2px solid var(--teal-dark); outline-offset: 4px; }
 .usage-premium-link :deep(.iconify) { flex: 0 0 16px; width: 16px; height: 16px; }
 
-@media (max-width: 1200px) {
-  .question-number-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-}
-
 @media (max-width: 960px) {
-  .number-checkbox-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .usage-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 
@@ -609,8 +553,8 @@ watch(questionNumbers, (numbers, previousNumbers) => {
   .exam-card { min-height: 86px; padding: 18px; }
   .condition-fields { padding: 20px; }
   .condition-field-heading { align-items: flex-end; }
-  .number-checkbox-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
-  .number-checkbox-grid label { min-height: 46px; flex-direction: column; gap: 3px; padding: 5px 2px; }
+  .number-checkbox-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .number-checkbox-grid label { min-height: 46px; gap: 6px; padding: 8px 6px; }
   .number-checkbox-grid input { width: 15px; height: 15px; flex-basis: 15px; }
   .condition-submit { align-items: stretch; flex-direction: column; padding: 18px 20px 20px; }
   .condition-actions { width: 100%; flex-direction: column; }

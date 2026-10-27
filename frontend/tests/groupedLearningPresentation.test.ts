@@ -14,6 +14,27 @@ test('catalog-based navigation preserves group display order and never invents m
   assert.deepEqual(selectPracticePositions(catalog, [2], [1]), [])
 })
 
+test('omitting the old question filter includes all published groups through the thirtieth question', () => {
+  const groups = [8, 7, 8, 7].map((count, index, counts) => Array.from({ length: count }, (_, offset) => counts.slice(0, index).reduce((sum, value) => sum + value, 0) + offset + 1))
+  const catalog = [{ exam_number: 1, question_numbers: groups.flat() }, { exam_number: 2, question_numbers: [1, 3, 2] }]
+  const sequence = selectPracticePositions(catalog, [1, 2])
+  assert.equal(sequence.length, 33)
+  for (const number of [8, 15, 23]) {
+    const index = sequence.findIndex(position => position.examNumber === 1 && position.questionNumber === number)
+    assert.deepEqual(sequence[index + 1], { examNumber: 1, questionNumber: number + 1 })
+  }
+  assert.deepEqual(sequence[29], { examNumber: 1, questionNumber: 30 })
+  assert.deepEqual(sequence.slice(30), [{ examNumber: 2, questionNumber: 1 }, { examNumber: 2, questionNumber: 3 }, { examNumber: 2, questionNumber: 2 }])
+})
+
+test('an omitted question filter uses actual published positions while explicit old filters stay narrow', () => {
+  const catalog = [{ exam_number: 1, question_numbers: [1, 3, 2, 4, 5, 6, 7, 8] }]
+  assert.equal(selectPracticePositions(catalog, [1]).length, 8)
+  assert.deepEqual(selectPracticePositions(catalog, [1], []), [])
+  assert.deepEqual(selectPracticePositions(catalog, [1], [2, 3, 30]), [{ examNumber: 1, questionNumber: 3 }, { examNumber: 1, questionNumber: 2 }])
+  assert.deepEqual(selectPracticePositions(catalog, [2]), [])
+})
+
 test('group labels use actual group-local order while URLs retain the stable number', () => {
   const exam = { exam_number: 2, question_numbers: [8, 5], groups: [{ id: 9, group_number: 1, title: '合成大問', question_numbers: [8, 5] }] }
   assert.equal(catalogQuestionLabel(exam, 5), '大問1・問2')

@@ -3,7 +3,7 @@ import type { AdminQuestionInput } from '~/types/adminQuestion'
 import type { GroupPassage } from '../../../shared/types/learning'
 import { culturalHistoryLabel } from '~/utils/historyTopics'
 
-const props = defineProps<{ question: AdminQuestionInput; passages?: GroupPassage[] }>()
+const props = defineProps<{ question: AdminQuestionInput; passages?: GroupPassage[]; essayProfile?: { max_characters: number; required_terms: string[] } }>()
 
 const majorCategoryLabel = computed(() => getMasterDataLabel(
   MAJOR_CATEGORIES,
@@ -21,7 +21,7 @@ const majorCategoryLabel = computed(() => getMasterDataLabel(
     <div class="preview-paper">
       <section v-if="passages?.length" class="preview-passages"><article v-for="passage in passages" :key="passage.id"><h3>本文{{ passage.label }}</h3><QuestionContentBlocks :blocks="passage.content_blocks" /></article></section>
       <div class="preview-question"><QuestionContentBlocks :blocks="question.content_blocks" /></div>
-      <div v-if="question.answer_type !== 'short_text'" class="preview-choices">
+      <div v-if="!question.answer_type || question.answer_type === 'single_choice'" class="preview-choices">
         <div v-for="choice in question.choices" :key="choice.choice_label" :class="{ correct: choice.is_correct }">
           <span class="preview-radio" />
           <strong>{{ choice.choice_label }}</strong>
@@ -29,7 +29,9 @@ const majorCategoryLabel = computed(() => getMasterDataLabel(
           <span v-if="choice.is_correct" class="correct-label"><UIcon name="i-lucide-check" />正答</span>
         </div>
       </div>
-      <div v-else class="preview-short-answer"><label>語句記述 <small>{{ question.input_constraints?.hint }}</small><input type="text" disabled placeholder="解答を入力"></label><p>模範解答：{{ question.accepted_answers?.[0] || '未設定' }}</p><p v-if="(question.accepted_answers?.length ?? 0) > 1">許容表記：{{ question.accepted_answers?.slice(1).join(' ／ ') }}</p></div>
+      <div v-else-if="question.answer_type === 'short_text'" class="preview-short-answer"><label>語句記述 <small>{{ question.input_constraints?.hint }}</small><input type="text" disabled placeholder="解答を入力"></label><p>模範解答：{{ question.accepted_answers?.[0] || '未設定' }}</p><p v-if="(question.accepted_answers?.length ?? 0) > 1">許容表記：{{ question.accepted_answers?.slice(1).join(' ／ ') }}</p></div>
+
+      <div v-else class="preview-short-answer"><label>論述<textarea rows="5" disabled placeholder="論述の解答を入力" /></label><p v-if="essayProfile">{{ essayProfile.max_characters }}字以内。<template v-if="essayProfile.required_terms.length">指定語：{{ essayProfile.required_terms.join('、') }}</template></p><p>模範解答：{{ question.essay_config?.model_answer || '未設定' }}</p></div>
 
       <section class="preview-explanation">
         <h3>解答解説</h3>
@@ -59,7 +61,7 @@ const majorCategoryLabel = computed(() => getMasterDataLabel(
 .preview-passages h3 { margin: 0 0 12px; font-size: .9375rem; }
 .preview-short-answer { margin-top: 22px; }
 .preview-short-answer label { display: grid; gap: 9px; }
-.preview-short-answer input { width: 100%; max-width: 380px; min-height: 44px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); padding: 8px 12px; }
+.preview-short-answer input,.preview-short-answer textarea { width: 100%; max-width: 380px; min-height: 44px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); padding: 8px 12px; }
 .preview-short-answer p { font-size: .8125rem; }
 .preview-choices { display: grid; gap: 9px; margin-top: 24px; }
 .preview-choices > div { position: relative; min-width: 0; display: grid; grid-template-columns: 18px 28px minmax(0, 1fr) auto; align-items: start; gap: 9px; padding: 13px; border: 1px solid var(--line-strong); border-radius: 5px; }

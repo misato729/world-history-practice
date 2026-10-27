@@ -319,7 +319,7 @@ test('answer-type lock migration marks only currently published questions and pr
   await query("UPDATE questions SET publication_status='private' WHERE question_number=3", [], db)
   const before = await query('SELECT * FROM questions ORDER BY id', [], db)
   const choicesBefore = await query('SELECT * FROM question_choices ORDER BY id', [], db)
-  assert.deepEqual(await migrate(db), { applied: ['006_lock_published_answer_types.sql'] })
+  assert.deepEqual(await migrateThrough(db, '006_lock_published_answer_types.sql'), { applied: ['006_lock_published_answer_types.sql'] })
   const upgraded = await query('SELECT * FROM questions ORDER BY id', [], db)
   for (const [index, row] of upgraded.entries()) {
     assert.equal(row.answer_type_locked, before[index]!.publication_status === 'published')
@@ -327,9 +327,29 @@ test('answer-type lock migration marks only currently published questions and pr
     assert.deepEqual(original, before[index])
   }
   assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), choicesBefore)
-  assert.deepEqual(await migrate(db), { applied: [] })
+  assert.deepEqual(await migrateThrough(db, '006_lock_published_answer_types.sql'), { applied: [] })
   assert.deepEqual(await query('SELECT * FROM questions ORDER BY id', [], db), upgraded)
 }, '005_grouped_questions.sql'))
+
+test('essay migration preserves all pre-existing fields and adds strict nullable-correctness response shapes', integration, async () => isolated(async db => {
+  await insertLegacySamples(db)
+  const owner = await user(db)
+  await query(`INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,created_at,updated_at)
+    SELECT $1,q.id,c.id,c.is_correct,NOW(),NOW() FROM questions q JOIN question_choices c ON c.question_id=q.id AND c.display_order=1`, [owner.id], db)
+  await query('INSERT INTO favorites(user_id,question_id,created_at,updated_at) SELECT $1,id,NOW(),NOW() FROM questions', [owner.id], db)
+  const tables = ['questions','question_choices','users','answer_histories','favorites'] as const
+  const before = Object.fromEntries(await Promise.all(tables.map(async table => [table, await query(`SELECT * FROM ${table} ORDER BY id`, [], db)])))
+  assert.deepEqual(await migrate(db), { applied: ['007_essay_rule_scoring.sql'] })
+  for (const table of tables) {
+    const rows = await query(`SELECT * FROM ${table} ORDER BY id`, [], db)
+    const keys = Object.keys(before[table][0]!)
+    assert.deepEqual(rows.map(row => Object.fromEntries(keys.map(key => [key,row[key]]))), before[table])
+  }
+  assert.equal((await query<any>("SELECT count(*)::integer AS n FROM questions WHERE essay_config='{}'::jsonb", [], db))[0].n,before.questions.length)
+  assert.equal((await query<any>('SELECT count(*)::integer AS n FROM answer_histories WHERE essay_result IS NULL AND is_correct IS NOT NULL', [], db))[0].n,before.answer_histories.length)
+  assert.deepEqual(await migrate(db), { applied: [] })
+  await assert.rejects(query('UPDATE answer_histories SET is_correct=NULL', [], db), (e:any)=>e.code==='23514')
+}, '006_lock_published_answer_types.sql'))
 
 test('applied SQL checksums cannot be silently rewritten', integration, async () => isolated(async db => {
   const directory = await mkdtemp(join(tmpdir(), 'exam-migration-test-'))

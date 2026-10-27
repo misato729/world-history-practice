@@ -4,7 +4,7 @@ import { createEmptyQuestion } from '~/types/adminQuestion'
 import type { ExamSet, QuestionGroup, PassageReference, TopicLink, SourceReference } from '../../../shared/types/learning'
 import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
 import { changeCulturalHistory, CULTURAL_HISTORY_CATEGORIES, normalizeHistoryFlags, selectCulturalHistoryCategory } from '~/utils/historyTopics'
-import { normalizeAdminQuestion, prepareAdminQuestion, referenceKey, setPassageReference } from '~/utils/adminQuestionForm'
+import { normalizeAdminQuestion, prepareAdminQuestion, referenceKey, setPassageReference, essayProfileKey, selectEssayProfile } from '~/utils/adminQuestionForm'
 
 const props = defineProps<{
   initialValue: AdminQuestionInput
@@ -21,6 +21,12 @@ const emit = defineEmits<{
 const normalizedForm = (value: AdminQuestionInput): AdminQuestionInput => ({ ...normalizeAdminQuestion(value), ...normalizeHistoryFlags(value) })
 const form = reactive<AdminQuestionInput>(normalizedForm(props.initialValue))
 const previewOpen = ref(false)
+type EssayProfile = { id: string; version: number; title: string; max_characters: number; required_terms: string[]; elements: { id: string; label: string; points: number }[] }
+const essayProfiles = ref<EssayProfile[]>([])
+const essayProfilesError = ref('')
+const essayConfig = computed(() => form.essay_config!)
+const essayProfileSelection = computed({ get: () => essayConfig.value.profile_id ? `${essayConfig.value.profile_id}:${essayConfig.value.profile_version}` : '', set: (key: string) => { form.essay_config = selectEssayProfile(essayConfig.value, essayProfiles.value, key) } })
+const selectedEssayProfile = computed(() => essayProfiles.value.find(profile => profile.id === essayConfig.value.profile_id && profile.version === essayConfig.value.profile_version))
 const { $api: api } = useNuxtApp()
 const { authHeaders } = useAuth()
 const exam = ref<ExamSet | null>(null)
@@ -62,6 +68,15 @@ watch(() => form.exam_number, loadExam, { immediate: true })
 watch(() => form.group_id, loadGroup, { immediate: true })
 const changeExam = () => { form.group_id = null; form.group_question_number = null; form.passage_references = [] }
 const changeGroup = () => { form.group_question_number = form.group_id ? (exam.value?.groups.find(item => item.id === form.group_id)?.questions?.length ?? 0) + 1 : null; form.passage_references = [] }
+const loadEssayProfiles = async () => {
+  if (import.meta.server || form.answer_type !== 'essay' || essayProfiles.value.length) return
+  try {
+    const response = await api<ApiResponse<EssayProfile[]>>('/api/v1/admin/essay_profiles', { headers: authHeaders.value })
+    essayProfiles.value = response.data
+    essayProfilesError.value = ''
+  } catch { essayProfilesError.value = '採点ルールを読み込めませんでした。再読み込みしてください。' }
+}
+watch(() => form.answer_type, loadEssayProfiles, { immediate: true })
 const referenceOptions = computed(() => (group.value?.passages ?? []).flatMap(passage => [
   { passage_id: passage.id, anchor_id: null, label: `本文${passage.label} 全体` },
   ...passage.content_blocks.flatMap(block => (block.inlines ?? []).filter(part => part.type !== 'text' && part.label).map(part => ({ passage_id: passage.id, anchor_id: 'id' in part ? part.id : '', label: `本文${passage.label} の (${ 'label' in part ? part.label : '' })` }))),
@@ -106,7 +121,7 @@ const submit = () => {
         <div class="admin-field"><label for="question-number">問番号（セット内の通し番号）</label><input id="question-number" v-model.number="form.question_number" type="number" min="1" required></div>
         <div class="admin-field"><label for="question-group">所属する大問</label><select id="question-group" v-model="form.group_id" @change="changeGroup"><option :value="null">所属なし</option><option v-for="item in exam?.groups ?? []" :key="item.id" :value="item.id">大問{{ item.group_number }} {{ item.title }}</option></select><small><NuxtLink :to="`/admin/exams/${form.exam_number}`">教材・共通本文を管理</NuxtLink></small></div>
         <div v-if="form.group_id" class="admin-field"><label for="group-question-number">大問内の小問番号</label><input id="group-question-number" v-model.number="form.group_question_number" type="number" min="1" :max="group?.planned_question_count ?? 8"></div>
-        <div class="admin-field"><label for="question-answer-type">回答形式</label><select id="question-answer-type" v-model="form.answer_type" :disabled="form.answer_type_locked"><option value="single_choice">選択式（正答1件）</option><option value="short_text">語句記述</option></select><small v-if="form.answer_type_locked">公開済みの回答形式は変更できません。別の形式にする場合は新しい小問を作成してください。</small></div>
+        <div class="admin-field"><label for="question-answer-type">回答形式</label><select id="question-answer-type" v-model="form.answer_type" :disabled="form.answer_type_locked"><option value="single_choice">選択式（正答1件）</option><option value="short_text">語句記述</option><option value="essay">論述（要素別ルール採点）</option></select><small v-if="form.answer_type_locked">公開済みの回答形式は変更できません。別の形式にする場合は新しい小問を作成してください。</small></div>
         <div class="admin-field"><label for="question-major-category">大分類</label><select id="question-major-category" v-model="form.major_category_code" required><option v-for="item in MAJOR_CATEGORIES" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
         <div class="admin-field"><label for="question-category">小分類</label><select id="question-category" v-model="form.category_code" required><option v-for="item in categories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
         <fieldset class="history-flags-field">
@@ -152,7 +167,7 @@ const submit = () => {
       <div class="admin-panel-body"><AdminContentBlockEditor v-model="form.content_blocks" context="question" /></div>
     </section>
 
-    <section v-if="form.answer_type !== 'short_text'" class="admin-panel">
+    <section v-if="!form.answer_type || form.answer_type === 'single_choice'" class="admin-panel">
       <div class="admin-panel-head"><div><h2>選択肢と正答</h2><p>{{ CHOICE_LABELS.length }}件の選択肢を入力し、正答を1件選びます。</p></div></div>
       <div class="admin-panel-body choice-list">
         <article v-for="(choice, index) in form.choices" :key="choice.choice_label" class="choice-editor" :class="{ correct: choice.is_correct }">
@@ -165,7 +180,7 @@ const submit = () => {
       </div>
     </section>
 
-    <section v-else class="admin-panel">
+    <section v-else-if="form.answer_type === 'short_text'" class="admin-panel">
       <div class="admin-panel-head"><div><h2>語句記述の正答</h2><p>1行目を模範解答とし、2行目以降に許容する別表記を入力します。</p></div></div>
       <div class="admin-panel-body admin-form-grid">
         <div class="admin-field full-width"><label for="accepted-answers">模範解答・許容表記</label><textarea id="accepted-answers" v-model="acceptedAnswers" /></div>
@@ -173,6 +188,15 @@ const submit = () => {
         <div class="admin-field"><label for="answer-length">指定文字数（任意）</label><input id="answer-length" v-model.number="constraints.exact_length" type="number" min="1"></div>
         <div class="admin-field"><label for="answer-max-length">最大文字数（任意）</label><input id="answer-max-length" v-model.number="constraints.max_length" type="number" min="1"></div>
         <div class="admin-field"><label for="answer-hint">入力欄の案内（任意）</label><input id="answer-hint" v-model="constraints.hint" type="text" placeholder="漢字3字で入力してください"></div>
+      </div>
+    </section>
+
+    <section v-if="form.answer_type === 'essay'" class="admin-panel">
+      <div class="admin-panel-head"><div><h2>論述の採点設定</h2><p>登録済みの12問に対応する要素別ルールを選びます。未知の表現は判定保留になります。</p></div></div>
+      <div class="admin-panel-body admin-form-grid">
+        <div class="admin-field full-width"><label for="essay-profile">採点ルール</label><select id="essay-profile" v-model="essayProfileSelection"><option value="">選択してください</option><option v-for="profile in essayProfiles" :key="`${profile.id}:${profile.version}`" :value="essayProfileKey(profile)">{{ profile.title }}（第{{ profile.version }}版）</option></select><p v-if="essayProfilesError" role="alert">{{ essayProfilesError }} <button type="button" @click="loadEssayProfiles">再読み込み</button></p></div>
+        <div v-if="selectedEssayProfile" class="admin-field full-width"><p>{{ selectedEssayProfile.max_characters }}字以内<template v-if="selectedEssayProfile.required_terms.length">・指定語：{{ selectedEssayProfile.required_terms.join('、') }}</template></p><ul><li v-for="element in selectedEssayProfile.elements" :key="element.id">{{ element.label }}（{{ element.points }}点）</li></ul></div>
+        <div class="admin-field full-width"><label for="essay-model">模範解答</label><textarea id="essay-model" v-model="essayConfig.model_answer" maxlength="4000" /><small>公開するには、選んだルールで模範解答の全要素が確認でき、字数・指定語を満たす必要があります。</small></div>
       </div>
     </section>
 
@@ -190,7 +214,7 @@ const submit = () => {
 
     <section v-if="previewOpen" class="admin-panel preview-panel">
       <div class="admin-panel-head"><div><h2>プレビュー</h2><p>一般の問題演習画面に近い表示で確認できます。</p></div><button class="admin-icon-button" type="button" aria-label="プレビューを閉じる" @click="previewOpen = false"><UIcon name="i-lucide-x" /></button></div>
-      <div class="admin-panel-body"><AdminQuestionPreview :question="form" :passages="group?.passages ?? []" /></div>
+      <div class="admin-panel-body"><AdminQuestionPreview :question="form" :passages="group?.passages ?? []" :essay-profile="selectedEssayProfile" /></div>
     </section>
 
     <div class="form-action-bar">

@@ -1,4 +1,4 @@
-export type AnswerType = 'single_choice' | 'short_text'
+export type AnswerType = 'single_choice' | 'short_text' | 'essay'
 export type ExamFormatCode = 'legacy_practice' | 'group_practice' | 'rekiken_mock'
 export type PassageInline =
   | { type: 'text'; text: string }
@@ -28,3 +28,4 @@ export type ExamSet = {
 export type AnswerInput =
   | { answer_type: 'single_choice'; selected_choice_id: number; question_version: number; submission_key: string }
   | { answer_type: 'short_text'; submitted_text: string; question_version: number; submission_key: string }
+  | { answer_type: 'essay'; submitted_text: string; question_version: number; submission_key: string }
