@@ -17,7 +17,7 @@
 
 ## 状態
 
-送信前検査・独立レビューを進行中。コミット/pushとCIの結果は実施後に追記する。詳細な機械記録はローカル専用の`local-only/grouped-delivery-20261027/`。
+送信前168件・設定/資料保護/差分検査と独立stage94件レビューに合格。`9fe5e508d8b4a76ff0390ffbbafc51e92d933113`を`[skip netlify]`付きで通常mainへcommit/pushし、実remoteSHA一致・差分0/0と、94ファイルのレビュー時の内容一致、旧コピー10件の保持を確認した。GitHub Actions [40514882121](https://github.com/misato729/world-history-practice/actions/runs/40514882121)はharness/verifyとも成功。全20ステップ（資料保護・進捗・コンテナ・API回帰・フロント・型・本番用build・後片付け）が成功し、対象SHAとの一致も別担当が確認した。完了記録を追加するコミットにも`[skip netlify]`を付ける。最終送信後のSHA同期・除外保持・CIはローカル機械記録へ保存し、この先行コードコミットの結果と区別する。詳細な機械記録はローカル専用の`local-only/grouped-delivery-20261027/`。
 
 ## 送信対象ファイル
 
@@ -116,3 +116,7 @@
 - [docs/grouped-changes-delivery-20261027.md](grouped-changes-delivery-20261027.md): 設計・運用・検証・現在地の関連記録。
 
 - [docs/workflow/handoffs/2026-10-27T13-40-38-249Z-r68.json](workflow/handoffs/2026-10-27T13-40-38-249Z-r68.json): 今回の送信依頼と事前検査の開始記録。
+
+## 完了記録の更新
+
+この送信結果に合わせ、`docs/verification.md`・`docs/workflow/contexts/service.md`・`docs/workflow/state.json`と追加の評価/終了checkpointを更新した。個別ファイルはstateの評価記録・last_checkpointに列挙される。先行機能のコード・DBを再変更していない。

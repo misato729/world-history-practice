@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 68,
-  "updated_at": "2026-10-27T13:40:38.249Z",
+  "revision": 71,
+  "updated_at": "2026-10-27T13:50:00.159Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T13-40-38-249Z-r68.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T13-50-00-159Z-r71.json",
   "contexts": [
     {
       "id": "product",
@@ -1912,7 +1912,7 @@
       "id": "grouped_changes_delivery",
       "context": "service",
       "title": "大問対応と表示・作問基準の変更をコミットしてpush",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "grouped_questions_implementation",
         "persistent_shared_passage",
@@ -1921,44 +1921,67 @@
       ],
       "authorization": "requested",
       "request_ref": "2026-10-27 ユーザー: ここまでの変更をコミットしてpushしてください。原資料/DB/旧コピーを除外し通常mainへ送信する。デプロイの承認はない。",
-      "next_action": "ローカル専用資料/DB/旧コピー10件を除き、skip netlify付きで通常commit/pushしCIとSHA同期を確認する",
-      "evidence": [],
-      "last_verified_at": null,
-      "verification_scope": "",
+      "next_action": "完了記録の後続commit/pushを行い、最終main同期とCIを確認する",
+      "evidence": [
+        "docs/grouped-changes-delivery-20261027.md",
+        "local-only/grouped-delivery-20261027/review.md",
+        "local-only/grouped-delivery-20261027/first-push-check.json",
+        "local-only/grouped-delivery-20261027/ci-first-review.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "正規94件の集合/事前index/commitSHA一致、168軽量/資料全履歴/設定/差分/独立review。9fe5e50を通常mainへpushし実remoteSHA一致/0差分、CI40514882121対象SHA一致・全20step成功。旧コピー10件保持、Netlify一覧読取とskip指定、DB/本番変更なし。完了記録を後続commitで送信する。",
       "acceptance": [
         {
           "id": "checks",
           "kind": "automated",
           "description": "正規差分が許可集合に一致し、ローカル資料/秘密/旧コピーを含まず関連検査に合格",
           "verification": "NUL区切りstage集合照合、原資料全履歴/設定/進捗軽量168件/差分、既存アプリ検査根拠の鮮度確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-delivery-20261027/harness-tests.log",
+            "local-only/grouped-delivery-20261027/template-check.log",
+            "local-only/grouped-delivery-20261027/private-check.log",
+            "local-only/grouped-delivery-20261027/stage-check.json"
+          ],
+          "checked_at": "2026-10-27"
         },
         {
           "id": "delivery",
           "kind": "automated",
           "description": "通常pushでmainのSHAが一致しCI成功、skip netlifyと除外対象を保持",
           "verification": "Netlify読み取り確認とskip指定、commit/push/remoteSHA/差分0/0、実行CI完了、旧コピー/原資料保持",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-delivery-20261027/first-push-check.json",
+            "local-only/grouped-delivery-20261027/ci-first-review.md"
+          ],
+          "checked_at": "2026-10-27"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "別担当がstageと除外範囲・検査根拠を点検",
           "verification": "group_data_auditの独立送信前レビュー",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-delivery-20261027/review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "group_data_audit"
         }
       ],
       "execution": {
         "worker": "root",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "94件の通常pushとSHA同期、旧コピー保持、全履歴保護・168軽量・独立review、対象CIの全20step成功を確認",
+            "at": "2026-10-27T13:49:58.741Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
