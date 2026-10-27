@@ -1,26 +1,17 @@
 <script setup lang="ts">
-import { EXAM_CATALOG, QUESTIONS_PER_EXAM, FREE_EXAM_MAX, type ExamCatalogEntry } from '~/utils/examCatalog'
+import type { NitroFetchOptions } from 'nitropack/types'
+import { EXAM_CATALOG, FREE_EXAM_MAX, publishedQuestionNumbers, type ExamCatalogEntry } from '~/utils/examCatalog'
+import type { LearningBlock as ContentBlock, GroupPassage, PassageReference, InputConstraints, SourceReference as StructuredSource } from '../../../../shared/types/learning'
+import { presentSources, shortAnswerIssue } from '~/utils/learningPresentation'
+import { canRetainPassageContext, isCurrentPracticeRequest, reconcilePassageContext, type PracticePassageContext, type PracticeRequestTag } from '~/utils/practicePassageState'
 import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
 import { culturalHistoryLabel, HISTORY_TOPICS } from '~/utils/historyTopics'
 import {
-  createPracticeSequence,
   selectPracticePositions,
   shufflePracticeSequence,
   type PracticeOrder,
   type PracticePosition,
 } from '~/utils/practiceSequence'
-
-type ContentBlock = {
-  type: 'text' | 'quote' | 'fill_in_text' | 'fill_in_quote' | 'fill_in_choice' | 'table' | 'code' | 'code_group'
-  text?: string
-  source?: string
-  title?: string
-  code?: string
-  headers?: string[]
-  rows?: string[][]
-  items?: { title: string, code: string }[]
-  cells?: string[]
-}
 
 type Choice = {
   id: number
@@ -40,14 +31,26 @@ type Question = {
   is_art_history: boolean
   cultural_history_category: CulturalHistoryCategoryCode | null
   choices: Choice[]
+  answer_type?: 'single_choice' | 'short_text'
+  input_constraints?: InputConstraints
+  question_version?: number
+  group_question_number?: number | null
+  group?: { id: number; group_number: number; title: string; question_numbers: number[] } | null
+  shared_passages?: GroupPassage[]
+  passage_references?: PassageReference[]
   is_favorite?: boolean
 }
 
 type AnswerResult = {
   question_id: number
-  selected_choice_id: number
+  selected_choice_id?: number | null
+  answer_type?: string
+  submitted_text?: string
+  correct_answer?: string
+  question_version?: number
+  source_references?: StructuredSource[]
   is_correct: boolean
-  correct_choice: Choice
+  correct_choice?: Choice | null
   explanation_blocks: ContentBlock[]
   source_text: string | null
   answer_history_id: number | null
@@ -56,28 +59,34 @@ type AnswerResult = {
 type AnswerHistoryDetail = {
   id: number
   question: { id: number }
-  selected_choice: { id: number }
+  selected_choice?: { id: number } | null
+  answer_type?: string
+  submitted_text?: string
+  correct_answer?: string
+  question_version?: number
+  source_references?: StructuredSource[]
   is_correct: boolean
-  correct_choice: Choice
+  correct_choice?: Choice | null
   explanation_blocks: ContentBlock[]
   source_text: string | null
 }
 
 type ApiResponse<T> = { data: T }
+type TaggedQuestionResponse = ApiResponse<Question> & { requestContext: PracticeRequestTag }
+type QuestionEndpoint = '/api/v1/questions/next'
 
-type SourceReference = {
-  label: string
-  url: string | null
-}
+definePageMeta({
+  key: route => `practice:${String(route.params.examNumber)}`,
+})
 
 const route = useRoute()
 const { $api: api } = useNuxtApp()
-const { isLoggedIn, user, authHeaders, logout } = useAuth()
+const { isLoggedIn, user, accessToken, authHeaders, logout } = useAuth()
 const { canUseFavorites, isFavorite, setFavorite, toggleFavorite } = useFavorites()
 const updatingFavorite = ref(false)
 
 const allExamNumbers = EXAM_CATALOG.map(exam => exam.exam_number)
-const allQuestionNumbers = Object.freeze(Array.from({ length: QUESTIONS_PER_EXAM }, (_, index) => index + 1))
+const allQuestionNumbers = computed(() => publishedQuestionNumbers(matchingCatalog.value?.data ?? []))
 
 const parseNumberSelection = (value: unknown, allowedNumbers: readonly number[]) => {
   const serialized = Array.isArray(value) ? value.join(',') : typeof value === 'string' ? value : ''
@@ -91,11 +100,26 @@ const parseNumberSelection = (value: unknown, allowedNumbers: readonly number[])
 
 const examNumber = computed(() => Number(route.params.examNumber))
 const questionNumber = computed(() => Number(route.params.questionNumber))
-const practiceSubjectQuery = computed(() => Object.fromEntries(
-  ['major_category_code', 'category_code', 'history_topic']
+const practiceSubjectQuery = computed<Record<string, string>>((previous) => {
+  const next = Object.fromEntries(['major_category_code', 'category_code', 'history_topic']
     .map(key => [key, route.query[key]])
     .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1] !== '' && !(entry[0] === 'history_topic' && entry[1] === 'all')),
-))
+  )
+  return previous && JSON.stringify(previous) === JSON.stringify(next) ? previous : next
+})
+const conditionScope = computed(() => JSON.stringify([
+  ...['exams', 'questions', 'order', 'seed'].map(key => route.query[key] ?? null), practiceSubjectQuery.value,
+]))
+const scopeGeneration = ref(0)
+const requestInstance = useId()
+let pageActive = true
+const navigationGeneration = ref(0)
+const latestQuestionRequest = ref(0)
+const passageContext = shallowRef<PracticePassageContext | null>(null)
+const requestFailure = shallowRef<{ context: PracticeRequestTag; error: any } | null>(null)
+const sharedPassagePanel = ref<{ showReference: (reference: PassageReference, isCurrent?: () => boolean) => Promise<void> } | null>(null)
+const currentRequestContext = (): PracticeRequestTag => ({ instance: requestInstance, scope: scopeGeneration.value, navigation: navigationGeneration.value, request: latestQuestionRequest.value, examNumber: examNumber.value, questionNumber: questionNumber.value })
+const requestIsCurrent = (context: PracticeRequestTag | undefined) => pageActive && isCurrentPracticeRequest(context, currentRequestContext())
 const hasSubjectFilter = computed(() => Object.keys(practiceSubjectQuery.value).length > 0)
 const hasConditionSelection = computed(() => (
   route.query.exams !== undefined || route.query.questions !== undefined || hasSubjectFilter.value
@@ -120,9 +144,9 @@ const selectedPracticeExamNumbers = computed(() => {
   return selected.length > 0 ? selected : [examNumber.value]
 })
 const selectedPracticeQuestionNumbers = computed(() => {
-  const selected = parseNumberSelection(route.query.questions, allQuestionNumbers)
+  const selected = parseNumberSelection(route.query.questions, allQuestionNumbers.value)
   if (selected.length > 0) return selected
-  return [...allQuestionNumbers]
+  return [...allQuestionNumbers.value]
 })
 const {
   data: matchingCatalog,
@@ -135,10 +159,9 @@ const {
   headers: authHeaders,
   server: false,
   lazy: true,
+  watch: false,
 })
-const basePracticeSequence = computed<PracticePosition[]>(() => hasSubjectFilter.value
-  ? selectPracticePositions(matchingCatalog.value?.data ?? [], selectedPracticeExamNumbers.value, selectedPracticeQuestionNumbers.value)
-  : createPracticeSequence(selectedPracticeExamNumbers.value, selectedPracticeQuestionNumbers.value))
+const basePracticeSequence = computed<PracticePosition[]>(() => selectPracticePositions(matchingCatalog.value?.data ?? [], selectedPracticeExamNumbers.value, selectedPracticeQuestionNumbers.value))
 const isRandomPractice = computed(() => (
   hasConditionSelection.value
   && practiceOrder.value === 'random'
@@ -176,37 +199,61 @@ const validRoutePosition = computed(() => (
   Number.isInteger(examNumber.value)
   && allExamNumbers.includes(examNumber.value)
   && Number.isInteger(questionNumber.value)
-  && allQuestionNumbers.includes(questionNumber.value)
+  && questionNumber.value > 0 && questionNumber.value <= 10000
 ))
 const validPosition = computed(() => validRoutePosition.value && currentPracticeIndex.value >= 0)
 
 const requestQuery = computed(() => ({
   exam_number: validRoutePosition.value ? examNumber.value : 0,
-  after_question_number: validRoutePosition.value ? questionNumber.value - 1 : -1,
+  question_number: validRoutePosition.value ? questionNumber.value : -1,
   ...practiceSubjectQuery.value,
 }))
+
+const questionFetch = (async (request: QuestionEndpoint, options?: NitroFetchOptions<QuestionEndpoint>): Promise<TaggedQuestionResponse> => {
+  const context = { ...currentRequestContext(), request: ++latestQuestionRequest.value }
+  requestFailure.value = null
+  try {
+    const response = await api<ApiResponse<Question>, QuestionEndpoint>(request, options)
+    return { ...response, requestContext: context }
+  }
+  catch (error) {
+    if (requestIsCurrent(context)) requestFailure.value = { context, error }
+    throw error
+  }
+}) as typeof api
 
 const {
   data: questionResponse,
   status,
-  error: questionError,
   refresh,
-} = await useFetch<ApiResponse<Question>>('/api/v1/questions/next', {
-  $fetch: api,
+} = await useFetch<TaggedQuestionResponse>('/api/v1/questions/next', {
+  key: `practice-question:${requestInstance}`,
+  $fetch: questionFetch,
   query: requestQuery,
   headers: authHeaders,
   server: false,
   // 画面遷移をAPIの応答待ちで止めず、起動待ち中も読み込み表示を出す。
   lazy: true,
+  watch: false,
+  getCachedData: () => undefined,
 })
 
 const question = computed(() => {
-  const loaded = questionResponse.value?.data
+  const response = questionResponse.value
+  if (status.value !== 'success' || !requestIsCurrent(response?.requestContext)) return null
+  const loaded = response?.data
   if (!loaded || loaded.exam_number !== examNumber.value || loaded.question_number !== questionNumber.value) return null
   return loaded
 })
+const questionError = computed(() => requestIsCurrent(requestFailure.value?.context) ? requestFailure.value?.error : null)
+const retainedPassageContext = computed(() => canRetainPassageContext(passageContext.value, { examNumber: examNumber.value, questionNumber: questionNumber.value, scope: scopeGeneration.value }) ? passageContext.value : null)
+const displayedGroup = computed(() => question.value?.group ?? retainedPassageContext.value?.group)
+const questionLoading = computed(() => status.value === 'idle' || status.value === 'pending' || catalogStatus.value === 'idle' || catalogStatus.value === 'pending' || (!requestIsCurrent(questionResponse.value?.requestContext) && !questionError.value))
 
 const selectedChoiceId = ref<number | null>(null)
+const submittedText = ref('')
+const submissionKey = ref<string | null>(null)
+let answerRequestVersion = 0
 const answerResult = ref<AnswerResult | null>(null)
 const answerError = ref('')
 const submitting = ref(false)
@@ -225,22 +272,22 @@ const categoryLabel = computed(() => getCategoryLabel(question.value?.category_c
 const questionIsFavorite = computed(() => (
   isLoggedIn.value && question.value ? isFavorite(question.value.id) : false
 ))
-const sourceReferences = computed<SourceReference[]>(() => (
-  (answerResult.value?.source_text ?? '')
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const separatorIndex = line.lastIndexOf('|')
-      if (separatorIndex === -1) return { label: line, url: null }
-
-      const label = line.slice(0, separatorIndex).trim()
-      const url = line.slice(separatorIndex + 1).trim()
-      if (!/^https:\/\/[^\s]+$/.test(url)) return { label: line, url: null }
-
-      return { label: label || url, url }
-    })
-))
+const sourceReferences = computed(() => presentSources(answerResult.value?.source_references, answerResult.value?.source_text))
+const displayedQuestionNumber = computed(() => question.value?.group_question_number ?? (displayedGroup.value ? displayedGroup.value.question_numbers.indexOf(questionNumber.value) + 1 : questionNumber.value))
+const visibleGroupNumbers = computed(() => (displayedGroup.value?.question_numbers ?? []).filter(number => (
+  practiceSequence.value.some(position => position.examNumber === examNumber.value && position.questionNumber === number)
+)))
+const referenceLabel = (reference: PassageReference) => {
+  const passage = question.value?.shared_passages?.find(item => item.id === reference.passage_id)
+  const anchor = passage?.content_blocks.flatMap(block => block.inlines ?? []).find(part => part.type !== 'text' && part.id === reference.anchor_id)
+  if (anchor?.type === 'blank') return `本文${passage?.label ?? ''} 空欄${anchor.label}`
+  return anchor?.type === 'anchor' ? `本文${passage?.label ?? ''} (${anchor.label})` : `本文${passage?.label ?? ''}`
+}
+const showReference = async (reference: PassageReference) => {
+  const context = currentRequestContext()
+  await sharedPassagePanel.value?.showReference(reference, () => requestIsCurrent(context))
+}
+watch([selectedChoiceId, submittedText], () => { submissionKey.value = null })
 
 const questionErrorStatus = computed(() => {
   const error = questionError.value as any
@@ -254,7 +301,8 @@ const paywallRequired = computed(() => (
 const paywallNeedsLogin = computed(() => questionErrorStatus.value === 401)
 
 const loadErrorMessage = computed(() => {
-  if (hasSubjectFilter.value && catalogError.value) return '演習条件を確認できませんでした。もう一度お試しください。'
+  if (questionLoading.value) return ''
+  if (catalogError.value) return '演習条件を確認できませんでした。もう一度お試しください。'
   if (!validPosition.value) return hasSubjectFilter.value ? '指定された条件に合う公開問題が見つかりませんでした。' : '試験ナンバーまたは問番号が正しくありません。'
   if (paywallRequired.value) return ''
   if (questionError.value || (questionResponse.value && !question.value)) return '指定された公開問題が見つかりませんでした。'
@@ -277,47 +325,68 @@ const completionMessage = computed(() => {
   return `演習セット ${examNumber.value} の公開問題をすべて解き終えました。`
 })
 
-watch(
-  () => [
-    examNumber.value,
-    questionNumber.value,
-    route.query.exams,
-    route.query.questions,
-    route.query.order,
-    route.query.seed,
-    route.query.history_topic,
-    route.query.major_category_code,
-    route.query.category_code,
-  ],
-  () => {
-    selectedChoiceId.value = null
-    answerResult.value = null
-    answerError.value = ''
-    completed.value = false
-    restoredHistoryId.value = null
-  },
-)
+const resetAnswer = () => {
+  answerRequestVersion++
+  selectedChoiceId.value = null
+  submittedText.value = ''
+  answerResult.value = null
+  restoredHistoryId.value = null
+  submissionKey.value = null
+  submitting.value = false
+  answerError.value = ''
+  completed.value = false
+  favoriteModalOpen.value = false
+}
+
+watch([accessToken, () => user.value?.id, () => user.value?.role, () => user.value?.paid_content_access, conditionScope], () => {
+  scopeGeneration.value++
+  passageContext.value = null
+  requestFailure.value = null
+  resetAnswer()
+}, { flush: 'sync' })
+
+watch([examNumber, questionNumber], () => {
+  navigationGeneration.value++
+  requestFailure.value = null
+  if (!canRetainPassageContext(passageContext.value, { examNumber: examNumber.value, questionNumber: questionNumber.value, scope: scopeGeneration.value })) passageContext.value = null
+  resetAnswer()
+}, { flush: 'sync' })
+watch(() => route.query.answer_history_id, resetAnswer, { flush: 'sync' })
+watch([() => question.value?.id, () => question.value?.question_version], resetAnswer, { flush: 'sync' })
+watch([scopeGeneration, navigationGeneration], () => { if (pageActive) void refresh() }, { flush: 'post' })
+watch([practiceSubjectQuery, accessToken, () => user.value?.id, () => user.value?.paid_content_access, () => user.value?.role], () => { if (pageActive) void refreshCatalog() }, { flush: 'post' })
 
 watch(question, (loaded) => {
+  if (!loaded) return
+  passageContext.value = reconcilePassageContext(passageContext.value, loaded, scopeGeneration.value)
   if (loaded && typeof loaded.is_favorite === 'boolean') setFavorite(loaded, loaded.is_favorite)
 }, { immediate: true })
+
+watch([questionError, catalogError], ([failure, catalogFailure]) => {
+  if (failure || catalogFailure) {
+    passageContext.value = null
+  }
+}, { flush: 'sync' })
+
+onBeforeUnmount(() => {
+  pageActive = false
+  answerRequestVersion++
+  passageContext.value = null
+})
 
 watch(questionErrorStatus, (errorStatus) => {
   if (errorStatus === 401 && isLoggedIn.value) logout()
 })
 
-const choiceState = (choice: Choice) => {
-  if (!answerResult.value) return { selected: selectedChoiceId.value === choice.id }
-
-  return {
-    selected: selectedChoiceId.value === choice.id,
-    correct: answerResult.value.correct_choice.id === choice.id,
-    incorrect: selectedChoiceId.value === choice.id && !answerResult.value.is_correct,
-  }
-}
-
 const submitAnswer = async () => {
-  if (!question.value || selectedChoiceId.value === null || submitting.value) return
+  if (!question.value || submitting.value || answerResult.value) return
+  if (question.value.answer_type === 'short_text' ? Boolean(shortAnswerIssue(submittedText.value, question.value.input_constraints)) : selectedChoiceId.value === null) return
+  const currentId = question.value.id
+  const currentVersion = question.value.question_version ?? 1
+  const requestVersion = ++answerRequestVersion
+  const currentToken = accessToken.value
+  const answerContext = currentRequestContext()
+  submissionKey.value ??= crypto.randomUUID()
 
   submitting.value = true
   answerError.value = ''
@@ -328,12 +397,24 @@ const submitAnswer = async () => {
       {
         method: 'POST',
         headers: authHeaders.value,
-        body: { selected_choice_id: selectedChoiceId.value },
+        body: { answer_type: question.value.answer_type ?? 'single_choice', question_version: currentVersion, submission_key: submissionKey.value, ...(question.value.answer_type === 'short_text' ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) },
       },
     )
+    if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value) return
     answerResult.value = response.data
   }
   catch (error: any) {
+    if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value) return
+    if ((error?.statusCode ?? error?.status) === 409) {
+      await refresh()
+      // Refresh changes the request counter and content version, not the answer's location.
+      if (!pageActive || answerContext.instance !== requestInstance
+        || answerContext.scope !== scopeGeneration.value || answerContext.navigation !== navigationGeneration.value
+        || answerContext.examNumber !== examNumber.value || answerContext.questionNumber !== questionNumber.value
+        || currentId !== question.value?.id || currentToken !== accessToken.value) return
+      answerError.value = '問題が更新されました。内容を確認して回答し直してください。'
+      return
+    }
     if (error?.statusCode === 401 || error?.status === 401) {
       logout()
       answerError.value = 'ログインの有効期限が切れました。もう一度ログインしてください。'
@@ -343,10 +424,10 @@ const submitAnswer = async () => {
       answerError.value = 'プレミアム会員資格を確認できません。プレミアム会員ページをご確認ください。'
       return
     }
-    answerError.value = '回答を送信できませんでした。通信状況を確認して、もう一度お試しください。'
+    answerError.value = error?.data?.error?.message ?? '回答を送信できませんでした。通信状況を確認して、もう一度お試しください。'
   }
   finally {
-    submitting.value = false
+    if (requestVersion === answerRequestVersion) submitting.value = false
   }
 }
 
@@ -358,6 +439,8 @@ const answerHistoryId = computed(() => {
 const restoreAnswerHistory = async () => {
   if (!question.value || !isLoggedIn.value || !answerHistoryId.value) return
   if (restoredHistoryId.value === answerHistoryId.value) return
+  const requestVersion = answerRequestVersion
+  const token = accessToken.value
 
   try {
     const response = await api<ApiResponse<AnswerHistoryDetail>>(
@@ -366,16 +449,23 @@ const restoreAnswerHistory = async () => {
         headers: authHeaders.value,
       },
     )
+    if (requestVersion !== answerRequestVersion || token !== accessToken.value) return
     const history = response.data
-    if (history.question.id !== question.value.id) {
+    if (history.question.id !== question.value.id || (history.question_version && history.question_version !== question.value.question_version)) {
       answerError.value = 'この解答履歴は表示中の問題と一致しません。'
       return
     }
 
-    selectedChoiceId.value = history.selected_choice.id
+    selectedChoiceId.value = history.selected_choice?.id ?? null
+    submittedText.value = history.submitted_text ?? ''
     answerResult.value = {
       question_id: history.question.id,
-      selected_choice_id: history.selected_choice.id,
+      selected_choice_id: history.selected_choice?.id ?? null,
+      answer_type: history.answer_type,
+      submitted_text: history.submitted_text,
+      correct_answer: history.correct_answer,
+      question_version: history.question_version,
+      source_references: history.source_references,
       is_correct: history.is_correct,
       correct_choice: history.correct_choice,
       explanation_blocks: history.explanation_blocks,
@@ -385,13 +475,14 @@ const restoreAnswerHistory = async () => {
     restoredHistoryId.value = history.id
   }
   catch (error: any) {
+    if (requestVersion !== answerRequestVersion || token !== accessToken.value) return
     if (error?.statusCode === 401 || error?.status === 401) logout()
     else answerError.value = '解答履歴を読み込めませんでした。'
   }
 }
 
 watch(
-  [question, answerHistoryId, isLoggedIn],
+  [question, answerHistoryId, isLoggedIn, accessToken],
   restoreAnswerHistory,
   { immediate: true },
 )
@@ -458,7 +549,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
 <template>
   <div class="page-wrap practice-wrap">
-    <div v-if="status === 'idle' || status === 'pending' || (hasSubjectFilter && (catalogStatus === 'idle' || catalogStatus === 'pending'))" class="state-panel" role="status" aria-live="polite" aria-busy="true">
+    <div v-if="questionLoading && !retainedPassageContext" class="state-panel" role="status" aria-live="polite" aria-busy="true">
       <UIcon class="spin" name="i-lucide-loader-circle" aria-hidden="true" />
       <p>問題を読み込んでいます</p>
     </div>
@@ -474,12 +565,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
       </div>
     </div>
 
-    <div v-else-if="loadErrorMessage || !question" class="state-panel error-panel">
+    <div v-else-if="!retainedPassageContext && (loadErrorMessage || !question)" class="state-panel error-panel">
       <UIcon name="i-lucide-circle-alert" />
       <h1>問題を表示できません</h1>
       <p>{{ loadErrorMessage || '指定された公開問題が見つかりませんでした。' }}</p>
       <div class="state-actions">
-        <button class="secondary-link" type="button" @click="() => { refresh(); if (hasSubjectFilter) refreshCatalog() }">再読み込み</button>
+        <button class="secondary-link" type="button" @click="() => { refresh(); refreshCatalog() }">再読み込み</button>
         <NuxtLink class="primary-link" to="/practice/1/1">問1から始める</NuxtLink>
       </div>
     </div>
@@ -488,18 +579,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
       <header class="practice-head">
         <div>
           <div class="practice-context">
-            <span class="exam-label">演習セット {{ question.exam_number }}</span>
+            <span class="exam-label">演習セット {{ examNumber }}</span>
             <span v-if="practiceProgress" class="practice-progress">{{ practiceProgress }}</span>
           </div>
-          <h1>問{{ question.question_number }}</h1>
+          <h1><span v-if="displayedGroup">大問{{ displayedGroup.group_number }}・</span>問{{ displayedQuestionNumber }}</h1>
+          <p v-if="displayedGroup" class="group-title">{{ displayedGroup.title }}</p>
           <p v-if="selectedSubjectLabel" class="selected-subject">{{ selectedSubjectLabel }}</p>
         </div>
         <div class="practice-meta">
+          <div class="question-classification">
+            <template v-if="question">
+              <p>{{ majorCategoryLabel }} / {{ categoryLabel }}</p>
+              <span v-if="question.is_cultural_history" class="history-topic-label">{{ culturalHistoryLabel(question) }}</span>
+            </template>
+          </div>
           <button
             class="favorite-button"
             :class="{ active: questionIsFavorite }"
             type="button"
-            :disabled="updatingFavorite || (isLoggedIn && !user)"
+            :disabled="!question || updatingFavorite || (isLoggedIn && !user)"
             :aria-pressed="isLoggedIn ? questionIsFavorite : false"
             :aria-label="questionIsFavorite ? 'お気に入りから解除する' : 'お気に入りに登録する'"
             :title="questionIsFavorite ? 'お気に入りから解除' : 'お気に入りに登録'"
@@ -507,52 +605,32 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
           >
             <FavoriteStarIcon :filled="questionIsFavorite" :size="34" />
           </button>
-          <div class="question-classification">
-            <p>{{ majorCategoryLabel }} / {{ categoryLabel }}</p>
-            <span v-if="question.is_cultural_history" class="history-topic-label">{{ culturalHistoryLabel(question) }}</span>
-          </div>
         </div>
       </header>
 
-      <section class="question-panel">
+      <nav v-if="displayedGroup && visibleGroupNumbers.length > 1" class="group-question-nav" aria-label="大問内の小問">
+        <NuxtLink v-for="number in visibleGroupNumbers" :key="number" :to="{ path: `/practice/${examNumber}/${number}`, query: practiceNavigationQuery }" :aria-current="number === questionNumber ? 'page' : undefined">問{{ displayedGroup.question_numbers.indexOf(number) + 1 }}</NuxtLink>
+      </nav>
+      <div class="practice-columns">
+      <SharedPassagePanel v-if="retainedPassageContext" :key="`${retainedPassageContext.scope}:${retainedPassageContext.key}`" ref="sharedPassagePanel" :passages="retainedPassageContext.passages" />
+      <section class="question-panel" :aria-busy="questionLoading">
+        <div v-if="questionLoading" class="question-loading" role="status" aria-live="polite">
+          <UIcon class="spin" name="i-lucide-loader-circle" aria-hidden="true" />
+          <p>問題を読み込んでいます</p>
+        </div>
+        <div v-else-if="loadErrorMessage || !question" class="question-loading" role="alert">
+          <p>{{ loadErrorMessage || '指定された公開問題が見つかりませんでした。' }}</p>
+          <button class="secondary-link" type="button" @click="refresh()">再読み込み</button>
+        </div>
+        <template v-else>
         <div class="question-text">
           <QuestionContentBlocks :blocks="question.content_blocks" />
         </div>
 
-        <div class="choices" role="radiogroup" aria-label="選択肢">
-          <label
-            v-for="choice in question.choices"
-            :key="choice.id"
-            :class="choiceState(choice)"
-          >
-            <input
-              v-model="selectedChoiceId"
-              type="radio"
-              name="answer"
-              :value="choice.id"
-              :disabled="Boolean(answerResult) || submitting"
-            >
-            <span class="choice-label">{{ choice.choice_label }}</span>
-            <QuestionContentBlocks class="choice-content" :blocks="choice.content_blocks" />
-            <UIcon v-if="answerResult?.correct_choice.id === choice.id" class="choice-mark correct-mark" name="i-lucide-circle-check" />
-            <UIcon
-              v-else-if="answerResult && selectedChoiceId === choice.id"
-              class="choice-mark incorrect-mark"
-              name="i-lucide-circle-x"
-            />
-          </label>
+        <div v-if="question.passage_references?.length" class="passage-references" aria-label="参照する本文">
+          <button v-for="reference in question.passage_references" :key="`${reference.passage_id}-${reference.anchor_id ?? 'all'}`" type="button" @click="showReference(reference)">{{ referenceLabel(reference) }}を確認</button>
         </div>
-
-        <button
-          v-if="!answerResult"
-          class="primary-link answer-button"
-          type="button"
-          :disabled="selectedChoiceId === null || submitting"
-          @click="submitAnswer"
-        >
-          <UIcon v-if="submitting" class="spin" name="i-lucide-loader-circle" />
-          {{ submitting ? '採点中です' : '回答する' }}
-        </button>
+        <QuestionAnswerForm v-model:selected-choice-id="selectedChoiceId" v-model:submitted-text="submittedText" :answer-type="question.answer_type" :choices="question.choices" :constraints="question.input_constraints" :disabled="Boolean(answerResult)" :submitting="submitting" :correct-choice-id="answerResult?.correct_choice?.id" :is-correct="answerResult?.is_correct" @submit="submitAnswer" />
 
         <p v-if="answerError" class="inline-error" role="alert">{{ answerError }}</p>
 
@@ -569,10 +647,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
           <div class="result-section">
             <h2>正答</h2>
-            <div class="correct-answer">
+            <p v-if="answerResult.answer_type === 'short_text'" class="correct-short-answer">{{ answerResult.correct_answer }}</p>
+            <div v-else-if="answerResult.correct_choice" class="correct-answer">
               <span>{{ answerResult.correct_choice.choice_label }}</span>
               <QuestionContentBlocks :blocks="answerResult.correct_choice.content_blocks" />
             </div>
+            <p v-if="answerResult.answer_type === 'short_text'" class="submitted-answer">入力した解答：{{ answerResult.submitted_text }}</p>
           </div>
 
           <div class="result-section">
@@ -580,7 +660,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
             <QuestionContentBlocks :blocks="answerResult.explanation_blocks" />
           </div>
 
-          <div v-if="answerResult.source_text" class="result-section source-section">
+          <div v-if="sourceReferences.length" class="result-section source-section">
             <h2>根拠資料</h2>
             <ul>
               <li v-for="(source, index) in sourceReferences" :key="`${source.url ?? source.label}-${index}`">
@@ -605,7 +685,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
             <UIcon name="i-lucide-arrow-right" />
           </button>
         </section>
+        </template>
       </section>
+      </div>
     </template>
 
     <Teleport to="body">
@@ -648,16 +730,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
 <style scoped>
 .practice-wrap { max-width: 900px; }
-.practice-head { padding: 46px 0 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+.practice-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.group-question-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.group-question-nav a { padding: 8px 13px; border: 1px solid var(--line); border-radius: 4px; color: var(--teal-dark); text-decoration: none; font-weight: 700; }
+.group-question-nav a[aria-current="page"] { border-color: var(--teal); background: var(--surface-tint); }
+.passage-references { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.passage-references button { min-height: 40px; border: 1px solid var(--line); padding: 7px 12px; color: var(--teal-dark); background: var(--surface-soft); border-radius: 4px; cursor: pointer; }
+.correct-short-answer { font-size: 1.25rem; font-weight: 800; overflow-wrap: anywhere; }.submitted-answer { color: var(--muted); overflow-wrap: anywhere; }
+
+.practice-head { padding: 46px 0 22px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.practice-head > div:first-child { flex: 1 1 0; }
 .practice-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
 .practice-head .exam-label { color: var(--teal); font-size: 0.875rem; font-weight: 800; }
 .practice-progress { padding-left: 12px; border-left: 1px solid var(--line-strong); color: var(--muted); font-size: 0.8125rem; font-weight: 800; }
 .practice-head h1 { margin: 5px 0 0; font-size: 2.25rem; }
 .practice-head p { margin: 0; color: var(--muted); }
-.practice-meta { min-width: 0; display: flex; align-items: center; gap: 10px; }
+.practice-meta { min-width: 0; min-height: 42px; flex: 1 1 0; align-self: stretch; display: flex; align-items: flex-start; justify-content: flex-end; gap: 10px; }
 .practice-head > div { min-width: 0; }
 .practice-head p.selected-subject { margin-top: 8px; font-size: .8125rem; line-height: 1.7; }
-.question-classification { min-width: 0; text-align: right; font-size: .8125rem; line-height: 1.7; }
+.question-classification { min-width: 0; flex: 1 1 0; overflow-wrap: anywhere; text-align: right; font-size: .8125rem; line-height: 1.7; }
 .history-topic-label { display: inline-block; margin-top: 5px; color: var(--teal-dark); font-weight: 800; }
 .favorite-button {
   width: 42px;
@@ -675,8 +766,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 .favorite-button:hover { color: #c78b00; transform: scale(1.08); }
 .favorite-button.active { color: #f0b323; }
 .favorite-button:disabled { opacity: .6; cursor: wait; }
-.question-panel { padding: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.question-panel { min-width: 0; padding: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .question-text { margin: 0; font-size: 1.1875rem; font-weight: 700; line-height: 1.8; }
+.question-loading { min-height: 220px; display: grid; place-content: center; justify-items: center; gap: 12px; color: var(--muted); }
 .choices { display: grid; gap: 10px; margin-top: 28px; }
 .choices label { position: relative; min-width: 0; min-height: 62px; display: grid; grid-template-columns: 20px 34px minmax(0, 1fr) 24px; align-items: start; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; transition: border-color .15s, background .15s; }
 .choices label:hover:not(:has(input:disabled)) { border-color: var(--teal); }
@@ -775,6 +867,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 640px) {
   .practice-head { align-items: flex-start; flex-direction: column; }
+  .practice-head > div:first-child, .practice-meta { width: 100%; flex: none; }
   .question-panel { padding: 22px; }
   .question-text { font-size: 1.125rem; }
   .choices label { grid-template-columns: 18px 28px minmax(0, 1fr) 22px; padding: 11px; }

@@ -7,7 +7,7 @@ import { ApiError } from '../server/core/errors.ts'
 import { closeDatabase, getDatabase, query, type Database } from '../server/core/db.ts'
 import type { User } from '../server/core/auth.ts'
 import { excerptFrom, sanitizeQuestionInput, validateQuestionInput, type QuestionInput } from '../server/services/learning-validation.ts'
-import { deleteQuestion, loadQuestion, materialDigest, saveQuestion } from '../server/services/learning-writer.ts'
+import { deleteQuestion, loadQuestion, materialDigest, saveQuestion, loadExamSet, publishExamSet } from '../server/services/learning-writer.ts'
 import { answerQuestion, getHistory, getQuestion, listAdminQuestions, listExams, listFavorites, listHistory, nextQuestion, putFavorite, removeFavorite } from '../server/services/learning.ts'
 
 process.env.APP_ENV = 'test'
@@ -364,16 +364,31 @@ test('no-op and visibility-only saves preserve histories, identities and favorit
   assert.equal((await query('SELECT id FROM favorites WHERE user_id=$1 AND question_id=$2', [owner.id, question.id], db)).length, 1)
 }))
 
-test('publication requires all configured positions and invalid input cannot partially save', integration, async () => isolated(async (db, exam) => {
+test('legacy publication requires complete public peers or an atomic set publication', integration, async () => isolated(async (db, exam) => {
   await assert.rejects(saveQuestion(input({ exam_number: exam }), { db, requireCompleteExam: true }), apiError(422))
   assert.equal((await query('SELECT id FROM questions WHERE exam_number=$1', [exam], db)).length, 0)
   await saveQuestion(input({ exam_number: exam, publication_status: 'draft' }), { db })
-  await saveQuestion(input({ exam_number: exam, question_number: 2, publication_status: 'private' }), { db })
-  const last = await saveQuestion(input({ exam_number: exam, question_number: 3 }), { db, requireCompleteExam: true })
+  const privatePeer = await saveQuestion(input({ exam_number: exam, question_number: 2, publication_status: 'private' }), { db })
+  await assert.rejects(saveQuestion(input({ exam_number: exam, question_number: 3 }), { db, requireCompleteExam: true }), apiError(422))
+  assert.equal((await loadExamSet(exam, db)).publication_status, 'draft')
+  assert.equal((await listExams(null, db)).data.some(set => set.exam_number === exam), false)
+  const draftLast = await saveQuestion(input({ exam_number: exam, question_number: 3, publication_status: 'draft' }), { db })
+  const incomplete = await loadExamSet(exam, db)
+  await assert.rejects(publishExamSet(exam, incomplete.lock_version, { db }), apiError(422))
+  await saveQuestion({ ...privatePeer, publication_status: 'draft' }, { id: privatePeer.id, db })
+  const ready = await loadExamSet(exam, db)
+  await publishExamSet(exam, ready.lock_version, { db })
+  const last = await loadQuestion(draftLast.id, db)
   assert.equal(last.publication_status, 'published')
+  assert.equal(last.answer_type_locked, true)
+  assert.equal((await listExams(null, db)).data.find(set => set.exam_number === exam)!.published_question_count, 3)
+  await saveQuestion(last, { id: last.id, db, requireCompleteExam: true })
   const invalid = input({ exam_number: exam, question_number: 3, explanation_blocks: [] })
   await assert.rejects(saveQuestion(invalid, { id: last.id, db }), apiError(422))
   assert.deepEqual((await loadQuestion(last.id, db)).explanation_blocks, last.explanation_blocks)
+  // A no-op publication still checks every existing public peer's contents.
+  await query("UPDATE questions SET explanation_blocks='[]'::jsonb WHERE exam_number=$1 AND question_number=1", [exam], db)
+  await assert.rejects(saveQuestion(last, { id: last.id, db, requireCompleteExam: true }), apiError(422))
 }))
 
 test('changing the correct answer preserves choice IDs and enforces choice-ID ownership', integration, async () => isolated(async (db, exam) => {

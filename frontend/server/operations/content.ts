@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { lstat, readFile, mkdtemp, writeFile, link, rm } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -6,9 +5,11 @@ import { query, transaction, type Database } from '../core/db.ts'
 import { environment } from '../core/config.ts'
 import { validateQuestionInput, type QuestionInput } from '../services/learning-validation.ts'
 import { saveQuestion, validateCompleteExam } from '../services/learning-writer.ts'
+import { canonical, digest, OperationError, ARCHIVE_FORMAT } from './archive-common.ts'
+import { validateArchiveV2, importArchiveV2, exportArchiveV2, type ArchiveV2 } from './content-v2.ts'
+export { canonical, digest, OperationError, ARCHIVE_FORMAT } from './archive-common.ts'
+export { createArchiveV2, validateArchiveV2 } from './content-v2.ts'
 
-export class OperationError extends Error {}
-export const ARCHIVE_FORMAT = 'exam-practice-question-archive'
 export const IMPORT_CONFIRMATION = 'IMPORT_INTO_EMPTY_DATABASE'
 export const MAX_CONTENT_BYTES = 64 * 1024 * 1024
 export const QUESTION_LOCK = 71514345
@@ -22,12 +23,6 @@ const BLOCK_KEYS: Record<string, string[]> = {
   code_group: ['type', 'items'], fill_in_choice: ['type', 'cells'],
 }
 
-export function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical)
-  if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical((value as Record<string, unknown>)[key])]))
-  return value
-}
-export const digest = (value: unknown) => createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex')
 const object = (value: unknown): value is Record<string, any> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 const exactKeys = (value: unknown, keys: string[]): value is Record<string, any> => object(value) && Object.keys(value).sort().join('\0') === [...keys].sort().join('\0')
 
@@ -57,17 +52,19 @@ export function validateQuestions(value: unknown): QuestionInput[] {
   })
 }
 
-export type ArchiveDocument = {
-  format: string, version: number, question_count: number, choice_count: number,
+export type LegacyArchiveDocument = {
+  format: string, version: 1, question_count: number, choice_count: number,
   sha256: string, questions: QuestionInput[]
 }
-export function createArchive(questions: unknown): ArchiveDocument {
+export type ArchiveDocument = LegacyArchiveDocument | ArchiveV2
+export function createArchive(questions: unknown): LegacyArchiveDocument {
   const validated = validateQuestions(questions)
-  const body = { format: ARCHIVE_FORMAT, version: 1, question_count: validated.length,
+  const body = { format: ARCHIVE_FORMAT, version: 1 as const, question_count: validated.length,
     choice_count: validated.reduce((count, question) => count + question.choices.length, 0), questions: validated }
   return { ...body, sha256: digest(body) }
 }
 export function validateArchive(value: unknown): ArchiveDocument {
+  if (object(value) && value.version === 2) return validateArchiveV2(value)
   if (!exactKeys(value, ['format', 'version', 'question_count', 'choice_count', 'sha256', 'questions']) || value.format !== ARCHIVE_FORMAT || value.version !== 1) throw new OperationError('未対応のアーカイブ形式です')
   const archive = createArchive(value.questions)
   if (!Number.isSafeInteger(value.question_count) || !Number.isSafeInteger(value.choice_count) || value.question_count !== archive.question_count || value.choice_count !== archive.choice_count || typeof value.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(value.sha256) || value.sha256 !== archive.sha256) throw new OperationError('アーカイブの件数又は照合値が一致しません')
@@ -91,11 +88,12 @@ async function readJson(path: string): Promise<unknown> {
 export async function importArchive(document: unknown, confirmation: string | undefined, db?: Database) {
   if (confirmation !== IMPORT_CONFIRMATION) throw new OperationError('空のDBへ取り込む明示的な確認が必要です')
   const archive = validateArchive(document)
+  if (archive.version === 2) return importArchiveV2(archive, db)
   return transaction(async connection => {
     await query('SELECT pg_advisory_xact_lock($1)', [QUESTION_LOCK], connection)
     await query('LOCK TABLE questions, question_choices IN SHARE ROW EXCLUSIVE MODE', [], connection)
-    const [count] = await query<{ total: number }>('SELECT (SELECT count(*) FROM questions) + (SELECT count(*) FROM question_choices) AS total', [], connection)
-    if (Number(count?.total) !== 0) throw new OperationError('問題と選択肢が両方空のDBだけに取り込めます。既存データは上書きしません')
+    const [count] = await query<{ total: number }>('SELECT (SELECT count(*) FROM questions) + (SELECT count(*) FROM question_choices) + (SELECT count(*) FROM question_groups) + (SELECT count(*) FROM group_passages) AS total', [], connection)
+    if (Number(count?.total) !== 0) throw new OperationError('問題・選択肢・大問・共通本文が空のDBだけに取り込めます。既存データは上書きしません')
     for (const question of archive.questions) await saveQuestion(question, { db: connection, requireCompleteExam: false })
     const publishedSets = new Set(archive.questions.filter(question => question.publication_status === 'published').map(question => question.exam_number))
     for (const exam of publishedSets) await validateCompleteExam(exam, connection)
@@ -128,11 +126,14 @@ export async function exportArchive(path: string, db?: Database) {
     if (!db) await query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY', [], connection)
     const rows = await query<QuestionInput>(`SELECT q.exam_number, q.question_number, q.major_category_code, q.category_code,
       q.content_blocks, q.explanation_blocks, q.source_text, q.publication_status, q.is_cultural_history, q.is_art_history, q.cultural_history_category,
+      q.group_id,q.group_question_number,q.answer_type,q.accepted_answers,q.input_constraints,q.source_references,
+      COALESCE((SELECT jsonb_agg(jsonb_build_object('major_category_code',t.major_category_code,'category_code',t.category_code) ORDER BY t.major_category_code,t.category_code) FROM question_topic_links t WHERE t.question_id=q.id AND NOT (t.major_category_code=q.major_category_code AND t.category_code=q.category_code)), '[]'::jsonb) AS related_topics,
+      COALESCE((SELECT jsonb_agg(jsonb_build_object('passage_id',r.passage_id,'anchor_id',r.anchor_id) ORDER BY r.passage_id,r.anchor_id) FROM question_passage_references r WHERE r.question_id=q.id), '[]'::jsonb) AS passage_references,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('choice_label', c.choice_label, 'content_blocks', c.content_blocks,
         'is_correct', c.is_correct, 'display_order', c.display_order) ORDER BY c.display_order)
         FROM question_choices c WHERE c.question_id = q.id), '[]'::jsonb) AS choices
       FROM questions q ORDER BY q.exam_number, q.question_number`, [], connection)
-    return createArchive(rows)
+    return exportArchiveV2(rows, connection)
   }, db)
   const encoded = JSON.stringify(archive, null, 2) + '\n'
   if (Buffer.byteLength(encoded) > MAX_CONTENT_BYTES) throw new OperationError('アーカイブのサイズ上限を超えています')

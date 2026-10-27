@@ -183,10 +183,10 @@ test('fresh PostgreSQL migrations retain constraints and adopt existing Rails re
   await query('CREATE TABLE ar_internal_metadata(key varchar PRIMARY KEY,value varchar)', [], db)
   await query("INSERT INTO ar_internal_metadata(key,value) VALUES('environment','test')", [], db)
   await query('ALTER TABLE question_choices RENAME CONSTRAINT fk_choices_question TO fk_rails_preserved', [], db)
-  await query('DELETE FROM nitro_schema_migrations', [], db)
+  // Replay only the Rails-adoption migrations; later schema versions remain applied.
+  await query("DELETE FROM nitro_schema_migrations WHERE version IN ('001_preserve_rails_schema.sql','002_question_history_topics.sql')", [], db)
   const report = await migrate(db)
-  assert.ok(report.applied.includes('001_preserve_rails_schema.sql'))
-  assert.ok(report.applied.includes('002_question_history_topics.sql'))
+  assert.deepEqual(report.applied, ['001_preserve_rails_schema.sql','002_question_history_topics.sql'])
   assert.deepEqual(await query('SELECT * FROM questions ORDER BY id', [], db), rows)
   assert.deepEqual(await query('SELECT id,question_id FROM question_choices ORDER BY id', [], db), ids)
   assert.equal((await query('SELECT id FROM users WHERE id=$1', [owner.id], db)).length, 1)
@@ -223,7 +223,7 @@ test('Yamakawa taxonomy migration maps untouched legacy samples and preserves le
   }
   const applyTaxonomy = async () => {
     await query("DELETE FROM nitro_schema_migrations WHERE version='003_yamakawa_question_categories.sql'", [], db)
-    assert.deepEqual(await migrate(db), { applied: ['003_yamakawa_question_categories.sql', '004_cultural_history_categories.sql'] })
+    assert.deepEqual(await migrateThrough(db, '004_cultural_history_categories.sql'), { applied: ['003_yamakawa_question_categories.sql', '004_cultural_history_categories.sql'] })
   }
   const classifications = () => query('SELECT question_number,major_category_code,category_code,is_cultural_history,is_art_history,cultural_history_category FROM questions ORDER BY question_number', [], db)
   const expected = content.questions.map((question: any) => ({ question_number: question.question_number,
@@ -235,7 +235,7 @@ test('Yamakawa taxonomy migration maps untouched legacy samples and preserves le
   assert.deepEqual(await classifications(), expected)
   assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), choicesBefore)
   await verifyLearningRecords()
-  assert.deepEqual(await migrate(db), { applied: [] })
+  assert.deepEqual(await migrateThrough(db, '004_cultural_history_categories.sql'), { applied: [] })
 
   // Re-run the upgrade from the same legacy state with one author-edited choice.
   await query('ROLLBACK TO SAVEPOINT legacy_taxonomy', [], db)
@@ -269,7 +269,7 @@ test('culture category migration backfills legacy flags without changing identit
   }
   const preservedTables = ['questions', 'question_choices', 'users', 'answer_histories', 'favorites'] as const
   const before = Object.fromEntries(await Promise.all(preservedTables.map(async table => [table, await query(`SELECT * FROM ${table} ORDER BY id`, [], db)])))
-  assert.deepEqual(await migrate(db), { applied: ['004_cultural_history_categories.sql'] })
+  assert.deepEqual(await migrateThrough(db, '004_cultural_history_categories.sql'), { applied: ['004_cultural_history_categories.sql'] })
   const upgraded = await query('SELECT * FROM questions ORDER BY question_number', [], db)
   assert.deepEqual(upgraded.map(question => question.cultural_history_category), [null, 'art_history', 'other_cultural_history'])
   for (const table of preservedTables) {
@@ -277,9 +277,59 @@ test('culture category migration backfills legacy flags without changing identit
     if (table === 'questions') for (const row of rows) delete row.cultural_history_category
     assert.deepEqual(rows, before[table])
   }
-  assert.deepEqual(await migrate(db), { applied: [] })
+  assert.deepEqual(await migrateThrough(db, '004_cultural_history_categories.sql'), { applied: [] })
   assert.deepEqual(await query('SELECT * FROM questions ORDER BY question_number', [], db), upgraded)
 }, '003_yamakawa_question_categories.sql'))
+
+test('grouped migration preserves legacy questions, choice IDs, histories and favorites while adding defaults', integration, async () => isolated(async db => {
+  await insertLegacySamples(db)
+  const owner = await user(db)
+  await query(`INSERT INTO answer_histories(user_id,question_id,selected_choice_id,is_correct,created_at,updated_at)
+    SELECT $1,q.id,c.id,c.is_correct,NOW(),NOW() FROM questions q JOIN question_choices c ON c.question_id=q.id AND c.display_order=1`, [owner.id], db)
+  await query('INSERT INTO favorites(user_id,question_id,created_at,updated_at) SELECT $1,id,NOW(),NOW() FROM questions', [owner.id], db)
+  const tables = ['questions', 'question_choices', 'users', 'answer_histories', 'favorites'] as const
+  const before = Object.fromEntries(await Promise.all(tables.map(async table => [table, await query(`SELECT * FROM ${table} ORDER BY id`, [], db)])))
+  assert.deepEqual(await migrateThrough(db, '005_grouped_questions.sql'), { applied: ['005_grouped_questions.sql'] })
+  for (const table of tables) {
+    const rows = await query(`SELECT * FROM ${table} ORDER BY id`, [], db)
+    const oldKeys = Object.keys(before[table][0]!)
+    assert.deepEqual(rows.map(row => Object.fromEntries(oldKeys.map(key => [key, row[key]]))), before[table])
+  }
+  const upgraded = await query('SELECT * FROM questions ORDER BY id', [], db)
+  for (const row of upgraded) {
+    assert.equal(row.group_id, null); assert.equal(row.group_question_number, null)
+    assert.equal(row.answer_type, 'single_choice'); assert.equal(row.content_version, 1)
+    assert.equal(row.lock_version, 1); assert.equal(row.legacy_answer_compatible, true)
+    assert.deepEqual(row.accepted_answers, []); assert.deepEqual(row.input_constraints, {})
+  }
+  assert.equal((await query('SELECT * FROM question_topic_links', [], db)).length, upgraded.length)
+  const set = (await query('SELECT * FROM exam_sets WHERE exam_number=1', [], db))[0]!
+  assert.equal(set.format_code, 'legacy_practice'); assert.equal(set.publication_status, 'published')
+  for (const row of await query('SELECT * FROM answer_histories ORDER BY id', [], db)) {
+    assert.equal(row.answer_type, 'single_choice'); assert.equal(row.submitted_text, null)
+    assert.equal(row.question_version, 1); assert.equal(row.submission_key, null)
+  }
+  assert.deepEqual(await migrateThrough(db, '005_grouped_questions.sql'), { applied: [] })
+  assert.deepEqual(await query('SELECT * FROM questions ORDER BY id', [], db), upgraded)
+}, '004_cultural_history_categories.sql'))
+
+test('answer-type lock migration marks only currently published questions and preserves existing fields', integration, async () => isolated(async db => {
+  await insertLegacySamples(db)
+  await query("UPDATE questions SET publication_status='draft' WHERE question_number=2", [], db)
+  await query("UPDATE questions SET publication_status='private' WHERE question_number=3", [], db)
+  const before = await query('SELECT * FROM questions ORDER BY id', [], db)
+  const choicesBefore = await query('SELECT * FROM question_choices ORDER BY id', [], db)
+  assert.deepEqual(await migrate(db), { applied: ['006_lock_published_answer_types.sql'] })
+  const upgraded = await query('SELECT * FROM questions ORDER BY id', [], db)
+  for (const [index, row] of upgraded.entries()) {
+    assert.equal(row.answer_type_locked, before[index]!.publication_status === 'published')
+    const { answer_type_locked: _locked, ...original } = row
+    assert.deepEqual(original, before[index])
+  }
+  assert.deepEqual(await query('SELECT * FROM question_choices ORDER BY id', [], db), choicesBefore)
+  assert.deepEqual(await migrate(db), { applied: [] })
+  assert.deepEqual(await query('SELECT * FROM questions ORDER BY id', [], db), upgraded)
+}, '005_grouped_questions.sql'))
 
 test('applied SQL checksums cannot be silently rewritten', integration, async () => isolated(async db => {
   const directory = await mkdtemp(join(tmpdir(), 'exam-migration-test-'))

@@ -24,11 +24,12 @@ test('mobile accordion starts closed and keeps a separate question accordion', (
   assert.match(sidebar, /\.mobile-open \.sidebar-content\s*\{ display: block; \}/)
 })
 
-test('navigation closes the mobile list without adding API calls', () => {
+test('navigation closes the mobile list and shares the published catalog', () => {
   assert.match(sidebar, /watch\(\(\) => route.fullPath, closeMobileList\)/)
   assert.equal(sidebar.match(/@click="closeMobileList"/g)?.length, 2)
   assert.match(sidebar, /@keydown.esc="closeMobileOnEscape"/)
   assert.match(sidebar, /mobileToggle.value\?\.focus\(\)/)
+  assert.match(sidebar, /usePublicExamCatalog\(\)/)
   assert.doesNotMatch(sidebar, /\b(?:useFetch|useApi|\$fetch)\s*\(/)
 })
 

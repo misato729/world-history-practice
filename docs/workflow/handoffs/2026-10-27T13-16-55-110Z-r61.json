@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "revision": 61,
+  "state_hash": "80fa15fa19c27d458c2484e7f8853fe23377e77cd77d6e0f80d03d49acfab1c5",
+  "recorded_at": "2026-10-27T13:16:55.110Z",
+  "timezone": "UTC",
+  "context": "service",
+  "task": "persistent_shared_passage",
+  "summary": "型/buildと画面確認は成功。最終フロント再検査は制限環境で96/97成功、ローカルHTTPSポートを開く既存1件が環境制限で失敗",
+  "next_action": "コードを変えず、ローカルポートの利用が可能な実行条件で同じ97件を再確認する",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "b3e0dc10cc338a977da534c397fd1bc778247591",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "README.md"
+      },
+      {
+        "status": " M",
+        "path": "config/exam.json"
+      },
+      {
+        "status": " M",
+        "path": "docs/architecture.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/customization.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/verification.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/product.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/ExamSidebar.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/QuestionContentBlocks.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminContentBlockEditor.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionForm.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/components/admin/AdminQuestionPreview.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/layouts/admin.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/questions/[questionId]/edit.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/admin/questions/new.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/exam-overview.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/favorites.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/history.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/index.vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/pages/practice/[examNumber]/[questionNumber].vue"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/types/adminQuestion.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/utils/examCatalog.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/app/utils/practiceSequence.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/api.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/archive-optional.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/learning.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server-tests/operations.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/content.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/operations/restore-drill.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-validation.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning-writer.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/server/services/learning.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/shared/examConfig.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/tests/examConfig.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "frontend/tests/examSidebarLayout.test.ts"
+      },
+      {
+        "status": " M",
+        "path": "scripts/check-template.mjs"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/grouped-question-design-20261027.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/grouped-question-implementation-20261027.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/question-registration-20261027.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/components/QuestionAnswerForm.vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/components/QuestionInlineText.vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/components/SharedPassagePanel.vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/components/admin/AdminSourceEditor.vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/usePublicExamCatalog.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/pages/admin/exams/[examNumber].vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/pages/admin/exams/index.vue"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/adminQuestionForm.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/learningPresentation.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/practicePassageState.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server-tests/content-v2.test.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server-tests/grouped-learning.test.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/database/migrations/005_grouped_questions.sql"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/database/migrations/006_lock_published_answer_types.sql"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/operations/archive-common.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/operations/content-v2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/server/services/learning-structure.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/shared/types/learning.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/adminGroupedQuestion.test.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/groupedLearningPresentation.test.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/practicePassageState.test.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "30a06837103836e1e49b60126d31a6aaefc6dacb811e767588701863ebfae49b",
+    "README.md": "e1f2c774d1d9c0ca82c53ec679f267ffc1eea272d66bb55def0de00892e0274f",
+    "config/exam.json": "9034ad2855636d04e75649b53c0da210dce3021149a0a0e44a6c4ef413ca0caa",
+    "docs/classification.md": "9a3b5787ee99061934016d982c989444c5b87a009ebd5bdf6aab836a5ff6ea0b",
+    "docs/verification.md": "5909d0f5c237a314a400437251444c3417c6494dcd2dbd5d0e3394e8d895017a",
+    "docs/workflow/README.md": "d5f0794f33467a626398387d4a2e464beafc8cbf836141419f63888632aeec20",
+    "scripts/context.mjs": "3828c41d1cc5a6977b8444035e094e61e1c9895fcaa9451ecb1919e799ecaffc",
+    "scripts/context.test.mjs": "cc4bda3d1f56ca6824603896b7ad640e7a94a60d55b14a1b0eaeef8030b9e323",
+    "docs/workflow/contexts/product.md": "b0787d728c0ed83a94a2e2245c207c98bc8b88bf52f6a61cd37f2295a5421166",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "d1a54a895714cd0b9e88d3e0997360811ce95f5ce5771ea0e759481fb0e1f1d0",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "587a69716771d7702bcfca7420b7ea3cca69cd2dad300499367e9aeda49f8667",
+    "scripts/check-private-sources.mjs": "1d28447b51b39591d42151f236b837b33d695662168ee5c71500205aa0de96af",
+    "scripts/check-private-sources.test.mjs": "f4e19e5ec736d8c90c1790410c889528ec6ca01ecf39342ab99e3d07b85b1b75",
+    ".gitignore": "44b7e116bb889fd78a2b9dc44c62d261806821140c6a321c65da8508751ae268",
+    ".dockerignore": "bec9094f1c7ce7df6f5ff6ec08343b77dc6dba2988a093ebb384072017a36d08",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a",
+    "content/questions.json": "2327e8637a79dc480d2bd85641156516376e0a025170a8d43113faad33614625",
+    "frontend/shared/examConfig.ts": "a480ce5a6c8ec6cda23c2fdcbf8cbaac4e52f0576366fe673cf15b267eb19fed",
+    "frontend/app/utils/historyTopics.ts": "557afbc23a2da1c4ba8ddaecbeefaecb92a8bddacb86c030740d1fdc9125caab",
+    "frontend/server/services/learning-validation.ts": "4dd86f8c1c82ea6576cbd814885d876566958fbb56ff3b59c91e0d1eb79b356a",
+    "frontend/server/services/learning-writer.ts": "fc39e15c52d2e3a439ea91c6d3408b3afef1f9359496a32077f8398cd193eff4",
+    "frontend/server/services/learning.ts": "44e7a2a5739f01891118e44f1d95c31bb2268265bcfe260dbe5199f5d6c36437",
+    "frontend/server/database/migrations/004_cultural_history_categories.sql": "efa1479a13c01ebca748846228752430845c7b5691c023cd395b3c3e3d2d1773",
+    "frontend/tests/historyTopics.test.ts": "8d8249a3ec79e980b233907e7ca083ae3d85c50ae5d1e691f0f9bcf3cca8f204",
+    "frontend/server-tests/learning.test.ts": "6b3d59b41da88ea07967af6671aeed95cfd64c0b08e8ff4fb1f1a34128e78fb8",
+    "frontend/app/pages/index.vue": "dc7778add03b48851c801a4b8bd5e5c6807b88df5a231e3da16c6e0f3977dd19",
+    "frontend/app/pages/admin/questions/index.vue": "bded02a715ab5082e62094abcafe4b6c734d655ab1c238c729edacfa5a5f2173",
+    "docs/workflow/policy.json": "e3b00b8f351f93a879fc8f77fe0aebb5d72047f3d25496097cdc93c9da96e12c",
+    "scripts/workspace-policy.mjs": "5c050cc4c89e54c79724a4659ff1115c771346873da7bad1746e9610ad729f86",
+    "scripts/workspace-policy.test.mjs": "3f62840182881f24c556e7da76849a61e7d9dbb755a79ff72f241c4a7598c810",
+    "docs/workflow/template-parity-20261027.md": "f919f0ac26ee483a8adad786dfca45727ee315ce82f60d04aa8e0402378712b3",
+    "local-only/question-draft-20261027/問題と解説.md": "dfd78bbf44557448f6b02a072ff0fc995e646c9087e8ef0dfa27884733c19dff",
+    "local-only/question-draft-20261027/形式検査.json": "72c11fcb1452b72c2aafd24f95ff927a32af11971f025896384ac4052c4ce19c",
+    "local-only/question-draft-20261027/過去問形式確認.md": "4b1b58352ad1d8bc0aac2004567cc4ffd46678a907ca76600608cc5802fccd49",
+    "local-only/question-draft-20261027/独立レビュー.md": "83f182c9e26ef53d7a48cc3180929120e6674cb08be70b13941d002bd2535d4e",
+    "local-only/cross-era-question-20261027/問題と解説.md": "79272185430fd4c143ea6db26c763a44941ac64788dfee4be697322ae3760648",
+    "local-only/cross-era-question-20261027/形式再確認.md": "025ba51069750b0e079777a68b896d9c159defa4a5453e7475e84565110b7661",
+    "local-only/cross-era-question-20261027/形式検査.json": "66f42753aa0b96d29d91ea30fedc54e3f1613f865ab87c0ee962fe8c55fab2da",
+    "local-only/cross-era-question-20261027/前半レビュー.md": "9204a77a039f1beb98fcbd572772e02e49492c975b8c5a793d46dbe7e5bd2631",
+    "local-only/cross-era-question-20261027/後半レビュー.md": "f7987965c743b3b36f8adcd3258730f42ba37470ccf1762dd2ceb0b701b24f11",
+    "docs/grouped-question-design-20261027.md": "a10866d7e033b27963362c48e4f2a9159a261d55c71e8e42f5cec8d9798bd354",
+    "local-only/grouped-question-proposal-20261027/文書検査_履歴削除許容後.json": "3e044619572c8454a8588f20c54503301706b85044d4a0246668cbf787488503",
+    "local-only/grouped-question-proposal-20261027/履歴削除許容後レビュー.md": "64b58a0aa0fa419f6f3929b2d91fb351c7a6d668de573848829113eb9ff3d95d",
+    "local-only/grouped-question-proposal-20261027/UIレビュー_履歴削除許容後.md": "d0871f56b635559aec33fade95e77f96db61cd564c445b11fc7cc0e01cbe67d0"
+  },
+  "attempt": {
+    "outcome": "failed",
+    "number": 2
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

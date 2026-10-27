@@ -3,8 +3,20 @@ import test from 'node:test'
 import { EXAM_CONFIG, parseExamConfig, hasFullExamAccess, canUseFavoriteFeature, themeVariables } from '../app/utils/examConfig.ts'
 import { createExamCatalog } from '../app/utils/examCatalog.ts'
 import { createEmptyQuestion } from '../app/types/adminQuestion.ts'
+import { getExamFormat } from '../shared/examConfig.ts'
 
 const variant = () => structuredClone(EXAM_CONFIG)
+
+test('grouped formats coexist with the five-question legacy material', () => {
+  const config = variant()
+  assert.equal(getExamFormat(config, 'legacy_practice').question_count, 5)
+  assert.deepEqual(getExamFormat(config, 'group_practice'), { group_count: 1, allowed_group_question_counts: [7, 8] })
+  assert.deepEqual(getExamFormat(config, 'rekiken_mock'), { group_count: 4, question_count: 30, allowed_group_question_counts: [7, 8] })
+  delete config.exam.formats
+  assert.equal(getExamFormat(parseExamConfig(config), 'rekiken_mock').question_count, 30)
+  config.exam.formats = { rekiken_mock: { group_count: 4, question_count: 29, allowed_group_question_counts: [7, 8] } }
+  assert.throws(() => parseExamConfig(config), /invalid grouped exam structure/)
+})
 
 test('a different exam configuration drives catalog dimensions, category defaults and five-choice authoring', () => {
   const input = variant()

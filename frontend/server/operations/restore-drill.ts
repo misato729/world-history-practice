@@ -10,7 +10,8 @@ import { configuration, environment } from '../core/config.ts'
 import { issueToken, verifyToken, userPayload, type User } from '../core/auth.ts'
 import { migrate } from '../database/migrate.ts'
 import { saveQuestion } from '../services/learning-writer.ts'
-import { nextQuestion, listHistory, listFavorites, listAdminQuestions } from '../services/learning.ts'
+import { nextQuestion, getQuestion, answerQuestion, listHistory, listFavorites, listAdminQuestions } from '../services/learning.ts'
+import { loadExamSet, saveExamSet, createQuestionGroup, loadQuestionGroup, saveQuestionGroup, publishExamSet } from '../services/learning-structure.ts'
 import { publicPaymentConfiguration, settingEnabled } from '../services/payment-settings.ts'
 import { digest, OperationError } from './content.ts'
 
@@ -108,6 +109,30 @@ async function createSyntheticRecords(db: Database, password: string) {
   await query("INSERT INTO memberships(user_id,source_payment_id,status,activated_at,created_at,updated_at) VALUES($1,$2,'active',NOW(),NOW(),NOW())", [user!.id, payment!.id], db)
   await query("INSERT INTO verification_access_grants(user_id,reason,granted_by,expires_at,created_at,updated_at) VALUES($1,'Synthetic restore drill','local-test',NOW()+interval '1 day',NOW(),NOW())", [user!.id], db)
   await query("INSERT INTO stripe_webhook_events(stripe_event_id,event_type,livemode,processed_at,created_at,updated_at) VALUES('evt_test_restore_drill','checkout.session.completed',false,NOW(),NOW(),NOW())", [], db)
+  if (configuration.exam.set_count < 2) throw new OperationError('大問の復元演習には検証用の第2教材枠が必要です')
+  const before = await loadExamSet(2, db)
+  await saveExamSet({ exam_number: 2, title: 'Synthetic grouped drill', format_code: 'group_practice', publication_status: 'draft', lock_version: before.lock_version }, { db })
+  const group = await createQuestionGroup(2, { group_number: 1, title: 'Synthetic group', planned_question_count: 8, publication_status: 'draft', passages: [{ label: 'A', display_order: 1, content_blocks: [{ type: 'text', inlines: [{ type: 'anchor', id: 'a', label: 'a', text: 'Synthetic shared passage', underline: true }] }] }] }, { db })
+  let shortId = 0
+  for (let i = 1; i <= 8; i++) {
+    const short = i === 3 || i === 6
+    const saved = await saveQuestion({ exam_number: 2, question_number: i, group_id: group.id, group_question_number: i,
+      major_category_code: category.major_category_value, category_code: category.value, is_cultural_history: false, is_art_history: false, cultural_history_category: null,
+      publication_status: 'published', answer_type: short ? 'short_text' : 'single_choice', content_blocks: [{ type: 'text', text: `Synthetic grouped question ${i}` }], explanation_blocks: [{ type: 'text', text: 'Synthetic grouped explanation' }], source_text: null,
+      source_references: [{ kind: 'book', title: 'Synthetic reference', publisher: 'Synthetic publisher', section: 'Synthetic entry' }],
+      accepted_answers: short ? ['合成語', '別表記'] : [], input_constraints: short ? { script: 'kanji', exact_length: 3 } : {}, related_topics: [],
+      passage_references: [{ passage_id: group.passages[0]!.id, anchor_id: i === 1 ? 'a' : null }],
+      choices: short ? [] : configuration.exam.choice_labels.map((choice_label, n) => ({ choice_label, display_order: n + 1, is_correct: n === 0, content_blocks: [{ type: 'text', text: `Synthetic choice ${n}` }] })),
+    }, { db, requireCompleteExam: false })
+    if (i === 3) shortId = saved.id
+  }
+  const complete = await loadQuestionGroup(group.id, db)
+  await saveQuestionGroup(group.id, { ...complete, publication_status: 'published' }, { db })
+  const completeSet = await loadExamSet(2, db)
+  await publishExamSet(2, completeSet.lock_version, { db })
+  const { data: shortQuestion } = await getQuestion(shortId, user!, db)
+  await answerQuestion(shortId, { answer_type: 'short_text', submitted_text: '別表記', question_version: shortQuestion.question_version, submission_key: 'restore-synthetic-short' }, user!, db)
+  await query('INSERT INTO favorites(user_id,question_id,created_at,updated_at) VALUES($1,$2,NOW(),NOW())', [user!.id, shortId], db)
 }
 
 async function applicationChecks(db: Database, password: string) {
@@ -120,13 +145,17 @@ async function applicationChecks(db: Database, password: string) {
   const { data: history } = await listHistory(user, {}, db)
   const { data: favorites } = await listFavorites(user, {}, db)
   const { data: managed } = await listAdminQuestions(admin, {}, db)
+  const { data: grouped } = await nextQuestion({ exam_number: 2, question_number: 3 }, user, db)
   const checks = {
     password_authentication: true, signed_tokens: true, paid_content_access: me.paid_content_access === true,
     public_answer_secrecy: !('explanation_blocks' in question) && !('source_text' in question) &&
       Array.isArray(question.choices) && question.choices.length === configuration.exam.choice_labels.length && question.choices.every(choice => !('is_correct' in choice)),
-    history_relationship: history.length === 1 && history[0]!.question.id === question.id,
-    favorite_relationship: favorites.length === 1 && favorites[0]!.question.id === question.id,
-    admin_read: managed.length === 1 && managed[0]!.id === question.id,
+    history_relationship: history.length === 2 && history.some(item => item.question.id === question.id),
+    favorite_relationship: favorites.length === 2 && favorites.some(item => item.question.id === question.id),
+    admin_read: managed.length === 9 && managed.some(item => item.id === question.id),
+    grouped_context: grouped.answer_type === 'short_text' && Array.isArray(grouped.shared_passages) && grouped.shared_passages.length === 1,
+    short_answer_secrecy: !('accepted_answers' in grouped) && !('source_references' in grouped),
+    short_history: history.some(item => item.question.id === grouped.id && item.answer_type === 'short_text' && item.selected_choice === null),
     sales_disabled: publicPaymentConfiguration().enabled === false,
   }
   for (const current of [user, null]) {
@@ -158,7 +187,7 @@ export async function restoreDrill() {
       if (Number(output.match(/PostgreSQL\) (\d+)/)?.[1]) !== major) throw new OperationError('pg_dump・pg_restoreはtest用DBと同じメジャーバージョンを使用してください')
     }
     const suffix = randomBytes(8).toString('hex')
-    const [source, target] = [`world_history_drill_source_${suffix}`, `world_history_drill_target_${suffix}`]
+    const [source, target] = [`world_history_drill_source_${suffix}_test`, `world_history_drill_target_${suffix}_test`]
     for (const name of [source!, target!]) { await admin.query(`CREATE DATABASE ${identifier(name)} TEMPLATE template0`); created.push(name) }
     const connect = async (database: string) => {
       const client = new pg.Client({ ...settings, database, ssl: false, connectionTimeoutMillis: 10000, statement_timeout: 60000, options: '-c timezone=UTC' })

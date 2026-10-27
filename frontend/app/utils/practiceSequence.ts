@@ -18,12 +18,12 @@ export const selectPracticePositions = (
   catalog: readonly { exam_number: number, question_numbers: readonly number[] }[],
   examNumbers: readonly number[],
   questionNumbers: readonly number[],
-): PracticePosition[] => catalog
+): PracticePosition[] => [...catalog]
+  .sort((left, right) => left.exam_number - right.exam_number)
   .filter(exam => examNumbers.includes(exam.exam_number))
   .flatMap(exam => exam.question_numbers
     .filter(question => questionNumbers.includes(question))
     .map(questionNumber => ({ examNumber: exam.exam_number, questionNumber })))
-  .sort((left, right) => left.examNumber - right.examNumber || left.questionNumber - right.questionNumber)
 
 export const createPracticeSeed = () => Math.floor(Math.random() * 0x100000000)
 

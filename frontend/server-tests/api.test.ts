@@ -144,7 +144,7 @@ test('HTTP exercises hide answers, save authenticated history and preserve favor
   const item = question.body.data
   assert.equal('explanation_blocks' in item, false)
   assert.equal('is_correct' in item.choices[0], false)
-  const answered = await request(`/questions/${item.id}/answer`, { method: 'POST', token: session.access_token, body: { selected_choice_id: item.choices[1].id } })
+  const answered = await request(`/questions/${item.id}/answer`, { method: 'POST', token: session.access_token, body: { answer_type: 'single_choice', selected_choice_id: item.choices[1].id, question_version: item.question_version, submission_key: randomUUID() } })
   assert.equal(answered.status, 200)
   assert.ok(answered.body.data.answer_history_id)
   assert.ok(answered.body.data.explanation_blocks.length)
@@ -169,7 +169,9 @@ test('HTTP administrator checks re-read roles and CRUD keeps question IDs and de
   const changed = await request(`/admin/questions/${questionIds[0]}`, { method: 'PATCH', token: adminToken, body: { question: { ...detail.body.data, publication_status: 'private' } } })
   assert.equal(changed.status, 200)
   assert.equal((await request(`/questions/${questionIds[0]}`)).status, 404)
-  const restored = await request(`/admin/questions/${questionIds[0]}`, { method: 'PATCH', token: adminToken, body: { question: detail.body.data } })
+  const stale = await request(`/admin/questions/${questionIds[0]}`, { method: 'PATCH', token: adminToken, body: { question: detail.body.data } })
+  assert.equal(stale.status, 409)
+  const restored = await request(`/admin/questions/${questionIds[0]}`, { method: 'PATCH', token: adminToken, body: { question: { ...detail.body.data, lock_version: changed.body.data.lock_version } } })
   assert.equal(restored.status, 200)
 })
 

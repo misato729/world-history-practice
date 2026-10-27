@@ -22,6 +22,11 @@ assert(config.exam.set_count <= 10000 && config.exam.questions_per_exam <= 10000
 assert(config.exam.choice_labels.length >= 2 && config.exam.choice_labels.length <= 10, 'At least two choices are required')
 unique(config.exam.choice_labels, 'choice_labels')
 assert(config.exam.choice_labels.every(label => typeof label === 'string' && label.trim() && label.length <= 10), 'choice labels must be 1..10 characters')
+if (config.exam.formats !== undefined) {
+  assert(config.exam.formats && typeof config.exam.formats === 'object' && !Array.isArray(config.exam.formats), 'exam.formats must be an object')
+  const formats = { group_practice: { group_count: 1, allowed_group_question_counts: [7, 8] }, rekiken_mock: { group_count: 4, question_count: 30, allowed_group_question_counts: [7, 8] } }
+  for (const [code, rule] of Object.entries(config.exam.formats)) assert.deepEqual(rule, formats[code], `Unsupported format: ${code}`)
+}
 assert.equal(typeof config.payments.enabled, 'boolean')
 integer(config.payments.free_exam_count, 0, 'free_exam_count')
 assert(config.payments.free_exam_count <= config.exam.set_count, 'free_exam_count exceeds set_count')
@@ -63,8 +68,10 @@ for (const question of content.questions) {
   assert(question.choices.every(choice => Array.isArray(choice.content_blocks) && choice.content_blocks.length), 'Choice content is required')
   assert(typeof question.source_text === 'string' && question.source_text.trim(), 'Source attribution is required')
 }
-for (let exam = 1; exam <= config.exam.set_count; exam++) {
+// This file is a synthetic legacy fixture, not the source of every DB material.
+const sampleSets = [...new Set(content.questions.map(question => question.exam_number))]
+for (const exam of sampleSets) {
   const questions = content.questions.filter(question => question.exam_number === exam)
   assert.equal(questions.length, config.exam.questions_per_exam, `Sample set ${exam} must be complete`)
 }
-console.log(`Template validated: ${config.exam.set_count} sets, ${config.exam.questions_per_exam} questions per set, ${config.exam.choice_labels.length} choices. ${content.questions.length} original sample questions.`)
+console.log(`Template validated: ${config.exam.set_count} material slots; ${sampleSets.length} synthetic legacy set(s), ${content.questions.length} questions, ${config.exam.choice_labels.length} choices.`)

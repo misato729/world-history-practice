@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { EXAM_CATALOG, FREE_EXAM_CATALOG, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { FREE_EXAM_MAX, catalogQuestionLabel, type ExamCatalogEntry } from '~/utils/examCatalog'
 
 const route = useRoute()
 const openExam = ref<number | null>(null)
 const mobileOpen = ref(false)
 const mobileToggle = ref<HTMLButtonElement | null>(null)
 const { user, accessToken, ensureCurrentUser } = useAuth()
+const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = await usePublicExamCatalog()
 const { isFavoriteAt } = useFavorites()
 const accessStatus = ref<'ready' | 'pending' | 'error'>(
   accessToken.value && !user.value ? 'pending' : 'ready',
@@ -13,10 +14,10 @@ const accessStatus = ref<'ready' | 'pending' | 'error'>(
 let resolvingAccess = false
 
 const exams = computed(() => (
-  hasFullExamAccess(user.value) ? EXAM_CATALOG : FREE_EXAM_CATALOG
+  (publicCatalog.value?.data ?? []).filter(exam => exam.access !== 'paid_membership_required' && (hasFullExamAccess(user.value) || exam.exam_number <= FREE_EXAM_MAX))
 ))
-const isLoading = computed(() => accessStatus.value === 'pending')
-const hasAccessError = computed(() => accessStatus.value === 'error')
+const isLoading = computed(() => accessStatus.value === 'pending' || catalogStatus.value === 'pending' || catalogStatus.value === 'idle')
+const hasAccessError = computed(() => accessStatus.value === 'error' || Boolean(catalogError.value))
 
 const resolveAccess = async () => {
   if (resolvingAccess) return
@@ -113,7 +114,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
       <div v-else-if="hasAccessError" class="sidebar-loading sidebar-error" role="alert">
         <UIcon name="i-lucide-circle-alert" />
         <span>利用資格を確認できません</span>
-        <button type="button" @click="resolveAccess">再確認</button>
+        <button type="button" @click="() => { resolveAccess(); refreshCatalog() }">再確認</button>
       </div>
 
       <div v-else class="exam-groups" :class="{ 'single-set': exams.length === 1 }">
@@ -127,7 +128,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
             :class="{ current: route.path.startsWith(`/practice/${exam.exam_number}/`) }"
           >
             <NuxtLink class="exam-link" :to="examTarget(exam)" @click="closeMobileList">
-              演習セット {{ exam.exam_number }}
+              {{ exam.title || `演習セット ${exam.exam_number}` }}
             </NuxtLink>
             <button
               type="button"
@@ -150,6 +151,7 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
               v-if="openExam === exam.exam_number"
               :id="`exam-${exam.exam_number}-questions`"
               class="question-list"
+              :class="{ grouped: Boolean(exam.groups?.length) }"
               :aria-label="`演習セット${exam.exam_number}の問題一覧`"
             >
               <NuxtLink
@@ -157,11 +159,11 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
                 :key="question"
                 :to="examTarget(exam, question)"
                 :class="{ active: isCurrentQuestion(exam.exam_number, question), favorite: isFavoriteAt(exam.exam_number, question) }"
-                :aria-label="`問${question}${isFavoriteAt(exam.exam_number, question) ? '（お気に入り）' : ''}`"
+                :aria-label="`${catalogQuestionLabel(exam, question)}${isFavoriteAt(exam.exam_number, question) ? '（お気に入り）' : ''}`"
                 :title="isFavoriteAt(exam.exam_number, question) ? 'お気に入り' : undefined"
                 @click="closeMobileList"
               >
-                問{{ question }}
+                {{ catalogQuestionLabel(exam, question) }}
               </NuxtLink>
             </nav>
           </Transition>
@@ -288,6 +290,8 @@ const examTarget = (exam: ExamCatalogEntry, question?: number) => (
   gap: 5px;
   padding: 10px 6px 4px;
 }
+
+.question-list.grouped { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .question-list a {
   min-height: 36px;

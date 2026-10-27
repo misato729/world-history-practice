@@ -11,12 +11,16 @@ type HistoryItem = {
     body_excerpt?: string
     major_category_code?: string
     category_code?: string
+    group_number?: number
+    group_question_number?: number
   }
+  answer_type?: 'single_choice' | 'short_text'
+  submitted_text?: string
   selected_choice?: {
     id: number
     choice_label: string
     body_excerpt: string
-  }
+  } | null
   is_correct?: boolean
   answered_at: string
 }
@@ -34,17 +38,21 @@ type ApiResponse = {
 }
 
 const { $api: api } = useNuxtApp()
-const { isLoggedIn, authHeaders, logout } = useAuth()
+const { isLoggedIn, accessToken, authHeaders, logout } = useAuth()
 const histories = ref<HistoryItem[]>([])
 const meta = ref<HistoryMeta>({ current_page: 1, per_page: 20, total_count: 0, total_pages: 0 })
 const page = ref(1)
 const loading = ref(false)
 const loadError = ref('')
+let loadVersion = 0
 
 const loadHistories = async () => {
+  const version = ++loadVersion
+  const token = accessToken.value
   if (!isLoggedIn.value) {
     histories.value = []
     loadError.value = ''
+    loading.value = false
     return
   }
 
@@ -55,10 +63,12 @@ const loadHistories = async () => {
       headers: authHeaders.value,
       query: { page: page.value, per_page: 20 },
     })
+    if (version !== loadVersion || token !== accessToken.value) return
     histories.value = response.data
     meta.value = response.meta
   }
   catch (error: any) {
+    if (version !== loadVersion || token !== accessToken.value) return
     if (error?.statusCode === 401 || error?.status === 401) {
       logout()
       return
@@ -66,11 +76,11 @@ const loadHistories = async () => {
     loadError.value = '解答履歴を読み込めませんでした。もう一度お試しください。'
   }
   finally {
-    loading.value = false
+    if (version === loadVersion) loading.value = false
   }
 }
 
-watch([isLoggedIn, page], loadHistories, { immediate: true })
+watch([accessToken, page], loadHistories, { immediate: true })
 
 const formatAnsweredAt = (value: string) => new Intl.DateTimeFormat('ja-JP', {
   dateStyle: 'medium',
@@ -138,7 +148,7 @@ const historyLink = (history: HistoryItem) => ({
             </div>
 
             <div class="history-question">
-              <span>演習セット {{ history.question.exam_number }}・問{{ history.question.question_number }}</span>
+              <span>演習セット {{ history.question.exam_number }}・<template v-if="history.question.group_number">大問{{ history.question.group_number }}・</template>問{{ history.question.group_question_number ?? history.question.question_number }}</span>
               <strong>{{ history.question.body_excerpt }}</strong>
               <small>
                 {{ majorCategoryLabel(history.question.major_category_code) }} /
@@ -147,8 +157,9 @@ const historyLink = (history: HistoryItem) => ({
             </div>
 
             <div class="selected-answer">
-              <span>選択した解答</span>
-              <p><b>{{ history.selected_choice?.choice_label }}</b>{{ history.selected_choice?.body_excerpt }}</p>
+              <span>{{ history.answer_type === 'short_text' ? '入力した解答' : '選択した解答' }}</span>
+              <p v-if="history.answer_type === 'short_text'" class="written-answer">{{ history.submitted_text }}</p>
+              <p v-else><b>{{ history.selected_choice?.choice_label }}</b>{{ history.selected_choice?.body_excerpt }}</p>
             </div>
 
             <span class="review-link">問題と解説を確認する <UIcon name="i-lucide-arrow-right" /></span>
@@ -159,7 +170,7 @@ const historyLink = (history: HistoryItem) => ({
               <time :datetime="history.answered_at">{{ formatAnsweredAt(history.answered_at) }}</time>
             </div>
             <div class="history-question">
-              <span>演習セット {{ history.question.exam_number }}・問{{ history.question.question_number }}</span>
+              <span>演習セット {{ history.question.exam_number }}・<template v-if="history.question.group_number">大問{{ history.question.group_number }}・</template>問{{ history.question.group_question_number ?? history.question.question_number }}</span>
               <strong>この履歴の本文・正誤・解説はプレミアム会員向けです。</strong>
             </div>
             <NuxtLink v-if="PAYMENTS_ENABLED" class="primary-link" to="/premium">プレミアム会員について確認する</NuxtLink>
@@ -198,6 +209,7 @@ const historyLink = (history: HistoryItem) => ({
 .selected-answer { padding: 14px 16px; border-left: 3px solid var(--line-strong); background: var(--surface-soft); }
 .selected-answer > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
 .selected-answer p { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; margin: 0; color: var(--text-secondary); line-height: 1.6; }
+.selected-answer p.written-answer { display: block; overflow-wrap: anywhere; }
 .selected-answer b { color: var(--teal-dark); }
 .review-link { display: inline-flex; align-items: center; justify-self: end; gap: 6px; color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
 .locked-history { display: grid; gap: 18px; padding: 22px 24px; }

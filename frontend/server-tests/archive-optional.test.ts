@@ -41,7 +41,10 @@ function questions(): QuestionInput[] {
 }
 
 test('canonical validation retains empty/null optional metadata while admin form normalization stays unchanged', () => {
-  for (const row of questions()) assert.deepEqual(validateQuestionInput(row), row)
+  for (const row of questions()) {
+    const normalized = validateQuestionInput(row)
+    for (const key of Object.keys(row)) assert.deepEqual(normalized[key as keyof QuestionInput], row[key as keyof QuestionInput])
+  }
   const normalized = questions().map(row => sanitizeQuestionInput(row))
   assert.equal('title' in normalized[0]!.content_blocks[0]!, false)
   assert.equal('source' in normalized[0]!.explanation_blocks[0]!, false)
@@ -67,10 +70,13 @@ test('PostgreSQL archive import/export keeps legacy optional metadata and its ca
     const imported = await importArchive(archive, IMPORT_CONFIRMATION, client)
     const exported = await exportArchive(path, client)
     const recovered = JSON.parse(await readFile(path, 'utf8'))
-    assert.deepEqual(recovered.questions, archive.questions)
+    assert.equal(recovered.version, 2)
+    for (const [i, row] of archive.questions.entries()) for (const key of Object.keys(row)) assert.deepEqual(recovered.questions[i][key], row[key as keyof QuestionInput])
     assert.equal(imported.sha256, archive.sha256)
-    assert.equal(exported.sha256, archive.sha256)
-    assert.equal(recovered.sha256, archive.sha256)
+    assert.equal(exported.sha256, recovered.sha256)
+    // A second export is stable after upgrading the legacy archive to v2.
+    const again = await exportArchive(join(directory, 'again.json'), client)
+    assert.equal(again.sha256, recovered.sha256)
   } finally {
     await client.query('ROLLBACK')
     client.release()

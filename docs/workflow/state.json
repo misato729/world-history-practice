@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 38,
-  "updated_at": "2026-10-27T05:56:41.222Z",
+  "revision": 68,
+  "updated_at": "2026-10-27T13:40:38.249Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T05-56-41-222Z-r38.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T13-40-38-249Z-r68.json",
   "contexts": [
     {
       "id": "product",
@@ -65,7 +65,26 @@
     "docs/workflow/policy.json",
     "scripts/workspace-policy.mjs",
     "scripts/workspace-policy.test.mjs",
-    "docs/workflow/template-parity-20261027.md"
+    "docs/workflow/template-parity-20261027.md",
+    "local-only/question-draft-20261027/問題と解説.md",
+    "local-only/question-draft-20261027/形式検査.json",
+    "local-only/question-draft-20261027/過去問形式確認.md",
+    "local-only/question-draft-20261027/独立レビュー.md",
+    "local-only/cross-era-question-20261027/問題と解説.md",
+    "local-only/cross-era-question-20261027/形式再確認.md",
+    "local-only/cross-era-question-20261027/形式検査.json",
+    "local-only/cross-era-question-20261027/前半レビュー.md",
+    "local-only/cross-era-question-20261027/後半レビュー.md",
+    "docs/grouped-question-design-20261027.md",
+    "local-only/grouped-question-proposal-20261027/文書検査_履歴削除許容後.json",
+    "local-only/grouped-question-proposal-20261027/履歴削除許容後レビュー.md",
+    "local-only/grouped-question-proposal-20261027/UIレビュー_履歴削除許容後.md",
+    "frontend/app/pages/practice/[examNumber]/[questionNumber].vue",
+    "frontend/app/components/SharedPassagePanel.vue",
+    "frontend/app/utils/practicePassageState.ts",
+    "frontend/tests/practicePassageState.test.ts",
+    "docs/interaction-and-content-update-20261027.md",
+    "docs/grouped-changes-delivery-20261027.md"
   ],
   "tasks": [
     {
@@ -1102,6 +1121,844 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "mongol_big_question_20261027",
+      "context": "product",
+      "title": "論述を除く歴検1級世界史形式の大問を1つ作成",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 歴検1級世界史の過去問の形式に倣った大問を1つ。論述なし。",
+      "next_action": "チャットで問題本文と解説ファイルを提示する。追加作問・DB反映・公開は別依頼を待つ",
+      "evidence": [
+        "local-only/question-draft-20261027/問題と解説.md",
+        "local-only/question-draft-20261027/形式検査.json",
+        "local-only/question-draft-20261027/過去問形式確認.md",
+        "local-only/question-draft-20261027/独立レビュー.md"
+      ],
+      "last_verified_at": "2026-10-27T06:10:36.258Z",
+      "verification_scope": "大問1つ、10小問（四択7/28選択肢・語句記述3）、論述なし。2008〜2012大問1と2008解答解説の指定範囲を原画像で形式確認。2025紙面の一部も目視。用語集PDF通し73〜75の原画像でリード・全肢・短答・誤答訂正・追加解説をrootとquestion_reviewが確認。形式の自動検査と独立レビュー合格。表示に合わせ本文中の(a)等に参照を統一。日本語教科書/旧版未照合、難度未実測。DB・配信データ・Git送信・公開未操作。",
+      "acceptance": [
+        {
+          "id": "structure",
+          "kind": "automated",
+          "description": "1大問10小問、四択7・語句記述3、全選択肢と一意の正答・参照先がそろい論述がない",
+          "verification": "設問番号・選択肢・解答数・空欄参照・ファイル存在の軽量検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/question-draft-20261027/形式検査.json"
+          ],
+          "checked_at": "2026-10-27T06:10:36.258Z"
+        },
+        {
+          "id": "sources",
+          "kind": "review",
+          "description": "史実・誤答訂正・解説を受領済み用語集原画像で照合し、過去問形式を参照",
+          "verification": "PDF通しページを記録した原画像照合と別担当の内容確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/question-draft-20261027/過去問形式確認.md",
+            "local-only/question-draft-20261027/独立レビュー.md"
+          ],
+          "checked_at": "2026-10-27T06:10:36.258Z",
+          "reviewer": "question_review"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が正答の一意性・難度・語調による手掛かり・論述なしを確認",
+          "verification": "独立レビューと必要な修正の再確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/question-draft-20261027/過去問形式確認.md",
+            "local-only/question-draft-20261027/独立レビュー.md"
+          ],
+          "checked_at": "2026-10-27T06:10:36.258Z",
+          "reviewer": "question_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "大問1つ・四択7問28肢・短答3問を作成。過去問形式と用語集原画像で全肢・全解説を照合し、形式検査と独立レビュー合格。参照表示を統一。DB反映なし",
+            "at": "2026-10-27T06:10:51.622Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "cross_era_big_question_20261027",
+      "context": "product",
+      "title": "7〜8小問・時代地域横断の設計に大問を作り直す",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー訂正: 大問7又は8小問、4大問30問。大問内と選択肢間で時代・地域を大きく横断する設計で作成。元依頼は1大問・論述なし。",
+      "next_action": "記録先と新稿をチャットで提示する。追加作問・DB反映・公開は別依頼を待つ",
+      "evidence": [
+        "AGENTS.md",
+        "local-only/cross-era-question-20261027/問題と解説.md",
+        "local-only/cross-era-question-20261027/形式再確認.md",
+        "local-only/cross-era-question-20261027/形式検査.json",
+        "local-only/cross-era-question-20261027/前半レビュー.md",
+        "local-only/cross-era-question-20261027/後半レビュー.md"
+      ],
+      "last_verified_at": "2026-10-27T07:40:45.632Z",
+      "verification_scope": "8小問（四択6・24肢/語句記述2）、論述なし。2025全4大問の8・7・8・7=30を原画像で再確認。大問内と全6選択問題の時代地域横断を別担当が設計レビュー。全リード・全肢・短答・誤答訂正・追加解説を用語集PDF指定ページ原画像で前後半2担当が照合。初回設計レビューの問5①表現指摘を修正し再確認、問4④も活版印刷へ明確化。件数/参照/正答形式/規則の検査成功。日本語教科書・旧版未照合、難度未実測。新稿1大問のみ、DB/配信データ/公開未変更。",
+      "acceptance": [
+        {
+          "id": "structure",
+          "kind": "automated",
+          "description": "8小問・論述なし、四択6問24肢・短答2問、参照・解答完備。4大問30問の設計基準を文書に反映",
+          "verification": "件数・参照・正答形式・規則文の軽量検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-question-20261027/形式検査.json"
+          ],
+          "checked_at": "2026-10-27T07:40:45.632Z"
+        },
+        {
+          "id": "sources",
+          "kind": "review",
+          "description": "リード・全選択肢・短答・誤答訂正・解説を用語集原画像に照合",
+          "verification": "実確認したPDF通しページを記録し別担当が全件確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-question-20261027/前半レビュー.md",
+            "local-only/cross-era-question-20261027/後半レビュー.md"
+          ],
+          "checked_at": "2026-10-27T07:40:45.632Z",
+          "reviewer": "cross_source_a/cross_source_b"
+        },
+        {
+          "id": "design",
+          "kind": "review",
+          "description": "大問内と複数の小問の選択肢間が時代地域を横断し、正答が一意",
+          "verification": "時代地域の対応表と独立レビュー。単に前稿を2問削った構成を避ける",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-question-20261027/形式再確認.md"
+          ],
+          "checked_at": "2026-10-27T07:40:45.632Z",
+          "reviewer": "cross_era_design"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回設計レビューの指摘を記録: 問5①の同盟当事者の表現に修正要。旧稿の単純削減は避け8小問を新規作成。指摘は原稿と記録へ反映し、修正版の最終判定を次の評価に保存する",
+            "at": "2026-10-27T07:40:46.509Z",
+            "failed_criteria": [
+              "design"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "8小問の新稿、全24肢・短答2問・解説の原画像照合、時代地域横断と正答一意性の独立レビュー、形式検査に合格。問5①の表現を修正し再確認。共通設計基準をAGENTSに統合",
+            "at": "2026-10-27T07:41:42.559Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "grouped_questions_implementation_proposal",
+      "context": "service",
+      "title": "大問・共通本文・語句記述・横断分類を扱う実装案",
+      "status": "waiting_for_request",
+      "depends_on": [],
+      "authorization": "not_requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 今の機能設計では今回のような問題が入らない。入る機能設計へ修正したく、実装で提案。今回はコードに基づく実装案を提示し、アプリ/DBへの適用は含めない。",
+      "next_action": "ユーザーの履歴削除許容により旧条件案は保留。旧案をlocal-onlyへ保持し、grouped_question_proposal_history_resetへ継承。",
+      "evidence": [
+        "local-only/grouped-question-proposal-20261027/履歴保持案_旧版.md",
+        "local-only/grouped-question-proposal-20261027/文書検査.json",
+        "local-only/grouped-question-proposal-20261027/設計レビュー.md",
+        "local-only/grouped-question-proposal-20261027/UIレビュー.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "",
+      "acceptance": [
+        {
+          "id": "evidence",
+          "kind": "automated",
+          "description": "現行根拠のパス・行、提案の新規ファイル、既存差分保持と文書の参照が整合",
+          "verification": "参照パス・受入条件の網羅・差分・進捗の軽量検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-question-proposal-20261027/文書検査.json"
+          ],
+          "checked_at": "2026-10-27T08:35:09.376Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が8小問の題材を表現できる設計と既存データ保全・実装順を確認",
+          "verification": "実装案と現行DB/API/画面制約を独立レビュー",
+          "status": "failed",
+          "evidence": [
+            "local-only/grouped-question-proposal-20261027/設計レビュー.md",
+            "local-only/grouped-question-proposal-20261027/UIレビュー.md"
+          ],
+          "checked_at": "2026-10-27T08:35:09.376Z",
+          "reviewer": "group_data_audit/group_ui_audit"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回独立レビューで、旧回答互換と改訂ID検査、書籍のみの出典、questions/nextの共通DTO、管理API契約の明記不足を検出。根拠をレビュー記録へ保存",
+            "at": "2026-10-27T08:35:09.722Z",
+            "failed_criteria": [
+              "review"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "grouped_question_proposal_history_reset",
+      "context": "service",
+      "title": "履歴削除を許容した大問対応の実装案",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 大問・小問・横断問題を扱う機能設計の実装案を提案。追加指示: 履歴は消えてもいい。旧条件と評価記録を残して別タスクで簡略化する。",
+      "next_action": "設計案を提示する。アプリ実装・問題登録・送信/公開はそれぞれの依頼範囲に従う",
+      "evidence": [
+        "docs/grouped-question-design-20261027.md",
+        "local-only/grouped-question-proposal-20261027/文書検査_履歴削除許容後.json",
+        "local-only/grouped-question-proposal-20261027/履歴削除許容後レビュー.md",
+        "local-only/grouped-question-proposal-20261027/UIレビュー_履歴削除許容後.md",
+        "docs/workflow/contexts/service.md"
+      ],
+      "last_verified_at": "2026-10-27T08:47:14.735Z",
+      "verification_scope": "現行Nuxt/Nitro/pgのDB・型・Writer・API・管理/演習/履歴/お気に入り・設定・運用を読取確認。教材→大問→小問、単独7/8問/4大問30問、共通本文・参照、短答、関連分類、書籍/Web出典を提案。ユーザーの履歴削除許容により不変版を除外し対象履歴削除＋内容バージョンへ簡略化。公開中の未完成保存と本文全体依存を修正して独立2担当が再確認。文書21参照・19要件、前回監視実装等13ファイルの不変更を確認。提案のみで機能テスト・DB接続・履歴削除・問題登録・UI操作・コミット/push/デプロイなし。",
+      "acceptance": [
+        {
+          "id": "evidence",
+          "kind": "automated",
+          "description": "現行根拠の参照・要件の網羅・履歴削除許容の整合・アプリ不変更を確認",
+          "verification": "文書のパス/要件/旧案との差分/監視ソースのハッシュと進捗を軽量検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-question-proposal-20261027/文書検査_履歴削除許容後.json"
+          ],
+          "checked_at": "2026-10-27T08:47:14.735Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が大問8小問の表現、履歴削除範囲、既存ID保持、API・移行の実装可能性を確認",
+          "verification": "履歴削除許容後の最新案を独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-question-proposal-20261027/履歴削除許容後レビュー.md",
+            "local-only/grouped-question-proposal-20261027/UIレビュー_履歴削除許容後.md"
+          ],
+          "checked_at": "2026-10-27T08:47:14.735Z",
+          "reviewer": "group_data_audit/group_ui_audit"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "履歴削除許容後の独立レビューで、公開中の未完成編集の保存方法と、アンカー指定のない本文全体依存の表現を明確化する必要を検出。UI/APIの他要件は整合",
+            "at": "2026-10-27T08:44:44.568Z",
+            "failed_criteria": [
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "履歴削除許容後の実装案を完成。共通本文依存と公開中編集の契約を修正し、データ/UIの独立2担当が最終同一SHAで合格。21参照/19要件と実装等13ファイル不変更を確認。提案のみ、DB非接続",
+            "at": "2026-10-27T08:47:16.105Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "grouped_questions_implementation",
+      "context": "service",
+      "title": "大問・共通本文・語句記述・横断分類の一括実装",
+      "status": "done",
+      "depends_on": [
+        "grouped_question_proposal_history_reset"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー承認: OKです、一気にやってください。承認済み実装案全体を実装。履歴削除可、問題/選択肢ID・お気に入り保持。commit/push/公開の依頼は含まない。",
+      "next_action": "新しいユーザー依頼の8問登録を別タスクで実施する。",
+      "evidence": [
+        "docs/grouped-question-implementation-20261027.md",
+        "local-only/grouped-implementation-20261027/verification.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "最終server82/フロント91全合格、型/隔離本番build/133source一致、006含む16table復元、005006通常旧5問20肢/既存値日時保全と再適用無変更、PC1440SP390/320管理実保存/反復/並べ替え/公開/previewと両回答型/履歴/お気に入り、独立レビュー。実装検証時点は旧5問、後続のユーザー承認済8問登録は別タスク。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "server",
+          "kind": "automated",
+          "description": "大問/短答/参照/関連分類/出典/公開/履歴削除/競合/認可が隔離DBで動作",
+          "verification": "合成データのAPI/Writer/移行/復元テストを末尾_test DBで実行",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-implementation-20261027/server-tests-final-pass.log"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "frontend",
+          "kind": "automated",
+          "description": "管理編集と公開、演習/履歴/お気に入り/カタログの両回答型が動作",
+          "verification": "フロントテスト・型検査・ビルドを順次実行し、PC1440/SP390/320の実操作を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-implementation-20261027/frontend-tests-final.log",
+            "local-only/grouped-implementation-20261027/typecheck-complete.log",
+            "local-only/grouped-implementation-20261027/build-final.log",
+            "local-only/grouped-implementation-20261027/verification.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "operations",
+          "kind": "automated",
+          "description": "既存ID/本文/正答/日時/お気に入り保持、v1/v2運用と資料保護・文書が整合",
+          "verification": "通常DBのバックアップと読取比較、隔離移行/アーカイブ検査、設定/進捗/差分検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-implementation-20261027/restore-drill-final.log",
+            "local-only/grouped-implementation-20261027/final-preservation.json",
+            "docs/grouped-question-implementation-20261027.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外が変更・データ保全・正答非公開・管理/公開整合を確認",
+          "verification": "分担間と親による独立レビュー、実行結果と受入条件の最終照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/grouped-implementation-20261027/backend-review.md",
+            "local-only/grouped-implementation-20261027/operations-review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "implement_admin + implement_practice"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回統合評価: フロント91件・型・隔離移行合格。server7件失敗と運用独立レビュー指摘を修正して再評価する。",
+            "at": "2026-10-27T09:40:21.142Z",
+            "failed_criteria": [
+              "server",
+              "frontend",
+              "operations",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "第2回: server81件・型・ビルド・復元・005通常保全成功。旧サンプル全枠前提と公開/削除範囲、短答表示の追加指摘を修正。",
+            "at": "2026-10-27T09:57:44.047Z",
+            "failed_criteria": [
+              "server",
+              "frontend",
+              "operations",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "failed",
+            "summary": "第3回: 006のPostgreSQLパラメータ型競合を検出し明示castへ修正。自動検査DBと画面DBを分離。PC/SP管理・回答・履歴・並べ替え操作は確認。",
+            "at": "2026-10-27T10:05:52.637Z",
+            "failed_criteria": [
+              "server",
+              "frontend",
+              "operations",
+              "review"
+            ]
+          },
+          {
+            "number": 4,
+            "outcome": "passed",
+            "summary": "最終評価合格: server82/front91、型/build/復元/通常保全、PC・SP管理と両回答形式、独立レビューを確認。後続8問登録は別タスク。",
+            "at": "2026-10-27T10:27:13.539Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "cross_era_question_registration",
+      "context": "service",
+      "title": "旧5問を承認済み横断大問8小問へ入替",
+      "status": "done",
+      "depends_on": [
+        "grouped_questions_implementation",
+        "cross_era_big_question_20261027"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 既存5問は捨てていいのでさっきの予想問題入れてください。直前の横断8小問稿をローカル通常DBへ登録。既存5問の削除を明示承認、利用者/決済等は対象外。commit/push/deployは含まない。",
+      "next_action": "通常ローカルの演習セット1で利用可能。未commit/push/deploy。",
+      "evidence": [
+        "docs/question-registration-20261027.md",
+        "local-only/cross-era-registration-20261027/verification.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "承認済原稿hash固定、全文57項目独立比較、隔離入替/巻戻し/反復、通常DB旧5問20肢だけ削除→8問24肢/2短答/2本文登録公開、保存後/反復export全byte独立一致、実HTTP24肢/3短答正答/誤答/字種/正答秘匿、分類AND/0件、旧ID404、PC1440SP390/320の実採点/出典、対象外0件保持、設定/保護/差分成功。通常ローカルのみ、未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "content",
+          "kind": "automated",
+          "description": "原稿と8小問/24肢/短答2/解説/参照/出典/分類が一致",
+          "verification": "原稿hash固定、構造化テキスト・正答・各参照・入力条件と保存後DBを機械比較",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-registration-20261027/conversion-check.json",
+            "local-only/cross-era-registration-20261027/structured-review.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "database",
+          "kind": "automated",
+          "description": "承認された旧5問だけを入替え、対象外データを保持し8問の公開と反復不変が成立",
+          "verification": "before dump/IDとdigest、Writer+transaction+empty guard、隔離演習→通常DB比較、repeatと実API採点/PCSPを確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-registration-20261027/rehearsal.log",
+            "local-only/cross-era-registration-20261027/replacement-result.json",
+            "local-only/cross-era-registration-20261027/repeat-result.json",
+            "local-only/cross-era-registration-20261027/after-state.json",
+            "local-only/cross-era-registration-20261027/http-check.json",
+            "local-only/cross-era-registration-20261027/filter-check.json",
+            "local-only/cross-era-registration-20261027/verification.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立担当が原稿→構造化→DBの内容・正答・参照・出典・分類を確認",
+          "verification": "既存原典照合の同一hash再利用範囲と構造変換/保存後独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/cross-era-registration-20261027/structured-review.md",
+            "local-only/cross-era-question-20261027/DB変換監査.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "implement_practice + implement_admin"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "登録・独立比較・隔離反復は成功。実API検査が必要な参照本文のみを返す仕様との期待値違いで失敗し、検査を修正。",
+            "at": "2026-10-27T10:35:46.805Z",
+            "failed_criteria": [
+              "content",
+              "database",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "8問登録の最終評価合格。全文/保存後独立比較、隔離入替/反復、通常全肢・短答・分類・PC/SP採点、対象外保持を確認。",
+            "at": "2026-10-27T10:43:40.684Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "serial_question_layout",
+      "context": "service",
+      "title": "共通本文と設問をPC/SPとも縦並びへ変更",
+      "status": "done",
+      "depends_on": [
+        "grouped_questions_implementation"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 本文と設問は2カラムではなく直列にしたい。演習画面の本文→設問の縦並びへ変更。DB・問題文・commit/push/deployは対象外。",
+      "next_action": "現在の依頼は完了。追加依頼を待つ。",
+      "evidence": [
+        "local-only/serial-question-layout-20261027/verification.md",
+        "docs/verification.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "PC1440/SP390/320で同幅・左端一致・本文下端から設問まで24px、横はみ出し/重なりなし、折りたたみ/参照再展開/焦点・選択式/短答入力、Vue構文/関連9件/差分、独立レビュー合格。CSSと条件classのみ、DB/本文/API変更なし。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "layout",
+          "kind": "automated",
+          "description": "本文が設問の上に並びPC/SPで横はみ出し・重なりがない",
+          "verification": "Vue構文/関連軽量検査と実ブラウザ1440/390/320で領域位置・列数・幅と本文折りたたみ/参照移動を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/serial-question-layout-20261027/verification.md",
+            "local-only/serial-question-layout-20261027/checks.log",
+            "local-only/serial-question-layout-20261027/measurements.json",
+            "local-only/serial-question-layout-20261027/interactions.json"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "対象差分の限定と既存操作保持を実装担当以外が確認",
+          "verification": "DOM順/幅/折りたたみ/参照/関連文書を独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/serial-question-layout-20261027/review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "implement_admin"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "本文→設問を最大900pxの1列へ変更。PC/SP実測・折りたたみ/参照/入力、関連9件・構文・差分・独立レビュー合格。",
+            "at": "2026-10-27T12:24:17.603Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "persistent_shared_passage",
+      "context": "service",
+      "title": "同じ共通本文を保持して設問部分だけ切替",
+      "status": "done",
+      "depends_on": [
+        "serial_question_layout"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 同じ本文のとき全て再読み込みせず設問コンポーネントだけ再読み込みするようにしたい。同一教材・本文の表示保持を実装。 続くユーザー訂正: ページ先頭へ戻る動きの方が正しい。設問切替時のNuxt既定の先頭移動を保持する。",
+      "next_action": "独立した記述改訂とお気に入り位置の完了記録を残す",
+      "evidence": [
+        "local-only/persistent-passage-20261027/verification.md",
+        "local-only/persistent-passage-20261027/review.md",
+        "docs/interaction-and-content-update-20261027.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "フロント97/97、型/build、最終SFC、実API PC1440/SP390/320とGET専用遅延/合成403、本文保持・先頭移動・旧応答拒否、独立レビュー。認証/条件世代は単体とコード確認。サーバー/本番検証は未実施。",
+      "acceptance": [
+        {
+          "id": "state",
+          "kind": "automated",
+          "description": "同一本文の参照/開閉を保持し別本文・認証/条件変更は安全に切替、古い回答を表示しない",
+          "verification": "純粋状態/参照再利用/異なるscope/遅延応答の回帰、フロントテスト・型検査・ビルドを順次実行",
+          "status": "passed",
+          "evidence": [
+            "local-only/persistent-passage-20261027/frontend-tests-final.log",
+            "local-only/persistent-passage-20261027/typecheck.log",
+            "local-only/persistent-passage-20261027/build.log",
+            "local-only/favorite-position-20261027/sfc-check.log"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "同本文遷移は本文DOMを保持し設問だけ更新、別本文とエラーに対応、縦並びと既存操作を維持。設問切替の先頭移動を維持",
+          "verification": "通常ローカルPC1440/SP390/320でA内1→2→3、A→B3→4、loading/開閉/参照/スクロール/入力を確認。必要なら隔離合成APIで遅延・認証境界検証を区別する",
+          "status": "passed",
+          "evidence": [
+            "local-only/persistent-passage-20261027/verification.md",
+            "local-only/persistent-passage-20261027/live-retention-final.json",
+            "local-only/persistent-passage-20261027/pending-final.json",
+            "local-only/persistent-passage-20261027/forbidden-final.json",
+            "local-only/persistent-passage-20261027/request-count-final.json"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外が保持範囲・認証/非公開・古い回答・変更範囲を点検",
+          "verification": "root/implement_adminがbaseline差分と実行結果を独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/persistent-passage-20261027/review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "implement_admin"
+        }
+      ],
+      "execution": {
+        "worker": "implement_practice",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "フロント97件と独立レビュー合格。初回型検査でAPI汎用型の再帰上限を検出、buildは未実施。限定型へ修正する",
+            "at": "2026-10-27T12:54:49.944Z",
+            "failed_criteria": [
+              "state",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "型/buildと画面確認は成功。最終フロント再検査は制限環境で96/97成功、ローカルHTTPSポートを開く既存1件が環境制限で失敗",
+            "at": "2026-10-27T13:16:55.110Z",
+            "failed_criteria": [
+              "state",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "passed",
+            "summary": "本文保持の最終97件・型/build・SFC・実API PC/SP・遅延/403・先頭移動と独立レビューが成功",
+            "at": "2026-10-27T13:21:24.827Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "difficult_short_answers",
+      "context": "product",
+      "title": "語句記述を用語集①②又は説明文内の高難度語句へ改訂",
+      "status": "done",
+      "depends_on": [
+        "cross_era_question_registration"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: キープの記述は簡単すぎる。記述問題は①か②、又は見出し語になっていない説明文中の語句など難易度が高いものにする。",
+      "next_action": "今回の改訂は完了。追加作問・送信・公開は別の依頼を待つ",
+      "evidence": [
+        "local-only/difficult-short-answer-20261027/verification.md",
+        "local-only/difficult-short-answer-20261027/independent-review.md",
+        "local-only/difficult-short-answer-20261027/db-review.md",
+        "docs/interaction-and-content-update-20261027.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "原画像2問と全手掛かり/解説/表記の独立照合。共通WriterでID8/11限定更新、6問/24肢/共通本文/対象外不変、反復全snapshot一致。実API3正答表記/誤答/字種/旧版409/秘匿とPC/SP実採点。利用者/履歴/お気に入り等各0件。旧版/教科書/実測難易度は未確認。",
+      "acceptance": [
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "記述2問が新基準と大問テーマを満たし、手掛かり・正答・解説・頻度/項目配置を原画像で確認",
+          "verification": "PDF原画像照合と原稿/DB期待値の形式・本文露出・表記の検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/difficult-short-answer-20261027/q3-source-review.md",
+            "local-only/difficult-short-answer-20261027/q6-source-review.md",
+            "local-only/difficult-short-answer-20261027/independent-review.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "persistence",
+          "kind": "automated",
+          "description": "共通Writerで承認対象のみ更新しID/対象外/公開形式を保ち反復保存が不変",
+          "verification": "更新前バックアップ・全件比較・再保存・実API/PC/SP確認。自動seedや全件置換なし",
+          "status": "passed",
+          "evidence": [
+            "local-only/difficult-short-answer-20261027/update-result.json",
+            "local-only/difficult-short-answer-20261027/http-check.json",
+            "local-only/difficult-short-answer-20261027/after-ui-check.json",
+            "local-only/difficult-short-answer-20261027/verification.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装/作問担当以外が史実・正答一意性・基準とDB変更範囲を独立点検",
+          "verification": "原画像と新原稿、更新前後比較の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/difficult-short-answer-20261027/independent-review.md",
+            "local-only/difficult-short-answer-20261027/db-review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "cross_source_a/group_data_audit"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "原典・作問レビュー合格。更新前レビューで内部参照行再採番と全表不変検査の衝突を発見。未実行のためDB変更なし",
+            "at": "2026-10-27T13:08:17.248Z",
+            "failed_criteria": [
+              "persistence",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "原画像・独立作問レビュー、対象2問の共通Writer更新と反復/対象外比較、実API/PC/SP採点が成功",
+            "at": "2026-10-27T13:21:26.409Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "favorite_classification_position",
+      "context": "service",
+      "title": "お気に入りを分類表示の右に固定",
+      "status": "done",
+      "depends_on": [
+        "serial_question_layout"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: 設問ごとにお気に入りボタンが動くためclass=question-classificationの右に固定する。",
+      "next_action": "今回の依頼は完了。コミット・push・デプロイは別の明示依頼を待つ",
+      "evidence": [
+        "local-only/favorite-position-20261027/verification.md",
+        "local-only/favorite-position-20261027/review.md",
+        "docs/interaction-and-content-update-20261027.md"
+      ],
+      "last_verified_at": "2026-10-27",
+      "verification_scope": "template/CSSのみでscript不変、両SFC構文成功。実API PC1440/SP390/320の4問で星の位置差0px、分類右10px/右端一致/はみ出しなし、遅延pending同位置、ゲスト案内開閉。登録/削除・DB変更なし。",
+      "acceptance": [
+        {
+          "id": "layout",
+          "kind": "automated",
+          "description": "分類の右にお気に入りを置き、設問間/読み込み中も右端位置が変化せず狭い画面で重ならない",
+          "verification": "Vue構文/差分検査、PC1440/SP390/320の設問間とloadingの位置実測・モーダル操作",
+          "status": "passed",
+          "evidence": [
+            "local-only/favorite-position-20261027/sfc-check.log",
+            "local-only/favorite-position-20261027/measurements.json",
+            "local-only/favorite-position-20261027/checks.json",
+            "local-only/favorite-position-20261027/pending.json",
+            "local-only/favorite-position-20261027/verification.md"
+          ],
+          "checked_at": "2026-10-27"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装者以外が依頼範囲とレイアウトを確認",
+          "verification": "別担当が差分と実測をレビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/favorite-position-20261027/review.md"
+          ],
+          "checked_at": "2026-10-27",
+          "reviewer": "implement_admin"
+        }
+      ],
+      "execution": {
+        "worker": "implement_practice",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "分類の右上へ星を固定、4問×3画面幅とpendingで位置差0px、SFC/案内開閉と独立レビュー成功",
+            "at": "2026-10-27T13:21:28.061Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "grouped_changes_delivery",
+      "context": "service",
+      "title": "大問対応と表示・作問基準の変更をコミットしてpush",
+      "status": "doing",
+      "depends_on": [
+        "grouped_questions_implementation",
+        "persistent_shared_passage",
+        "difficult_short_answers",
+        "favorite_classification_position"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー: ここまでの変更をコミットしてpushしてください。原資料/DB/旧コピーを除外し通常mainへ送信する。デプロイの承認はない。",
+      "next_action": "ローカル専用資料/DB/旧コピー10件を除き、skip netlify付きで通常commit/pushしCIとSHA同期を確認する",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "正規差分が許可集合に一致し、ローカル資料/秘密/旧コピーを含まず関連検査に合格",
+          "verification": "NUL区切りstage集合照合、原資料全履歴/設定/進捗軽量168件/差分、既存アプリ検査根拠の鮮度確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "通常pushでmainのSHAが一致しCI成功、skip netlifyと除外対象を保持",
+          "verification": "Netlify読み取り確認とskip指定、commit/push/remoteSHA/差分0/0、実行CI完了、旧コピー/原資料保持",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当がstageと除外範囲・検査根拠を点検",
+          "verification": "group_data_auditの独立送信前レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

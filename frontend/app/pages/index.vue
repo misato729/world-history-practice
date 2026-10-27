@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { EXAM_CATALOG, FREE_EXAM_MAX, QUESTIONS_PER_EXAM, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { FREE_EXAM_MAX, publishedQuestionNumbers, type ExamCatalogEntry } from '~/utils/examCatalog'
 import { HISTORY_TOPICS, type HistoryTopic } from '~/utils/historyTopics'
 import {
   createPracticeSeed,
-  createPracticeSequence,
   selectPracticePositions,
   shufflePracticeSequence,
   type PracticeOrder,
@@ -21,7 +20,8 @@ useSeoMeta({
   ogDescription: description,
 })
 
-const questionNumbers = Object.freeze(Array.from({ length: QUESTIONS_PER_EXAM }, (_, index) => index + 1))
+const { data: publicCatalog, status: publicCatalogStatus, error: publicCatalogError, refresh: refreshPublicCatalog } = await usePublicExamCatalog()
+const questionNumbers = computed(() => publishedQuestionNumbers(publicCatalog.value?.data ?? []))
 
 const { user, authHeaders } = useAuth()
 const { $api: api } = useNuxtApp()
@@ -45,13 +45,13 @@ watch([selectedMajorCategory, selectedCategory, selectedHistoryTopic], () => {
 const hasFullAccess = computed(() => (
   hasFullExamAccess(user.value)
 ))
-const freeExams = computed(() => EXAM_CATALOG.filter(exam => exam.exam_number <= FREE_EXAM_MAX))
+const freeExams = computed(() => (publicCatalog.value?.data ?? []).filter(exam => exam.access !== 'paid_membership_required' && exam.exam_number <= FREE_EXAM_MAX))
 const availableExams = computed(() => (
-  hasFullAccess.value ? EXAM_CATALOG : freeExams.value
+  hasFullAccess.value ? (publicCatalog.value?.data ?? []).filter(exam => exam.access !== 'paid_membership_required') : freeExams.value
 ))
 const availableExamNumbers = computed(() => availableExams.value.map(exam => exam.exam_number))
 const selectedExamNumbers = ref<number[]>([...availableExamNumbers.value])
-const selectedQuestionNumbers = ref<number[]>([...questionNumbers])
+const selectedQuestionNumbers = ref<number[]>([...questionNumbers.value])
 
 const allExamsSelected = computed({
   get: () => (
@@ -68,11 +68,11 @@ const someExamsSelected = computed(() => (
 ))
 const allQuestionsSelected = computed({
   get: () => (
-    selectedQuestionNumbers.value.length === questionNumbers.length
-    && questionNumbers.every(questionNumber => selectedQuestionNumbers.value.includes(questionNumber))
+    selectedQuestionNumbers.value.length === questionNumbers.value.length
+    && questionNumbers.value.every(questionNumber => selectedQuestionNumbers.value.includes(questionNumber))
   ),
   set: (selected: boolean) => {
-    selectedQuestionNumbers.value = selected ? [...questionNumbers] : []
+    selectedQuestionNumbers.value = selected ? [...questionNumbers.value] : []
   },
 })
 const someQuestionsSelected = computed(() => (
@@ -85,17 +85,16 @@ const sortedSelectedQuestionNumbers = computed(() => (
   [...selectedQuestionNumbers.value].sort((left, right) => left - right)
 ))
 const selectedQuestionCount = computed(() => (
-  sortedSelectedExamNumbers.value.length * sortedSelectedQuestionNumbers.value.length
+  conditionSequence.value.length
 ))
-const conditionSequence = computed(() => createPracticeSequence(
-  sortedSelectedExamNumbers.value,
-  sortedSelectedQuestionNumbers.value,
+const conditionSequence = computed(() => selectPracticePositions(
+  publicCatalog.value?.data ?? [], sortedSelectedExamNumbers.value, sortedSelectedQuestionNumbers.value,
 ))
 const hasConditionSelection = computed(() => conditionSequence.value.length > 0)
 
 const examIsLocked = (examNumber: number) => examNumber > FREE_EXAM_MAX && !hasFullAccess.value
 const examTarget = (examNumber: number) => (
-  examIsLocked(examNumber) ? '/premium' : `/practice/${examNumber}/1`
+  examIsLocked(examNumber) ? '/premium' : `/practice/${examNumber}/${publicCatalog.value?.data.find(exam => exam.exam_number === examNumber)?.question_numbers[0] ?? 1}`
 )
 const startConditionalPractice = async (order: PracticeOrder) => {
   if (!hasConditionSelection.value || startingPractice.value) return
@@ -112,7 +111,7 @@ const startConditionalPractice = async (order: PracticeOrder) => {
 
   try {
     let sequence = conditionSequence.value
-    if (hasSubjectFilter.value) {
+    {
       const result = await api<{ data: ExamCatalogEntry[] }>('/api/v1/exams', {
         headers: authHeaders.value,
         query: {
@@ -149,14 +148,18 @@ const startConditionalPractice = async (order: PracticeOrder) => {
 
 watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   const previouslySelectedAll = (
-    previousExamNumbers.length > 0
-    && previousExamNumbers.every(examNumber => selectedExamNumbers.value.includes(examNumber))
+    (previousExamNumbers.length === 0 && selectedExamNumbers.value.length === 0)
+    || previousExamNumbers.length > 0 && previousExamNumbers.every(examNumber => selectedExamNumbers.value.includes(examNumber))
   )
   selectedExamNumbers.value = previouslySelectedAll
     ? [...examNumbers]
     : selectedExamNumbers.value.filter(examNumber => examNumbers.includes(examNumber))
 })
 
+watch(questionNumbers, (numbers, previousNumbers) => {
+  const allSelected = previousNumbers.length === 0 || previousNumbers.every(number => selectedQuestionNumbers.value.includes(number))
+  selectedQuestionNumbers.value = allSelected ? [...numbers] : selectedQuestionNumbers.value.filter(number => numbers.includes(number))
+})
 </script>
 
 <template>
@@ -176,6 +179,9 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
     </section>
 
     <section id="practice-launcher" class="practice-launcher" aria-labelledby="practice-launcher-title">
+      <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開中の演習セットを読み込んでいます。</p>
+      <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">演習セットを読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
+      <p v-else-if="!availableExams.length" role="status">現在利用できる公開問題はありません。</p>
       <div class="launcher-heading">
         <div>
           <h2 id="practice-launcher-title" class="section-heading">
@@ -220,7 +226,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
         aria-labelledby="exam-mode-tab"
       >
         <div class="exam-grid-heading">
-          <p><strong>公開中 {{ EXAM_CATALOG.length }}セット</strong><span>各{{ QUESTIONS_PER_EXAM }}問</span></p>
+          <p><strong>公開中 {{ publicCatalog?.data.length ?? 0 }}セット</strong><span>教材ごとの構成で演習</span></p>
           <NuxtLink v-if="!hasFullAccess" class="premium-info-link" to="/premium">
             <UIcon name="i-lucide-lock-keyhole" />
             演習セット{{ FREE_EXAM_MAX + 1 }}以降はプレミアム会員向けです
@@ -228,15 +234,15 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
         </div>
         <div class="exam-grid">
           <NuxtLink
-            v-for="exam in EXAM_CATALOG"
+            v-for="exam in publicCatalog?.data ?? []"
             :key="exam.exam_number"
             class="exam-card"
             :to="examTarget(exam.exam_number)"
             :aria-label="examIsLocked(exam.exam_number) ? `演習セット${exam.exam_number}はプレミアム会員向けです` : `演習セット${exam.exam_number}を始める`"
           >
             <span class="exam-card-copy">
-              <strong>演習セット {{ exam.exam_number }}</strong>
-              <span>{{ QUESTIONS_PER_EXAM }}問・{{ CHOICE_LABELS.length }}択の問題</span>
+              <strong>{{ exam.title || `演習セット ${exam.exam_number}` }}</strong>
+              <span>{{ exam.question_numbers.length }}問・{{ exam.format_code === 'legacy_practice' || !exam.format_code ? `${CHOICE_LABELS.length}択の問題` : exam.format_code === 'group_practice' ? '大問演習' : '4大問の模試' }}</span>
             </span>
             <UIcon :name="examIsLocked(exam.exam_number) ? 'i-lucide-lock-keyhole' : 'i-lucide-arrow-right'" aria-hidden="true" />
           </NuxtLink>
@@ -260,7 +266,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
                 <div><label for="practice-category">小分類（節）</label><select id="practice-category" v-model="selectedCategory" :disabled="!selectedMajorCategory"><option value="">すべての節</option><option v-for="item in availableCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
                 <div><label for="practice-history-topic">文化史の絞り込み</label><select id="practice-history-topic" v-model="selectedHistoryTopic"><option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.filterLabel }}</option></select></div>
               </div>
-              <p class="condition-help">文化史全般には、美術史・音楽史・文学史も含まれます。</p>
+              <p class="condition-help">文化史全般には、美術史・音楽史・文学史も含まれます。選んだ範囲の知識を使う横断問題も含みます。</p>
             </fieldset>
             <fieldset class="condition-fieldset" :disabled="startingPractice">
               <legend>対象演習セット</legend>
@@ -327,7 +333,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
           <div class="condition-submit">
             <p v-if="hasConditionSelection">
               <span>選択中</span>
-              {{ sortedSelectedExamNumbers.length }}セット・各{{ sortedSelectedQuestionNumbers.length }}問
+              {{ sortedSelectedExamNumbers.length }}セット・選択した公開問題
               <strong>{{ hasSubjectFilter ? `最大${selectedQuestionCount}問から条件で絞り込み` : `全${selectedQuestionCount}問` }}</strong>
             </p>
             <p v-else class="selection-required">

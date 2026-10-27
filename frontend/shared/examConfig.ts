@@ -1,6 +1,7 @@
 import rawConfiguration from '../../config/exam.json' with { type: 'json' }
 
 export type CulturalHistoryCategoryCode = 'art_history' | 'music_history' | 'literature_history' | 'other_cultural_history'
+export type ExamFormatRules = { group_count: number; question_count?: number; allowed_group_question_counts: number[] }
 
 export type ExamConfiguration = {
   schema_version: number
@@ -16,7 +17,7 @@ export type ExamConfiguration = {
     contact_email: string
     overview: { title: string, body: string }[]
   }
-  exam: { set_count: number, questions_per_exam: number, choice_labels: string[] }
+  exam: { set_count: number, questions_per_exam: number, choice_labels: string[], formats?: Record<string, ExamFormatRules> }
   categories: {
     major: { value: string, label: string }[]
     minor: { value: string, label: string, major_category_value: string }[]
@@ -43,6 +44,14 @@ export const parseExamConfig = (input: unknown): ExamConfiguration => {
   requireValue(typeof site.contact_email === 'string' && (site.contact_email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(site.contact_email)), 'contact_email must be empty or a valid email')
   requireValue(Array.isArray(site.overview) && site.overview.every(item => item && nonempty(item.title) && nonempty(item.body)), 'overview must contain title and body entries')
   requireValue(config.exam && positive(config.exam.set_count) && config.exam.set_count <= 10000 && positive(config.exam.questions_per_exam) && config.exam.questions_per_exam <= 10000, 'exam counts must be positive integers')
+  if (config.exam.formats !== undefined) {
+    requireValue(config.exam.formats && typeof config.exam.formats === 'object' && !Array.isArray(config.exam.formats), 'formats must be an object')
+    for (const [code, rules] of Object.entries(config.exam.formats)) {
+      requireValue(['group_practice', 'rekiken_mock'].includes(code), 'unsupported exam format')
+      requireValue(rules && positive(rules.group_count) && Array.isArray(rules.allowed_group_question_counts) && rules.allowed_group_question_counts.length === 2 && new Set(rules.allowed_group_question_counts).size === 2 && rules.allowed_group_question_counts.every(count => count === 7 || count === 8), 'group formats require seven or eight questions')
+      requireValue(code === 'group_practice' ? rules.group_count === 1 && rules.question_count === undefined : rules.group_count === 4 && rules.question_count === 30, 'invalid grouped exam structure')
+    }
+  }
   const labels = config.exam.choice_labels
   requireValue(Array.isArray(labels) && labels.length >= 2 && labels.length <= 10 && labels.every(value => nonempty(value) && value.length <= 10) && new Set(labels).size === labels.length, 'choice_labels must contain at least two distinct labels')
   const categories = config.categories
@@ -60,6 +69,12 @@ export const parseExamConfig = (input: unknown): ExamConfiguration => {
 }
 
 export const EXAM_CONFIG = parseExamConfig(rawConfiguration)
+export function getExamFormat(config: ExamConfiguration, code: string): ExamFormatRules {
+  if (code === 'legacy_practice') return { group_count: 0, question_count: config.exam.questions_per_exam, allowed_group_question_counts: [] }
+  if (code === 'group_practice') return config.exam.formats?.group_practice ?? { group_count: 1, allowed_group_question_counts: [7, 8] }
+  if (code === 'rekiken_mock') return config.exam.formats?.rekiken_mock ?? { group_count: 4, question_count: 30, allowed_group_question_counts: [7, 8] }
+  throw new Error('Unsupported exam format')
+}
 export const SITE = EXAM_CONFIG.site
 export const authCookieName = (config = EXAM_CONFIG) => `exam-${config.site.id}-access-token`
 export const PAYMENTS_ENABLED = EXAM_CONFIG.payments.enabled
