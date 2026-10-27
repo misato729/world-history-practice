@@ -177,4 +177,7 @@ APIテストは独立した `world_history_test` に接続しています。認�
 - 最新のユーザー指示により、Netlifyは設定完了まで追加確認不要。設定変更・ビルド再開・デプロイは行わず、コミットに `[skip netlify]` を付ける。Netlifyに世界史ラボの停止設定があることを確認済みとの報告はしない。
 - 3調査報告に点検時点の記録であることと後続変更への参照を追補。分類設定・問題・DBを変更せず、概要の参照元短文だけを公開する変更を保持した。
 - 送信前に `node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/workspace-policy.test.mjs scripts/check-private-sources.test.mjs` の168件が成功、失敗・スキップ0。設定・検証用問題検査、全履歴の原資料保護、差分検査も成功。UIは先行作業のPC/SP確認後に変更していないため再操作はせず、DB接続・Docker起動・アプリ全件テストは今回行わない。
-- リモートのmain先端をfetchせず読取確認し、旧OID `9fcf3d2dfdd4b542d2722d3d0782dd42148510c8` と一致。最終stageの独立レビュー後、同OIDをleaseとして使用する。実送信・同期・CIの結果は確認後に記録する。
+- リモートのmain先端をfetchせず読取確認し、旧OID `9fcf3d2dfdd4b542d2722d3d0782dd42148510c8` と一致。独立担当 `rights_delivery_review` が最終stage27件と期待path集合の完全一致、原資料・旧コピーの除外、3原本と旧コピー10件のハッシュ保持を確認して合格。
+- `5328f62192c1af8e4b098ad428460d269d2fcec4` を `[skip netlify]` 付きでコミットし、上記旧OIDを指定したforce-with-leaseでmainへpush成功。実pre-push検査も成功し、実リモートのSHA一致とローカル差分0/0を確認。分類文書・分類設定・問題データのハッシュ不変、旧コピー10件の保持を再確認。DBは未接続。
+- GitHub Actionsの実行 `40457910577` はharness・verifyとも成功。原資料保護・進捗・API・フロントエンド・型検査・ビルドが成功した。CLIの認証設定がなかったため、push起動分の一覧は公開APIで取得し、ジョブ詳細はGitHub接続で確認した。Netlifyは追加確認・設定変更をしていない。
+- 完了記録の追加コミットも `[skip netlify]` を使用する。これは通常の記録コミットで、履歴除去の再実行ではない。送信後に同期・原資料保護・最終コミットのCIを再確認する。

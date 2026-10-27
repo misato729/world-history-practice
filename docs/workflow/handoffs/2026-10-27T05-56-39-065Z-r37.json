@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "revision": 37,
+  "state_hash": "abef6da33db24c00a5a1bf0a04f4e494fa61c9075bf02caa205979cc6cf99a66",
+  "recorded_at": "2026-10-27T05:56:39.065Z",
+  "timezone": "UTC",
+  "context": "service",
+  "task": "rights_changes_delivery",
+  "summary": "明示27ファイルをcommit、旧OID付きforce-with-leaseでmain反映。原本/旧コピー保持、168検査・独立stageレビュー・CI全工程成功。Netlify追加確認不要の指示に従い設定未変更",
+  "next_action": "完了記録を[skip netlify]付きで送信し、最終同期とCIを確認する",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "5328f62192c1af8e4b098ad428460d269d2fcec4",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/local-only-materials.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/verification.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "e98936134eff5b4656179bd36a583a0857fbeda6070e79a1f100d1b3fd18ba45",
+    "README.md": "b33c1d1d854ad11e3505dbd9c7c268b1fb7543279fa552fecc6ad353c942931a",
+    "config/exam.json": "328e17f24acad57dfecdb0ecaa2a1731be9f0f94c87593b08a000328b8bf2119",
+    "docs/classification.md": "1942c5d4390914aedc3c5c681c12af827b714f536a6857eef1006a5760c081e3",
+    "docs/verification.md": "0695cae8b80d8654b04404a5434c0981c8afb5c8e729700d358d8829c56ba641",
+    "docs/workflow/README.md": "d5f0794f33467a626398387d4a2e464beafc8cbf836141419f63888632aeec20",
+    "scripts/context.mjs": "3828c41d1cc5a6977b8444035e094e61e1c9895fcaa9451ecb1919e799ecaffc",
+    "scripts/context.test.mjs": "cc4bda3d1f56ca6824603896b7ad640e7a94a60d55b14a1b0eaeef8030b9e323",
+    "docs/workflow/contexts/product.md": "cc25a8e658a340bd07e8a95f91c07a45536f4c1e7b5be5a418445f651fb6915c",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "790e1f58488613fb151497fffacf0efe942db4da3cadedb72b43f89f6b6b4984",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "587a69716771d7702bcfca7420b7ea3cca69cd2dad300499367e9aeda49f8667",
+    "scripts/check-private-sources.mjs": "1d28447b51b39591d42151f236b837b33d695662168ee5c71500205aa0de96af",
+    "scripts/check-private-sources.test.mjs": "f4e19e5ec736d8c90c1790410c889528ec6ca01ecf39342ab99e3d07b85b1b75",
+    ".gitignore": "44b7e116bb889fd78a2b9dc44c62d261806821140c6a321c65da8508751ae268",
+    ".dockerignore": "bec9094f1c7ce7df6f5ff6ec08343b77dc6dba2988a093ebb384072017a36d08",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a",
+    "content/questions.json": "2327e8637a79dc480d2bd85641156516376e0a025170a8d43113faad33614625",
+    "frontend/shared/examConfig.ts": "cabada6da1775c316dee62ccccba3fc0352a1a75ed4d36ef7b0e0e1118c02ecf",
+    "frontend/app/utils/historyTopics.ts": "557afbc23a2da1c4ba8ddaecbeefaecb92a8bddacb86c030740d1fdc9125caab",
+    "frontend/server/services/learning-validation.ts": "3bee7bebedda9130fcddd5e10ada8e4a4b0ec17546312617936f67c3b10494d0",
+    "frontend/server/services/learning-writer.ts": "490b1e3f463e7eb4a107197004900c6921d6f10fe1b8eeecef3802cb2221cb26",
+    "frontend/server/services/learning.ts": "15ec5ebd856df702f52b32f48ed3346566ef6aad979b308ff150a97fd63106e9",
+    "frontend/server/database/migrations/004_cultural_history_categories.sql": "efa1479a13c01ebca748846228752430845c7b5691c023cd395b3c3e3d2d1773",
+    "frontend/tests/historyTopics.test.ts": "8d8249a3ec79e980b233907e7ca083ae3d85c50ae5d1e691f0f9bcf3cca8f204",
+    "frontend/server-tests/learning.test.ts": "1f5e8eaf35d54eae79adf36356221755857dc57ba2989789812bbd7a13a1e5a7",
+    "frontend/app/pages/index.vue": "9d669d2ac76590cb73ceab3b6703b3e21971d3c323881fa3a283d7b5c48f3362",
+    "frontend/app/pages/admin/questions/index.vue": "bded02a715ab5082e62094abcafe4b6c734d655ab1c238c729edacfa5a5f2173",
+    "docs/workflow/policy.json": "e3b00b8f351f93a879fc8f77fe0aebb5d72047f3d25496097cdc93c9da96e12c",
+    "scripts/workspace-policy.mjs": "5c050cc4c89e54c79724a4659ff1115c771346873da7bad1746e9610ad729f86",
+    "scripts/workspace-policy.test.mjs": "3f62840182881f24c556e7da76849a61e7d9dbb755a79ff72f241c4a7598c810",
+    "docs/workflow/template-parity-20261027.md": "f919f0ac26ee483a8adad786dfca45727ee315ce82f60d04aa8e0402378712b3"
+  },
+  "attempt": {
+    "outcome": "passed",
+    "number": 1
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}
