@@ -145,3 +145,36 @@ APIテストは独立した `world_history_test` に接続しています。認�
 - 演習画面は実画面、管理一覧は一時的な読取専用合成応答で確認した。管理の検索操作でも節が空のまま維持されることを確認し、DBへの保存は行っていない。一時サーバーと合成セッションは確認後に終了した。
 - `review_section_dependency` の独立した静的レビューで、既存の条件解除・検索確定処理との整合と変更範囲を確認した。既存の文化史実装と別作業の表示文言を保持している。
 - 画面記録：[小分類をすべての節へ固定した状態](screenshots/section-filter-no-chapter.jpg)。差分・設定検査を実施。画面の選択制御だけの変更のため、DB移行・全件テスト・型検査・本番ビルドは再実行しない。
+# 2026年10月27日：概要の全一覧削除と分類文書のローカル専用化
+
+- ユーザー依頼により `frontend/app/pages/exam-overview.vue` の全19章・64節一覧と専用CSSを削除。「章・節の分類は、山川出版社『世界史用語集』に基づいています。」へ置換。概要説明・セット数・単一選択式説明・演習開始リンクを保持した。
+- 通常環境を起動せず、正規画面ソース・共有定義・同一分類設定の隔離コピーを使用。旧 ` 2` コピーは除外、DB用サーバーコードと秘密設定はコピーせず、空のserverDirとdotenvでローカルUIだけを確認。通常環境の重複autoimportや実API・DB・本番を再現した検証ではない。
+- ブラウザでPC1440×1000/SP390×844を確認。章見出し・分類グループは0件、参照元短文あり、横はみ出しなし。SPで演習開始リンクを押し `/#practice-launcher` へ移動することも確認。画像はローカル専用の `分析/権利点検20261027/概要一覧削除_PC.png`・`概要一覧削除_SP.png`。一時タブ・表示幅指定・サーバー・コピーは確認後に終了・解除・削除した。
+- 続く依頼で `docs/classification.md` を手元に残して `git rm --cached`。本文・分類設定・検証用問題のハッシュ不変を確認。Git上の削除だけがステージされており、ローカル本文の削除ではない。
+- `.gitignore`・`.dockerignore`・追加ポリシーに全階層・大小文字無視の `classification.md` 接頭辞保護を設定。同名バックアップも対象。README・カスタマイズ資料・AGENTS・ローカル資料運用・サービス文脈へ配布対象外と既存履歴残存を明記。
+- 初回の独立レビューで、ポリシーは接頭辞・全階層に作用する一方、ignoreが単一パスのみだった範囲不一致を指摘。両ignoreの範囲をそろえて修正し、再レビュー合格。元の不一致と修正をこの記録に残す。
+- `node --test --test-concurrency=1 scripts/workspace-policy.test.mjs scripts/check-private-sources.test.mjs` は45件成功、失敗0。`node scripts/check-template.mjs` 成功。NUL区切りの追跡・ignore確認、原本ハッシュ、Git/Dockerパターン一致、進捗形式、差分検査を確認。UIの小変更のためアプリ全件テスト・型検査・本番ビルド・DBテストは実行していない。
+- `node scripts/check-private-sources.mjs` は終了コード1、追跡0件・履歴1件を検出して停止。既存コミットに分類文書が残っているための期待した送信防止動作であり、送信可能の判定ではない。独立担当 `overview_copy_review` も同じ検出を確認。将来のpush前に履歴の扱いを別途確認する。履歴書換え・強制push・コミット・push・デプロイは未実施。
+- 機械確認の詳細はローカル専用の `分析/権利点検20261027/概要一覧削除と分類文書除外.json`。独立担当がソース差分・保持範囲・送信保護をレビュー合格。画面操作自体は親担当の記録を評価し、別担当による再操作はしていない。
+
+# 2026年10月27日：分類文書のGit履歴除去
+
+- ユーザーの明示依頼により `docs/classification.md` だけをローカルの送信対象履歴から除去。実push・通常の変更コミット・DB操作・デプロイは対象外とした。
+- 変更前の全参照・全履歴bundle、index、既存の作業差分、未追跡ファイルとローカル分類文書を `local-only/classification-history-purge-20261027/recovery.tar.gz` に復旧用として保持。控えをGit参照として残さず、既存のlocal-only保護内に保存した。
+- 元の作業ツリーに触れず、隔離mirrorで履歴を書換えた。全9コミットを対応づけ、対象パスを除いた全leafのmode/type/OID/path、親関係、author/committer等metadata、メッセージが一致することを機械検証。7コミットから対象パスを除去。空コミットを落とす操作は行っていない。
+- 作業差分用の3参照はcommitでなくtree型のため、別の一時indexで対象パスだけを除去し、他の全leafが一致することを検証。型とsymbolic refを維持した。準備中のbare repository向けindex操作に空の一時worktree指定が必要だったため追加し、候補を再検証した。元リポジトリの作業ツリーはこの準備では変更していない。
+- 検証済みbundleからobjectをローカルに取り込み、期待する旧OIDを指定した一括transactionで5実参照を更新。symbolic refを含む全6参照を再照合。refs/original等に旧履歴を残していない。ローカルremote-tracking参照も新履歴へ対応づけたが、これはGitHub側の更新ではない。
+- mainの旧OIDは `9fcf3d2dfdd4b542d2722d3d0782dd42148510c8`、新OIDは `1b4d0222f1ce55145b114835957cef300667eb7e`。履歴適用直後に全220ファイルのbyte/mode、indexファイルと全entry、unstaged差分、他のGit status項目が保持された。対象文書のステージ済み削除は新HEADとの一致により解消しただけで、ローカル本文は保持されている。この節等の運用文書更新は保全確認後に行った新しい差分である。
+- `node scripts/check-private-sources.mjs` 成功。`git log --all -- docs/classification.md` は0件。全参照先のtreeにも対象パスなし。実 `.githooks/pre-push` への送信予定metadataによる模擬検査も成功。`core.hooksPath=.githooks` を維持した。
+- 実remote mainが旧OIDであることを読み取り確認し、`git push --dry-run --force-with-lease=refs/heads/main:9fcf3d2dfdd4b542d2722d3d0782dd42148510c8 origin main:main` はpre-push検査を含め成功。その後の `git ls-remote` でも旧OIDのままであることを確認。実pushは行っていない。将来の反映時には、実remoteの旧OIDと旧履歴の再取得がないことを再確認する。
+- 独立担当 `history_purge_review` が隔離候補の9コミット・全実参照の対象外内容/metadata/親関係を別検証し、適用後の220ファイル、index、分類文書・分類設定・問題の保持を再確認。通常送信検査と実pre-push模擬検査も別担当で成功。ネットワーク上のdry-runとremote不変は親担当の記録を評価。独立レビュー合格。
+- 分類設定・問題・DBは未変更。DBには接続せず、アプリのテスト・ビルド・Docker起動は履歴操作の検証に不要のため実施していない。reflogの期限切れや到達不能objectの物理GCはしていない。送信可能な参照からの除去であり、手元の全痕跡のセキュア消去ではない。
+- 機械確認結果と旧新対応はローカル専用の `分析/権利点検20261027/Git履歴除去.json`。既存の引き継ぎ記録にある旧OIDや当時の検査停止結果は、その時点の記録として保持した。
+
+# 2026年10月27日：権利関連変更のコミット・送信
+
+- 今回の権利点検・章節構成調査・利用態様点検、試験概要の一覧削除、分類文書のローカル専用化と履歴除去について、ユーザーからコミットと旧OID明示のforce-with-leaseによるpushを承認された。既存の旧コピー10件、分類文書、分析・原資料・復旧控えは送信しない。
+- 最新のユーザー指示により、Netlifyは設定完了まで追加確認不要。設定変更・ビルド再開・デプロイは行わず、コミットに `[skip netlify]` を付ける。Netlifyに世界史ラボの停止設定があることを確認済みとの報告はしない。
+- 3調査報告に点検時点の記録であることと後続変更への参照を追補。分類設定・問題・DBを変更せず、概要の参照元短文だけを公開する変更を保持した。
+- 送信前に `node --test --test-concurrency=1 scripts/context.test.mjs scripts/workflow-policy.test.mjs scripts/workspace-policy.test.mjs scripts/check-private-sources.test.mjs` の168件が成功、失敗・スキップ0。設定・検証用問題検査、全履歴の原資料保護、差分検査も成功。UIは先行作業のPC/SP確認後に変更していないため再操作はせず、DB接続・Docker起動・アプリ全件テストは今回行わない。
+- リモートのmain先端をfetchせず読取確認し、旧OID `9fcf3d2dfdd4b542d2722d3d0782dd42148510c8` と一致。最終stageの独立レビュー後、同OIDをleaseとして使用する。実送信・同期・CIの結果は確認後に記録する。

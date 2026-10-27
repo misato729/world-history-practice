@@ -4,6 +4,8 @@
     "directory_names": [
       "local-only"
     ],
-    "filename_prefixes": []
+    "filename_prefixes": [
+      "classification.md"
+    ]
   }
 }

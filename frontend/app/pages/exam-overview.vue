@@ -11,10 +11,7 @@ useSeoMeta({ title: `試験概要｜${SITE.name}`, description: `${SITE.exam_nam
     <section class="content-panel">
       <h2>本サイトの演習</h2>
       <p>全{{ EXAM_CONFIG.exam.set_count }}セット、各{{ EXAM_CONFIG.exam.questions_per_exam }}問の単一選択式です。各問には{{ CHOICE_LABELS.length }}つの選択肢があり、正答は1つです。</p>
-      <div v-for="major in MAJOR_CATEGORIES" :key="major.value" class="category-group">
-        <h3>{{ major.label }}</h3>
-        <ul><li v-for="category in getCategoriesByMajorCategory(major.value)" :key="category.value">{{ category.label }}</li></ul>
-      </div>
+      <p>章・節の分類は、山川出版社『世界史用語集』に基づいています。</p>
       <NuxtLink class="primary-link" to="/#practice-launcher">問題演習を始める</NuxtLink>
     </section>
   </div>
@@ -23,7 +20,4 @@ useSeoMeta({ title: `試験概要｜${SITE.name}`, description: `${SITE.exam_nam
 <style scoped>
 .overview-page { padding-bottom: 36px; }
 .content-panel p { white-space: pre-line; overflow-wrap: anywhere; }
-.category-group { margin: 24px 0; }
-.category-group h3 { font-size: 1.125rem; }
-.category-group ul { padding-left: 1.4em; }
 </style>

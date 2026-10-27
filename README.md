@@ -115,7 +115,7 @@ docker compose run --rm frontend \
 ```
 
 - [進捗管理・セッション引き継ぎ](docs/workflow/README.md)
-- [分類・文化史・美術史の運用](docs/classification.md)
+- 分類・文化史・美術史の運用：`docs/classification.md`（ローカル専用。リポジトリの配布対象外）
 - [カスタマイズ手順](docs/customization.md)
 - [API・DB・運用の概要](docs/architecture.md)
 - [Rails版からの移行・バックアップ・復元演習](docs/migration.md)

@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "revision": 25,
+  "state_hash": "2d6ec67e5f1863999622a80cdd845a6bcaa81c96581bc0f6b10bf75935a4ca99",
+  "recorded_at": "2026-10-27T03:54:04.532Z",
+  "timezone": "UTC",
+  "context": "service",
+  "task": "rights_review",
+  "summary": "有料提供前の権利点検を完了。山川由来の分類構成を優先確認事項として報告し、DB等の未確認範囲と独立レビューを記録。アプリと問題DBは未変更",
+  "next_action": "分類の許諾相談又は独自分類への移行は次の依頼を待つ。点検完了を販売可・権利処理済みと扱わない",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "9fcf3d2dfdd4b542d2722d3d0782dd42148510c8",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/service.md"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/rights-review-20261027.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "476a56433c6fa84a6475ad4c161039b714d3baed4cf7fb10941e46fa891361d7",
+    "README.md": "52848a7b38e5d9fae499cc8f5f3744dcba614db310ad450b0af4c1da433809b4",
+    "config/exam.json": "328e17f24acad57dfecdb0ecaa2a1731be9f0f94c87593b08a000328b8bf2119",
+    "docs/classification.md": "1942c5d4390914aedc3c5c681c12af827b714f536a6857eef1006a5760c081e3",
+    "docs/verification.md": "5014c3d3249192a80d95179c6d52142bf72ed84ec343b413d3ceb5619abc087f",
+    "docs/workflow/README.md": "d5f0794f33467a626398387d4a2e464beafc8cbf836141419f63888632aeec20",
+    "scripts/context.mjs": "3828c41d1cc5a6977b8444035e094e61e1c9895fcaa9451ecb1919e799ecaffc",
+    "scripts/context.test.mjs": "cc4bda3d1f56ca6824603896b7ad640e7a94a60d55b14a1b0eaeef8030b9e323",
+    "docs/workflow/contexts/product.md": "cc25a8e658a340bd07e8a95f91c07a45536f4c1e7b5be5a418445f651fb6915c",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "7c55c0e19b5dc4b42a896a74f070510112515558be150c5d8cb0ddb5173a55d7",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "1307f3755b56c74dbbd4abecea74cb9cf8b43b6a668e8cec0ca4aeafb2f079ac",
+    "scripts/check-private-sources.mjs": "1d28447b51b39591d42151f236b837b33d695662168ee5c71500205aa0de96af",
+    "scripts/check-private-sources.test.mjs": "f4e19e5ec736d8c90c1790410c889528ec6ca01ecf39342ab99e3d07b85b1b75",
+    ".gitignore": "ce1463bbbb6aab62b5dbd625d379cabc2bbc69ceb8d8b1653edd904f464c44b8",
+    ".dockerignore": "6123f8916c1c08a454699c5d6edd2649248c6fb2edf7eb5a5b688f2fc50c39f1",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a",
+    "content/questions.json": "2327e8637a79dc480d2bd85641156516376e0a025170a8d43113faad33614625",
+    "frontend/shared/examConfig.ts": "cabada6da1775c316dee62ccccba3fc0352a1a75ed4d36ef7b0e0e1118c02ecf",
+    "frontend/app/utils/historyTopics.ts": "557afbc23a2da1c4ba8ddaecbeefaecb92a8bddacb86c030740d1fdc9125caab",
+    "frontend/server/services/learning-validation.ts": "3bee7bebedda9130fcddd5e10ada8e4a4b0ec17546312617936f67c3b10494d0",
+    "frontend/server/services/learning-writer.ts": "490b1e3f463e7eb4a107197004900c6921d6f10fe1b8eeecef3802cb2221cb26",
+    "frontend/server/services/learning.ts": "15ec5ebd856df702f52b32f48ed3346566ef6aad979b308ff150a97fd63106e9",
+    "frontend/server/database/migrations/004_cultural_history_categories.sql": "efa1479a13c01ebca748846228752430845c7b5691c023cd395b3c3e3d2d1773",
+    "frontend/tests/historyTopics.test.ts": "8d8249a3ec79e980b233907e7ca083ae3d85c50ae5d1e691f0f9bcf3cca8f204",
+    "frontend/server-tests/learning.test.ts": "1f5e8eaf35d54eae79adf36356221755857dc57ba2989789812bbd7a13a1e5a7",
+    "frontend/app/pages/index.vue": "9d669d2ac76590cb73ceab3b6703b3e21971d3c323881fa3a283d7b5c48f3362",
+    "frontend/app/pages/admin/questions/index.vue": "bded02a715ab5082e62094abcafe4b6c734d655ab1c238c729edacfa5a5f2173",
+    "docs/workflow/policy.json": "a8c85f6593e4be0bc610b161764d7037a2499c0ff4529bde49f1942f23f24240",
+    "scripts/workspace-policy.mjs": "5c050cc4c89e54c79724a4659ff1115c771346873da7bad1746e9610ad729f86",
+    "scripts/workspace-policy.test.mjs": "3f62840182881f24c556e7da76849a61e7d9dbb755a79ff72f241c4a7598c810",
+    "docs/workflow/template-parity-20261027.md": "f919f0ac26ee483a8adad786dfca45727ee315ce82f60d04aa8e0402378712b3"
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}

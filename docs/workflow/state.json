@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 23,
-  "updated_at": "2026-10-26T22:35:17.264Z",
+  "revision": 36,
+  "updated_at": "2026-10-27T05:43:24.625Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-26T22-35-17-264Z-r23.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T05-43-24-625Z-r36.json",
   "contexts": [
     {
       "id": "product",
@@ -692,6 +692,399 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "rights_review",
+      "context": "service",
+      "title": "有料提供前の著作権・分類・表示の全体点検",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 全体的に点検。山川独自の項目選択・章節構成・配列を体系的に再現しているとの申告",
+      "next_action": "分類の許諾相談又は独自分類への移行は次の依頼を待つ。点検完了を販売可・権利処理済みと扱わない",
+      "evidence": [
+        "docs/rights-review-20261027.md",
+        "分析/権利点検20261027/確認範囲.json"
+      ],
+      "last_verified_at": "2026-10-27T03:53:55.091Z",
+      "verification_scope": "分類19章64節の設定・一般向け一覧・条件選択・管理・Git追跡資料、検証用5問20選択肢47textブロック、OCR210頁検索と関連原画像8頁、出典・引用機能、静的資産1件、資料保護を確認。設定・件数/除外/差分範囲・進捗・Git原資料保護検査成功。独立担当rights_independent_reviewが報告の根拠・法的断定回避・未確認範囲をレビューし合格。実DB・実画面・本番・全過去問比較・原目次83見出し再照合・原表紙比較は未確認。許諾又は侵害の確定判断ではない。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "分類件数・公開経路・資料保護・差分範囲を確認し、問題全件照合と未確認範囲を区別する",
+          "verification": "設定とDBの安全な集計、リポジトリ検索、資料保護検査、文書と進捗検査",
+          "status": "passed",
+          "evidence": [
+            "docs/rights-review-20261027.md",
+            "分析/権利点検20261027/確認範囲.json"
+          ],
+          "checked_at": "2026-10-27T03:53:55.091Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が報告の根拠・法的断定・未確認範囲を確認する",
+          "verification": "コード・報告書・公式出典と結論の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/rights-review-20261027.md"
+          ],
+          "checked_at": "2026-10-27T03:53:55.091Z",
+          "reviewer": "rights_independent_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "分類の体系利用を優先論点として記録。確認可能なコード・検証用5問・原典8頁・資料保護と独立レビューを確認。実DB等の未確認範囲を明記した",
+            "at": "2026-10-27T03:53:55.455Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "classification_creativity",
+      "context": "service",
+      "title": "章節構成の創作性に関する判例・他社教科書比較",
+      "status": "done",
+      "depends_on": [
+        "rights_review"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 山川の章節構成の著作権上の創作性を判例と他社世界史教科書の分類比較で具体的に調査",
+      "next_action": "分類の維持又は変更は次の依頼で判断。許諾申請・DB更新・公開は未実施",
+      "evidence": [
+        "docs/classification-copyright-research-20261027.md",
+        "分析/権利点検20261027/章節構成調査.json"
+      ],
+      "last_verified_at": "2026-10-27T04:48:24.311Z",
+      "verification_scope": "4判決原文（ケイコとマナブ地裁・控訴審、分冊電話帳高裁、江差追分最高裁）、同課程5出版社教科書の公式公開構成資料、指導要領の共通枠組み、特定見出し2例を確認。設定19/64・2例一致・資料除外・設定検査・進捗形式・Git原資料保護・差分検査成功。独立担当も4判決・東書構成・第一2見出しを確認し報告をレビュー合格。83全件の法的独自性・全64節一致率・実DBは未確認。分類変更を法的必須と断定しないと前評価を追補。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "比較対象の版と一次資料参照、判例の判断部分、公開報告のリンクと進捗の形式を確認",
+          "verification": "比較対象件数・資料存在・出典URL・記録形式・資料除外・差分を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/classification-copyright-research-20261027.md",
+            "分析/権利点検20261027/章節構成調査.json"
+          ],
+          "checked_at": "2026-10-27T04:48:24.311Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が当事者主張と裁判判断、比較の限界、結論の過大主張を点検",
+          "verification": "裁判所原文と報告書の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/classification-copyright-research-20261027.md"
+          ],
+          "checked_at": "2026-10-27T04:48:24.311Z",
+          "reviewer": "rights_independent_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "判例4件・教科書5書籍・指導要領を比較し、分類指標と具体的編集物を区別。旧評価を追補し、独立レビューと関連検査に合格した",
+            "at": "2026-10-27T04:48:25.592Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "classification_usage",
+      "context": "service",
+      "title": "83見出しの画面・設定・配布文書での利用態様点検",
+      "status": "done",
+      "depends_on": [
+        "classification_creativity"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 現在の83見出しが分類指標の利用といえるか画面・設定・配布文書を点検。分類・DBは変更しない",
+      "next_action": "点検完了。分類・DBは維持し、表示・配布変更や公開は別依頼を待つ",
+      "evidence": [
+        "docs/classification-usage-audit-20261027.md",
+        "分析/権利点検20261027/83見出し利用態様.json"
+      ],
+      "last_verified_at": "2026-10-27T05:13:25.982Z",
+      "verification_scope": "正規ソース隔離UI・DB非接続で概要19章64節、トップ全19章操作の64節を確認。画面/文書/設定の名称・階層・順序一致、Git追跡と配信/イメージ経路、API/アーカイブ分類コード、原本6件ハッシュ不変、設定/進捗/原資料保護/差分検査と独立レビュー合格。分類指標と全体系の独立提示の併存を記録。DB・本番・remote公開・原目次83再照合は未確認、管理等はソースのみ。分類/DB/元画面変更・公開なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "19章64節の表示・保持・配布経路と分類不変更を確認する",
+          "verification": "設定件数・画面出力・文書含有・Git追跡・前後ハッシュ・進捗及び資料保護を検査",
+          "status": "passed",
+          "evidence": [
+            "docs/classification-usage-audit-20261027.md",
+            "分析/権利点検20261027/83見出し利用態様.json"
+          ],
+          "checked_at": "2026-10-27T05:13:25.982Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当がコードと点検報告から事実・法的評価・未確認範囲を点検する",
+          "verification": "画面・設定・配布文書・判例との類推について独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/classification-usage-audit-20261027.md",
+            "分析/権利点検20261027/83見出し利用態様.json"
+          ],
+          "checked_at": "2026-10-27T05:13:25.982Z",
+          "reviewer": "rights_independent_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "隔離UIの全83見出しと全章フィルター操作、設定・文書の全体系保持と配布経路、原本不変更を確認。指標と独立一覧の併存を記録し独立レビュー合格",
+            "at": "2026-10-27T05:13:46.199Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "overview_classification_copy",
+      "context": "service",
+      "title": "試験概要の全分類一覧を参照元の短文へ置換",
+      "status": "done",
+      "depends_on": [
+        "classification_usage"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: 試験概要の全一覧を消し山川出版社のものに基づく旨の文言にとどめる。分類文書の全表について説明",
+      "next_action": "画面変更はローカル実装完了。公開は別途の依頼を待つ",
+      "evidence": [
+        "docs/verification.md",
+        "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+      ],
+      "last_verified_at": "2026-10-27T05:29:51.552Z",
+      "verification_scope": "概要の全83見出し削除と参照元短文・PC1440/SP390の表示とリンク確認。分類設定/問題/ローカル分類文書ハッシュ保持。文書追跡解除とGit/Docker/追加ポリシー保護、関連45テスト、設定/進捗/差分検査と独立レビュー。送信検査は追跡0/既存履歴1で停止の期待動作。DB非接続、過去履歴/remote未変更、コミット/push/公開なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "一覧除去と参照元の短文、既存要素と分類等の保持を確認",
+          "verification": "元ソース差分・設定/分類文書/問題ハッシュ・PC/SP実画面・進捗/原資料保護検査",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+          ],
+          "checked_at": "2026-10-27T05:29:51.552Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が変更範囲と参照元表示の正確さを確認",
+          "verification": "変更差分と実施記録の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+          ],
+          "checked_at": "2026-10-27T05:29:51.552Z",
+          "reviewer": "overview_copy_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "概要の全一覧を短文へ置換しPC/SP表示と演習開始リンク、分類等の保持、独立レビューを確認",
+            "at": "2026-10-27T05:30:12.531Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "classification_document_local",
+      "context": "service",
+      "title": "分類文書を手元に残して今後のGit配布から除外",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー依頼: docs/classification.mdはリモートには上げない",
+      "next_action": "依頼範囲完了。将来の送信前に分類文書の既存履歴の扱いを別途確認する",
+      "evidence": [
+        "docs/verification.md",
+        "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+      ],
+      "last_verified_at": "2026-10-27T05:29:51.552Z",
+      "verification_scope": "概要の全83見出し削除と参照元短文・PC1440/SP390の表示とリンク確認。分類設定/問題/ローカル分類文書ハッシュ保持。文書追跡解除とGit/Docker/追加ポリシー保護、関連45テスト、設定/進捗/差分検査と独立レビュー。送信検査は追跡0/既存履歴1で停止の期待動作。DB非接続、過去履歴/remote未変更、コミット/push/公開なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "分類文書の内容保持・追跡解除・Git/Docker除外・既存保護の維持を確認",
+          "verification": "NUL区切りの追跡/ignore確認、原本ハッシュ、関連文書と進捗形式・既存送信検査",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+          ],
+          "checked_at": "2026-10-27T05:29:51.552Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当がローカル保持と今後の除外、履歴/公開の未反映を区別してレビュー",
+          "verification": "差分と検査記録の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/概要一覧削除と分類文書除外.json"
+          ],
+          "checked_at": "2026-10-27T05:29:51.552Z",
+          "reviewer": "overview_copy_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回レビューでignoreの単一パスとpolicyの全階層接頭辞に範囲不一致を検出。両ignoreを同範囲へ修正し再評価する。詳細は検証記録",
+            "at": "2026-10-27T05:29:53.658Z",
+            "failed_criteria": [
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "ignoreとpolicyの範囲不一致を修正。本文保持・追跡解除・Git/Docker保護・45テストと再レビュー合格。既存履歴検出で送信停止を確認",
+            "at": "2026-10-27T05:30:14.668Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "classification_history_purge",
+      "context": "service",
+      "title": "分類文書を全Git履歴から除去して送信検査を解消",
+      "status": "done",
+      "depends_on": [
+        "classification_document_local"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー明示依頼: docs/classification.mdを過去Git履歴から削除してpush可能に。手元ファイル・分類設定・DB保持",
+      "next_action": "履歴反映の実pushは別依頼を待つ。旧remote OIDと旧履歴再取得の有無を再確認しforce-with-leaseを使用する",
+      "evidence": [
+        "docs/verification.md",
+        "分析/権利点検20261027/Git履歴除去.json"
+      ],
+      "last_verified_at": "2026-10-27T05:42:55.707Z",
+      "verification_scope": "全9コミット/全6参照から対象path除去。対象外tree・親・metadata/message保持。履歴適用時220ファイル・index・既存差分保持、分類文書/設定/問題ハッシュ一致。通常guard・実pre-push模擬・旧OID明示force-with-lease dry-run成功、remote旧OID維持を再確認。独立レビュー合格。復旧archiveをlocal-only保存。DB非接続、通常変更コミット/実push/GCなし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "対象pathの全到達履歴からの消失、対象外tree・ローカル本文・分類設定・作業差分/indexの保持、送信検査を確認",
+          "verification": "local-only bundleとindex/作業差分控え、隔離履歴のtree/親/metadata全比較、全ref/CAS確認、原本ハッシュと全履歴/実hook/差分検査",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/Git履歴除去.json"
+          ],
+          "checked_at": "2026-10-27T05:42:55.707Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が履歴除去の範囲・保全・remote未更新と実push時の条件を確認",
+          "verification": "事前計画と機械検査記録の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md",
+            "分析/権利点検20261027/Git履歴除去.json"
+          ],
+          "checked_at": "2026-10-27T05:42:55.707Z",
+          "reviewer": "history_purge_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "全9コミット・全6参照から対象pathだけを除去。対象外内容・220ファイル・index/差分保持を独立検証。guard/hook/dry-run成功、remote不変、復旧控えを保存",
+            "at": "2026-10-27T05:43:21.473Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "rights_changes_delivery",
+      "context": "service",
+      "title": "権利関連変更のコミットと履歴除去を含むforce-with-lease送信",
+      "status": "doing",
+      "depends_on": [
+        "classification_history_purge",
+        "overview_classification_copy"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-27 ユーザー明示依頼: 今回の変更をコミットしforce-with-leaseでpush。手元の分類文書・分類設定・DB保持、Netlify停止維持。追加指示: Netlify設定完了まで確認不要",
+      "next_action": "今回の明示pathのみstageし保護/進捗/関連検査・独立レビュー後に[skip netlify]でcommit。旧remote OIDを再確認しforce-with-leaseで送信、同期とCIを確認",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "Netlify追加確認は最新ユーザー指示により省略。設定変更・ビルド再開・DB接続なし。既存旧コピー10件とローカル専用資料は送信しない",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "送信前保護・進捗・差分検査、対象外保持と実push後のSHA同期を確認する",
+          "verification": "明示pathとNUL区切りstage照合、全履歴保護とhook、関連軽量検査、原本/旧コピーSHA、旧remote OID lease付きpushと同期確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が送信対象・原資料除外・分類/DB保持・ユーザーのNetlify追加指示への適合をレビュー",
+          "verification": "実staged差分・送信対象pathと確認記録の独立レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],
