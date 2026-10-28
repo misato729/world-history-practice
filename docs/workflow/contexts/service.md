@@ -81,3 +81,5 @@ git diff --stat
 - 2026-10-28 JST、語句記述の`short-answer-hint`（文字種・表記許容・正規化の補足）を共通回答フォームから除去し、不要なARIA参照も削除。入力制約/採点/論述表示を維持し、既存入力関連6検査と独立差分レビュー、模試4大問3問7の実PC1280/SP390の非表示・入力・エラー・開始可否を確認した。回答は送信せずDB未変更。表示削除だけのため重い全体検査は追加せず、本番は未確認。[検証記録](../../../local-only/short-answer-hint-20261028/verification.json)。未commit/push/deploy。
 
 - 2026-10-28 JST「OKです。コミット・pushしてください」の明示依頼で、体裁/下線・小問順・5セット設定・条件件数/文化史checkbox・語句補足非表示と記録を通常mainへ送信する。旧コピー10件/原資料/DB/local-onlyは除外し、Netlifyは世界史未登録を読取確認・設定未変更、skip付き。今回168軽量/設定/資料保護、367front＋待受制限解除後の依存3件を確認。[送信記録](../../ui-changes-delivery-20261028.md)。現在は送信準備中で、push/CI/最終同期は後続に記録する。
+
+- 2026-10-28 JST送信完了：正規44件を`d6a8fa4`でmainへ通常push。pre-push成功、実remote SHA一致/差分0/0、44件のstage SHA一致と旧コピー10件保持を確認。GitHub Actions 40701704734はharness/verify全工程成功。完了記録もskip付きでcommit/pushし、最終結果はローカル送信記録へ保存する。[送信結果](../../ui-changes-delivery-20261028.md)。デプロイ/通常DB書込なし。
