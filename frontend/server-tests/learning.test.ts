@@ -209,6 +209,35 @@ test('chapter and topic filters intersect in catalogs, selection and administrat
   const arts = (await listExams(null, db, { history_topic: 'art_history' })).data.find(item => item.exam_number === exam)!
   assert.deepEqual(arts.question_numbers, [3])
   assert.equal(arts.published_question_count, 1)
+  const artAndMusic = (await listExams(null, db, { history_topic: 'art_history,music_history' })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(artAndMusic.question_numbers, [3, 4])
+  assert.equal(artAndMusic.published_question_count, 2)
+  assert.equal(artAndMusic.question_count, 2)
+  const duplicateTopics = (await listExams(null, db, { history_topic: 'music_history,art_history,music_history' })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(duplicateTopics.question_numbers, artAndMusic.question_numbers)
+  const explicitCulture = (await listExams(null, db, { history_topic: configuration.cultural_history_categories.map(item => item.value).join(',') })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(explicitCulture.question_numbers, cultural.question_numbers)
+  const artFirst = await nextQuestion({ exam_number: exam, history_topic: 'art_history,music_history', after_question_number: 0 }, null, db)
+  assert.equal(artFirst.data.id, art.id)
+  const musicNext = await nextQuestion({ exam_number: exam, history_topic: 'art_history,music_history', after_question_number: 3 }, null, db)
+  assert.equal(musicNext.data.id, music.id)
+  assert.equal('explanation_blocks' in musicNext.data, false)
+  assert.equal('source_references' in musicNext.data, false)
+  assert((musicNext.data.choices as Record<string, unknown>[]).every(choice => !('is_correct' in choice)))
+  await assert.rejects(nextQuestion({ exam_number: exam, history_topic: 'art_history,music_history', after_question_number: 4 }, null, db), apiError(404))
+  const unionAndChapter = (await listExams(null, db, { history_topic: 'art_history,music_history', major_category_code: firstCategory.major_category_value,
+    category_code: firstCategory.value })).data.find(item => item.exam_number === exam)!
+  assert.deepEqual(unionAndChapter.question_numbers, [4])
+  assert.equal(unionAndChapter.published_question_count, 1)
+  assert.equal((await nextQuestion({ exam_number: exam, history_topic: 'art_history,music_history', major_category_code: firstCategory.major_category_value,
+    category_code: firstCategory.value }, null, db)).data.id, music.id)
+  const emptyUnion = await listExams(null, db, { history_topic: 'music_history,literature_history', major_category_code: otherCategory.major_category_value,
+    category_code: otherCategory.value })
+  assert.equal(emptyUnion.data.find(item => item.exam_number === exam), undefined)
+  await assert.rejects(nextQuestion({ exam_number: exam, history_topic: 'music_history,literature_history', category_code: otherCategory.value }, null, db), apiError(404))
+  const unionAdmin = await listAdminQuestions(admin, { exam_number: exam, history_topic: 'art_history,music_history' }, db)
+  assert.equal(unionAdmin.meta.total_count, 3)
+  assert.deepEqual(new Set(unionAdmin.data.map(question => question.id)), new Set([art.id, music.id, privateMusic.id]))
   const combined = await nextQuestion({ exam_number: exam, history_topic: 'cultural_history', major_category_code: firstCategory.major_category_value, category_code: firstCategory.value }, null, db)
   assert.equal(combined.data.id, culture.id)
   assert.equal(combined.data.is_cultural_history, true)
@@ -242,6 +271,8 @@ test('chapter and topic filters intersect in catalogs, selection and administrat
   await assert.rejects(nextQuestion({ exam_number: exam, history_topic: 'music_history', category_code: otherCategory.value }, null, db), apiError(404))
   await assert.rejects(listAdminQuestions(null, { history_topic: 'music_history' }, db), apiError(401))
   for (const params of [{ history_topic: 'unknown' }, { history_topic: ['art_history'] }, { history_topic: ['music_history', 'literature_history'] },
+    ...['', ',', 'music_history,', ',art_history', 'music_history,,art_history', 'art_history,unknown', ' art_history',
+      'all,art_history', 'cultural_history,music_history', 'all,cultural_history', 'all,all'].map(history_topic => ({ history_topic })),
     { history_topic: {} }, { history_topic: "music_history' OR 1=1 --" }, { major_category_code: 'unknown' },
     { major_category_code: firstCategory.major_category_value, category_code: otherCategory.value }]) {
     await assert.rejects(nextQuestion(params, null, db), apiError(400))

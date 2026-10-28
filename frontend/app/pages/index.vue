@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, type ExamCatalogEntry } from '~/utils/examCatalog'
-import { HISTORY_TOPICS, type HistoryTopic } from '~/utils/historyTopics'
+import { CULTURAL_HISTORY_CATEGORIES, HISTORY_TOPICS, serializeHistoryTopicSelection } from '~/utils/historyTopics'
+import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
 import {
   createPracticeSeed,
   selectPracticePositions,
@@ -23,12 +24,22 @@ useSeoMeta({
 const { data: publicCatalog, status: publicCatalogStatus, error: publicCatalogError, refresh: refreshPublicCatalog } = await usePublicExamCatalog()
 const catalogExams = computed(() => (publicCatalog.value?.data ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined))
 
-const { user, authHeaders } = useAuth()
-const { $api: api } = useNuxtApp()
+const { user } = useAuth()
 const launcherMode = ref<LauncherMode>('exam')
 const selectedMajorCategory = ref('')
 const selectedCategory = ref('')
-const selectedHistoryTopic = ref<HistoryTopic>('all')
+const selectedHistoryCategories = ref<CulturalHistoryCategoryCode[]>([])
+const selectedHistoryTopic = computed(() => serializeHistoryTopicSelection(selectedHistoryCategories.value))
+const culturalFilterOptions = CULTURAL_HISTORY_CATEGORIES.map(item => ({
+  ...item, filterLabel: HISTORY_TOPICS.find(topic => topic.value === item.value)!.filterLabel,
+}))
+const allCulturalHistorySelected = computed({
+  get: () => culturalFilterOptions.every(item => selectedHistoryCategories.value.includes(item.value)),
+  set: (selected: boolean) => {
+    selectedHistoryCategories.value = selected ? culturalFilterOptions.map(item => item.value) : []
+  },
+})
+const someCulturalHistorySelected = computed(() => selectedHistoryCategories.value.length > 0 && !allCulturalHistorySelected.value)
 const startingPractice = ref(false)
 const practiceStartError = ref('')
 const availableCategories = computed(() => selectedMajorCategory.value
@@ -37,7 +48,7 @@ const availableCategories = computed(() => selectedMajorCategory.value
 const hasSubjectFilter = computed(() => Boolean(selectedMajorCategory.value || selectedCategory.value || selectedHistoryTopic.value !== 'all'))
 watch(selectedMajorCategory, () => {
   if (!availableCategories.value.some(item => item.value === selectedCategory.value)) selectedCategory.value = ''
-})
+}, { flush: 'sync' })
 watch([selectedMajorCategory, selectedCategory, selectedHistoryTopic], () => {
   practiceStartError.value = ''
 })
@@ -51,6 +62,7 @@ const availableExams = computed(() => (
 ))
 const availableExamNumbers = computed(() => availableExams.value.map(exam => exam.exam_number))
 const selectedExamNumbers = ref<number[]>([...availableExamNumbers.value])
+watch(selectedExamNumbers, () => { practiceStartError.value = '' })
 
 const allExamsSelected = computed({
   get: () => (
@@ -68,43 +80,48 @@ const someExamsSelected = computed(() => (
 const sortedSelectedExamNumbers = computed(() => (
   [...selectedExamNumbers.value].sort((left, right) => left - right)
 ))
-const selectedQuestionCount = computed(() => (
-  conditionSequence.value.length
-))
+const subjectQuery = computed<Record<string, string>>(() => ({
+  ...(selectedMajorCategory.value ? { major_category_code: selectedMajorCategory.value } : {}),
+  ...(selectedCategory.value ? { category_code: selectedCategory.value } : {}),
+  ...(selectedHistoryTopic.value !== 'all' ? { history_topic: selectedHistoryTopic.value } : {}),
+}))
+const {
+  data: conditionCatalog, error: conditionCatalogError,
+  refresh: refreshConditionCatalog, scopeKey: conditionScopeKey,
+} = usePracticeFilterCatalog(subjectQuery, computed(() => launcherMode.value === 'conditions'))
+const countReady = computed(() => publicCatalogStatus.value === 'success' && conditionCatalog.value !== null)
 const conditionSequence = computed(() => selectPracticePositions(
-  catalogExams.value, sortedSelectedExamNumbers.value,
+  (conditionCatalog.value ?? []).filter(exam => exam.access !== 'paid_membership_required'), sortedSelectedExamNumbers.value,
 ))
-const hasConditionSelection = computed(() => conditionSequence.value.length > 0)
+const selectedQuestionCount = computed(() => countReady.value ? conditionSequence.value.length : null)
+const hasConditionSelection = computed(() => sortedSelectedExamNumbers.value.length > 0)
+const canStartConditionalPractice = computed(() => hasConditionSelection.value && countReady.value && selectedQuestionCount.value! > 0)
+const currentStartContext = () => JSON.stringify([conditionScopeKey.value, sortedSelectedExamNumbers.value, launcherMode.value])
+const retryConditionCount = async () => {
+  if (publicCatalogError.value) await refreshPublicCatalog()
+  await refreshConditionCatalog()
+}
 
 const examIsLocked = (examNumber: number) => examNumber > FREE_EXAM_MAX && !hasFullAccess.value
 const examTarget = (exam: ExamCatalogEntry) => (
   examIsLocked(exam.exam_number) ? '/premium' : `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)!}`
 )
 const startConditionalPractice = async (order: PracticeOrder) => {
-  if (!hasConditionSelection.value || startingPractice.value) return
+  if (!canStartConditionalPractice.value || startingPractice.value) return
   startingPractice.value = true
   practiceStartError.value = ''
+  const context = currentStartContext()
+  const selectedExams = [...sortedSelectedExamNumbers.value]
 
   const query: Record<string, string> = {
-    exams: sortedSelectedExamNumbers.value.join(','),
+    exams: selectedExams.join(','),
+    ...subjectQuery.value,
   }
-  if (selectedMajorCategory.value) query.major_category_code = selectedMajorCategory.value
-  if (selectedCategory.value) query.category_code = selectedCategory.value
-  if (selectedHistoryTopic.value !== 'all') query.history_topic = selectedHistoryTopic.value
 
   try {
-    let sequence = conditionSequence.value
-    {
-      const result = await api<{ data: ExamCatalogEntry[] }>('/api/v1/exams', {
-        headers: authHeaders.value,
-        query: {
-          ...(selectedMajorCategory.value ? { major_category_code: selectedMajorCategory.value } : {}),
-          ...(selectedCategory.value ? { category_code: selectedCategory.value } : {}),
-          history_topic: selectedHistoryTopic.value,
-        },
-      })
-      sequence = selectPracticePositions(result.data, sortedSelectedExamNumbers.value)
-    }
+    const catalog = await refreshConditionCatalog()
+    if (!catalog || context !== currentStartContext() || launcherMode.value !== 'conditions') return
+    let sequence = selectPracticePositions(catalog.filter(exam => exam.access !== 'paid_membership_required'), selectedExams)
     if (order === 'random') {
       const seed = createPracticeSeed()
       sequence = shufflePracticeSequence(sequence, seed)
@@ -112,17 +129,14 @@ const startConditionalPractice = async (order: PracticeOrder) => {
       query.seed = String(seed)
     }
     const firstPosition = sequence[0]
-    if (!firstPosition) {
-      practiceStartError.value = 'この条件に合う公開問題はまだありません。分野や対象模擬試験を変更してください。'
-      return
-    }
+    if (!firstPosition) return
     await navigateTo({
       path: `/practice/${firstPosition.examNumber}/${firstPosition.questionNumber}`,
       query,
     })
   }
   catch {
-    practiceStartError.value = '演習を開始できませんでした。通信状況を確認して、もう一度お試しください。'
+    if (context === currentStartContext()) practiceStartError.value = '演習を開始できませんでした。通信状況を確認して、もう一度お試しください。'
   }
   finally {
     startingPractice.value = false
@@ -243,8 +257,21 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
               <div class="subject-select-grid">
                 <div><label for="practice-major-category">大分類（章）</label><select id="practice-major-category" v-model="selectedMajorCategory"><option value="">すべての章</option><option v-for="item in MAJOR_CATEGORIES" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
                 <div><label for="practice-category">小分類（節）</label><select id="practice-category" v-model="selectedCategory" :disabled="!selectedMajorCategory"><option value="">すべての節</option><option v-for="item in availableCategories" :key="item.value" :value="item.value">{{ item.label }}</option></select></div>
-                <div><label for="practice-history-topic">文化史の絞り込み</label><select id="practice-history-topic" v-model="selectedHistoryTopic"><option v-for="item in HISTORY_TOPICS" :key="item.value" :value="item.value">{{ item.filterLabel }}</option></select></div>
               </div>
+              <fieldset class="culture-filter-fieldset">
+                <legend>文化史の絞り込み</legend>
+                <p class="condition-help">複数選択できます。未選択の場合は絞り込みません。</p>
+                <label class="culture-all-selector">
+                  <input v-model="allCulturalHistorySelected" type="checkbox" :indeterminate="someCulturalHistorySelected">
+                  <span>文化史全般に絞る</span>
+                </label>
+                <div class="culture-checkbox-grid">
+                  <label v-for="item in culturalFilterOptions" :key="item.value" :class="{ selected: selectedHistoryCategories.includes(item.value) }">
+                    <input v-model="selectedHistoryCategories" type="checkbox" name="history-topics" :value="item.value">
+                    <span>{{ item.filterLabel }}</span>
+                  </label>
+                </div>
+              </fieldset>
               <p class="condition-help">文化史全般には、美術史・音楽史・文学史も含まれます。選んだ範囲の知識を使う横断問題も含みます。</p>
             </fieldset>
             <fieldset class="condition-fieldset" :disabled="startingPractice">
@@ -281,25 +308,32 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
           </div>
 
           <p v-if="practiceStartError" class="practice-start-error" role="alert">{{ practiceStartError }}</p>
+          <p v-if="hasConditionSelection && selectedQuestionCount === 0" class="practice-start-error" role="status">この条件に合う公開問題はまだありません。分野や対象模擬試験を変更してください。</p>
           <div class="condition-submit">
-            <p v-if="hasConditionSelection">
+            <p v-if="publicCatalogError || conditionCatalogError" class="practice-start-error" role="alert">
+              件数を確認できませんでした。
+              <button type="button" class="secondary-link" @click="retryConditionCount()">件数を再読み込み</button>
+            </p>
+            <p v-else-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開問題の件数を確認中です。</p>
+            <p v-else-if="hasConditionSelection" aria-live="polite">
               <span>選択中</span>
-              {{ sortedSelectedExamNumbers.length }}回の模擬試験・選択した公開問題
-              <strong>{{ hasSubjectFilter ? `最大${selectedQuestionCount}問から条件で絞り込み` : `全${selectedQuestionCount}問` }}</strong>
+              {{ sortedSelectedExamNumbers.length }}回の模擬試験・{{ hasSubjectFilter ? '条件に合う公開問題' : '選択した公開問題' }}
+              <strong v-if="countReady">全{{ selectedQuestionCount }}問</strong>
+              <strong v-else role="status">件数を確認中です。</strong>
             </p>
             <p v-else class="selection-required">
               <span>選択内容を確認してください</span>
               模擬試験を1つ以上選択してください
             </p>
             <div class="condition-actions">
-              <button class="primary-link" type="submit" :disabled="!hasConditionSelection || startingPractice">
+              <button class="primary-link" type="submit" :disabled="!canStartConditionalPractice || startingPractice">
                 <UIcon name="i-lucide-list-ordered" />
                 {{ startingPractice ? '確認中です' : '順番に始める' }}
               </button>
               <button
                 class="secondary-link"
                 type="button"
-                :disabled="!hasConditionSelection || startingPractice"
+                :disabled="!canStartConditionalPractice || startingPractice"
                 @click="startConditionalPractice('random')"
               >
                 <UIcon name="i-lucide-shuffle" />
@@ -421,6 +455,13 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .subject-select-grid > div { min-width: 0; }
 .subject-select-grid label { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: .8125rem; font-weight: 800; }
 .subject-select-grid select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--ink); font-size: .875rem; }
+.culture-filter-fieldset { min-width: 0; margin: 24px 0 0; padding: 0; border: 0; }
+.culture-filter-fieldset legend { font-size: .875rem; font-weight: 800; }
+.culture-all-selector { display: flex; align-items: center; gap: 9px; width: fit-content; min-height: 44px; color: var(--ink); font-size: .875rem; font-weight: 800; cursor: pointer; }
+.culture-checkbox-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.culture-checkbox-grid label { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 5px; font-size: .875rem; cursor: pointer; }
+.culture-checkbox-grid label.selected { border-color: var(--teal); background: var(--surface-tint); }
+.culture-checkbox-grid input, .culture-all-selector input { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--teal); }
 .practice-start-error { margin: 0; padding: 0 28px 20px; color: #a23b2a; font-weight: 700; line-height: 1.7; }
 .condition-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .condition-fieldset + .condition-fieldset { padding-top: 26px; border-top: 1px solid var(--line); }
@@ -543,6 +584,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 
 @media (max-width: 640px) {
   .subject-select-grid { grid-template-columns: 1fr; }
+  .culture-checkbox-grid { grid-template-columns: 1fr; }
   .practice-launcher { padding: 32px 20px 38px; }
   .launcher-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .launcher-heading h2 { font-size: 1.6875rem; }

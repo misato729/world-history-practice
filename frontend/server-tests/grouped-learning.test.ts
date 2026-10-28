@@ -121,6 +121,47 @@ test('group practice publishes seven mixed questions, grades aliases once, and p
  assert.equal((await loadQuestion(q.id,db)).answer_type,'short_text')
 }))
 async function clientSavepoint(db:Database,name:string,action:()=>Promise<void>){await query(`SAVEPOINT ${name}`,[],db);try{await action()}finally{await query(`ROLLBACK TO SAVEPOINT ${name}`,[],db);await query(`RELEASE SAVEPOINT ${name}`,[],db)}}
+test('next-question cursors follow reordered sparse public positions, retaining filters and absent-cursor compatibility',integration,async()=>isolated(async(db,exam,u)=>{
+ await saveExamSet({exam_number:exam,title:'Synthetic reordered material',format_code:'group_practice',publication_status:'draft'},{db})
+ const {group,ids}=await groupWithQuestions(db,exam,1,7,1)
+ const firstCategory=configuration.categories.minor[0]!
+ const otherCategory=configuration.categories.minor.find(c=>c.major_category_value!==firstCategory.major_category_value)!
+ const music=new Set([0,4,5])
+ // Move the larger old numbers first so sparse replacements do not collide with still-unmoved siblings.
+ for(const [index,id]of [...ids.entries()].reverse()){
+  const q=await loadQuestion(id,db),category=index===5?otherCategory:firstCategory
+  await saveQuestion({...q,question_number:(index+1)*3,major_category_code:category.major_category_value,category_code:category.value,
+   is_cultural_history:music.has(index),cultural_history_category:music.has(index)?'music_history':null},{id,db,requireCompleteExam:false})
+ }
+ const ordered=[3,0,6,1,5,2,4].map(index=>ids[index]!)
+ const current=await loadQuestionGroup(group.id,db)
+ await saveQuestionGroup(group.id,{lock_version:current.lock_version,question_ids:ordered},{db})
+ const set=await loadExamSet(exam,db);await publishExamSet(exam,set.lock_version,{db})
+ const catalog=(await listExams(u,db)).data.find(e=>e.exam_number===exam)!
+ assert.deepEqual(catalog.question_numbers,[12,3,21,6,18,9,15])
+ let after=0;const visited:number[]=[]
+ for(const id of ordered){const next=(await nextQuestion({exam_number:exam,after_question_number:after},u,db)).data;assert.equal(next.id,id);visited.push(next.id);after=next.question_number}
+ assert.equal(new Set(visited).size,7)
+ await assert.rejects(nextQuestion({exam_number:exam,after_question_number:after},u,db),error(404))
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:12,history_topic:'music_history'},u,db)).data.question_number,3)
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:21,history_topic:'music_history'},u,db)).data.question_number,18)
+ const filter={exam_number:exam,history_topic:'music_history',major_category_code:firstCategory.major_category_value,category_code:firstCategory.value}
+ assert.equal((await nextQuestion({...filter,after_question_number:0},u,db)).data.question_number,3)
+ assert.equal((await nextQuestion({...filter,after_question_number:3},u,db)).data.question_number,15)
+ assert.equal((await nextQuestion({...filter,after_question_number:18},u,db)).data.question_number,15)
+ await assert.rejects(nextQuestion({...filter,after_question_number:15},u,db),error(404))
+ // A public question in another exam, or a published child in a draft group, must not become this exam's cursor.
+ const another=exam+1;await saveExamSet({exam_number:another,title:'Synthetic other material',format_code:'group_practice',publication_status:'draft'},{db})
+ await groupWithQuestions(db,another,2,7,5);const otherSet=await loadExamSet(another,db);await publishExamSet(another,otherSet.lock_version,{db})
+ const hidden=await createQuestionGroup(exam,{group_number:2,title:'Synthetic draft group',planned_question_count:7},{db})
+ const hiddenGroup=await saveQuestionGroup(hidden.id,{lock_version:hidden.lock_version,passages:[{label:'A',content_blocks:[{type:'text',text:'Synthetic hidden passage'}]}]},{db})
+ await saveQuestion(sample(exam,5,{group_id:hidden.id,group_question_number:1,publication_status:'published',passage_references:[{passage_id:hiddenGroup.passages[0]!.id,anchor_id:null}]}),{db,requireCompleteExam:false})
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:4},u,db)).data.question_number,12)
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:5},u,db)).data.question_number,12)
+ assert.equal((await nextQuestion({...filter,after_question_number:5},u,db)).data.question_number,15)
+ await assert.rejects(nextQuestion({exam_number:exam,after_question_number:15},u,db),error(404))
+ await assert.rejects(nextQuestion({exam_number:exam,after_question_number:30},u,db),error(404))
+}))
 test('four-group mock requires 30 questions; draft siblings do not replace a published standalone group',integration,async()=>isolated(async(db,exam,u)=>{
  await saveExamSet({exam_number:exam,title:'Synthetic mock',format_code:'rekiken_mock',publication_status:'draft'},{db})
  let position=1
@@ -129,6 +170,11 @@ test('four-group mock requires 30 questions; draft siblings do not replace a pub
  const set=await loadExamSet(exam,db);await publishExamSet(exam,set.lock_version,{db})
  const catalog=(await listExams(u,db)).data.find(e=>e.exam_number===exam)!
  assert.equal(catalog.question_numbers.length,30);assert.equal(catalog.groups.length,4)
+ const firstGroup=await loadQuestionGroup(set.groups[0]!.id,db),firstIds=firstGroup.questions!.map(q=>q.id)
+ await saveQuestionGroup(firstGroup.id,{lock_version:firstGroup.lock_version,question_ids:[...firstIds].reverse()},{db})
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:0},u,db)).data.question_number,8)
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:8},u,db)).data.question_number,7)
+ assert.equal((await nextQuestion({exam_number:exam,after_question_number:1},u,db)).data.question_number,9)
  const another=exam+1;await saveExamSet({exam_number:another,title:'One group',format_code:'group_practice',publication_status:'draft'},{db})
  await groupWithQuestions(db,another,1,7,1);const single=await loadExamSet(another,db);await publishExamSet(another,single.lock_version,{db})
  await createQuestionGroup(another,{group_number:2,title:'Incomplete sibling',planned_question_count:8},{db})

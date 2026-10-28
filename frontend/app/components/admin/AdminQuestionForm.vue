@@ -78,8 +78,8 @@ const loadEssayProfiles = async () => {
 }
 watch(() => form.answer_type, loadEssayProfiles, { immediate: true })
 const referenceOptions = computed(() => (group.value?.passages ?? []).flatMap(passage => [
-  { passage_id: passage.id, anchor_id: null, label: `本文${passage.label} 全体` },
-  ...passage.content_blocks.flatMap(block => (block.inlines ?? []).filter(part => part.type !== 'text' && part.label).map(part => ({ passage_id: passage.id, anchor_id: 'id' in part ? part.id : '', label: `本文${passage.label} の (${ 'label' in part ? part.label : '' })` }))),
+  { passage_id: passage.id, anchor_id: null, label: `【${passage.label}】 全体` },
+  ...passage.content_blocks.flatMap(block => (block.inlines ?? []).filter(part => part.type !== 'text' && part.label).map(part => ({ passage_id: passage.id, anchor_id: 'id' in part ? part.id : '', label: `【${passage.label}】 の (${ 'label' in part ? part.label : '' })` }))),
 ]))
 const hasReference = (reference: PassageReference) => (form.passage_references ?? []).some(item => referenceKey(item) === referenceKey(reference))
 const toggleReference = (reference: PassageReference, event: Event) => { form.passage_references = setPassageReference(form.passage_references ?? [], reference, (event.target as HTMLInputElement).checked) }

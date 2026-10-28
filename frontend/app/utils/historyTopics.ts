@@ -53,3 +53,27 @@ export const culturalHistoryLabel = (flags: HistoryFlagInput): string => {
 export const isHistoryTopic = (value: unknown): value is HistoryTopic => (
   HISTORY_TOPICS.some(item => item.value === value)
 )
+
+/** Checkbox selections use one stable URL form while preserving the existing single-topic URLs. */
+export const serializeHistoryTopicSelection = (selected: readonly CulturalHistoryCategoryCode[]): string => {
+  if (selected.some(value => !isCulturalHistoryCategory(value))) throw new Error('文化史の区分を正しく指定してください')
+  const categories = CULTURAL_HISTORY_CATEGORIES.filter(item => selected.includes(item.value))
+  if (!categories.length) return 'all'
+  if (categories.length === CULTURAL_HISTORY_CATEGORIES.length) return 'cultural_history'
+  return categories.map(item => item.value).join(',')
+}
+
+export const historyTopicFilterLabel = (value: unknown): string => {
+  const single = HISTORY_TOPICS.find(item => item.value === value)
+  if (single) return single.label
+  if (typeof value !== 'string') return ''
+  const selected = value.split(',')
+  if (!selected.length || selected.some(item => !isCulturalHistoryCategory(item))) return ''
+  const serialized = serializeHistoryTopicSelection(selected as CulturalHistoryCategoryCode[])
+  const canonicalSingle = HISTORY_TOPICS.find(item => item.value === serialized)
+  if (canonicalSingle) return canonicalSingle.label
+  const labels = CULTURAL_HISTORY_CATEGORIES.filter(item => selected.includes(item.value)).map(item => (
+    item.value === 'other_cultural_history' ? `${item.label}の文化史` : item.label
+  ))
+  return `${labels.join('・')}のみ`
+}

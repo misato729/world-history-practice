@@ -7,7 +7,7 @@ import { essayAnswerIssue, type EssayConstraints } from '~/utils/essayPresentati
 import type { EssayGrade } from '../../../../shared/types/essay'
 import { canRetainPassageContext, isCurrentPracticeRequest, reconcilePassageContext, type PracticePassageContext, type PracticeRequestTag } from '~/utils/practicePassageState'
 import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
-import { culturalHistoryLabel, HISTORY_TOPICS } from '~/utils/historyTopics'
+import { culturalHistoryLabel, historyTopicFilterLabel } from '~/utils/historyTopics'
 import {
   selectPracticePositions,
   shufflePracticeSequence,
@@ -134,7 +134,7 @@ const hasConditionSelection = computed(() => (
 const selectedSubjectLabel = computed(() => [
   MAJOR_CATEGORIES.find(item => item.value === practiceSubjectQuery.value.major_category_code)?.label,
   CATEGORIES.find(item => item.value === practiceSubjectQuery.value.category_code)?.label,
-  HISTORY_TOPICS.find(item => item.value === practiceSubjectQuery.value.history_topic)?.label,
+  historyTopicFilterLabel(practiceSubjectQuery.value.history_topic),
 ].filter(Boolean).join(' / '))
 const practiceOrder = computed<PracticeOrder>(() => (
   route.query.order === 'random' ? 'random' : 'sequential'
@@ -288,8 +288,8 @@ const visibleGroupNumbers = computed(() => (displayedGroup.value?.question_numbe
 const referenceLabel = (reference: PassageReference) => {
   const passage = question.value?.shared_passages?.find(item => item.id === reference.passage_id)
   const anchor = passage?.content_blocks.flatMap(block => block.inlines ?? []).find(part => part.type !== 'text' && part.id === reference.anchor_id)
-  if (anchor?.type === 'blank') return `本文${passage?.label ?? ''} 空欄${anchor.label}`
-  return anchor?.type === 'anchor' ? `本文${passage?.label ?? ''} (${anchor.label})` : `本文${passage?.label ?? ''}`
+  if (anchor?.type === 'blank') return `【${passage?.label ?? ''}】 空欄${anchor.label}`
+  return anchor?.type === 'anchor' ? `【${passage?.label ?? ''}】 (${anchor.label})` : `【${passage?.label ?? ''}】`
 }
 const showReference = async (reference: PassageReference) => {
   const context = currentRequestContext()

@@ -19,7 +19,7 @@ const majorCategoryLabel = computed(() => getMasterDataLabel(
     </header>
 
     <div class="preview-paper">
-      <section v-if="passages?.length" class="preview-passages"><article v-for="passage in passages" :key="passage.id"><h3>本文{{ passage.label }}</h3><QuestionContentBlocks :blocks="passage.content_blocks" /></article></section>
+      <section v-if="passages?.length" class="preview-passages"><article v-for="passage in passages" :key="passage.id"><h3>【{{ passage.label }}】</h3><QuestionContentBlocks :blocks="passage.content_blocks" /></article></section>
       <div class="preview-question"><QuestionContentBlocks :blocks="question.content_blocks" /></div>
       <div v-if="!question.answer_type || question.answer_type === 'single_choice'" class="preview-choices">
         <div v-for="choice in question.choices" :key="choice.choice_label" :class="{ correct: choice.is_correct }">

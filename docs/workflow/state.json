@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 123,
-  "updated_at": "2026-10-28T01:52:16.733Z",
+  "revision": 139,
+  "updated_at": "2026-10-28T13:52:43.931Z",
   "workspace_relative_to_repo": ".",
-  "active_context": "product",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-28T01-52-16-733Z-r123.json",
+  "active_context": "service",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-28T13-52-43-931Z-r139.json",
   "contexts": [
     {
       "id": "product",
@@ -93,7 +93,17 @@
     "frontend/tests/groupedLearningPresentation.test.ts",
     "docs/mock-exam-hierarchy-20261027.md",
     "docs/architecture.md",
-    "docs/customization.md"
+    "docs/customization.md",
+    "docs/mock-exam-authoring-requirements-20261028.md",
+    "docs/mock-format-revision-20261028.md",
+    "frontend/tests/passageUnderline.test.ts",
+    "docs/question-order-update-20261028.md",
+    "frontend/server-tests/grouped-learning.test.ts",
+    "docs/practice-filter-count-20261028.md",
+    "frontend/app/composables/usePracticeFilterCatalog.ts",
+    "frontend/app/utils/practiceFilterCatalog.ts",
+    "frontend/tests/practiceFilterCatalog.test.ts",
+    "frontend/app/components/QuestionAnswerForm.vue"
   ],
   "tasks": [
     {
@@ -3114,6 +3124,454 @@
             "summary": "2025全30問/旧年度G1計37問の形式を画像確認し、1セット44要件と2配分例を文書化。実体下線・論述2大問各1を明記。集計/リンク/独立レビュー合格、実装/DBなし。",
             "at": "2026-10-28T01:51:19.054Z",
             "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_format_revision_20261028",
+      "context": "service",
+      "title": "公開5セットの本文/下線修正と第6セット30問の削除",
+      "status": "done",
+      "depends_on": [
+        "mock_format_requirements_20261028"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28 利用枠が復活しました。修正をお願いします。過去問体裁要件を適用。commit/push/deployの追加依頼なし。 追答: 5セットでよい。第6セットは問題ごと削除してよい（6と訂正）。 追答: 見出し・本文指定・参照を【A】へ統一し文書にも記載。",
+      "next_action": "本タスクの本文/下線/表記修正と第6セット削除は完了。資料判読/本文空欄・論述位置/要求量・模試合計結果は未実施と記録。新たな送信依頼なし。",
+      "evidence": [
+        "docs/mock-format-revision-20261028.md",
+        "local-only/mock-format-revision-20261028/verification.json",
+        "local-only/mock-format-revision-20261028/normal-comparison.json",
+        "local-only/mock-format-revision-20261028/http-check.json",
+        "local-only/mock-format-revision-20261028/final-review.md"
+      ],
+      "last_verified_at": "2026-10-28T08:04:39Z",
+      "verification_scope": "通常ローカル5セット150問を改稿・6の30問削除。原典/独立レビュー、隔離rollback/反復/合成履歴、通常反復全16表/旧8保持、実API150/404x30、PC/SP全34本文103下線、361/86/型を確認。全44要件適合/本番/管理UI実操作は未確認。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "manuscripts",
+          "kind": "automated",
+          "description": "公開5セット150問20/8/2・異なる2大問論述を維持、本文使い分け/下線/参照/原典漏洩点検",
+          "verification": "新旧原稿全件比較、本文/下線/参照対応、出典と設計理由を照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-format-revision-20261028/payload-check.json",
+            "local-only/mock-format-revision-20261028/answer-exposure-final.json",
+            "local-only/mock-format-revision-20261028/review-01-02.md",
+            "local-only/mock-format-revision-20261028/review-03-04-iteration2.md",
+            "local-only/mock-format-revision-20261028/review-05-iteration2.md",
+            "local-only/mock-format-revision-20261028/label-prefix-review.md"
+          ],
+          "checked_at": "2026-10-28T07:59:16Z"
+        },
+        {
+          "id": "implementation",
+          "kind": "automated",
+          "description": "空/下線なし参照の再発防止と【A】表記、PC/SP実画面構造確認",
+          "verification": "関連テスト/型、実API/ブラウザで本文本数・下線文字列・リンクと保持/先頭移動を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-format-revision-20261028/frontend-tests.log",
+            "local-only/mock-format-revision-20261028/server-tests.log",
+            "local-only/mock-format-revision-20261028/typecheck-final.log",
+            "local-only/mock-format-revision-20261028/ui-pc-all.json",
+            "local-only/mock-format-revision-20261028/ui-sp-390-all.json",
+            "local-only/mock-format-revision-20261028/ui-sp-320.json",
+            "local-only/mock-format-revision-20261028/ui-interactions.json",
+            "local-only/mock-format-revision-20261028/http-check.json"
+          ],
+          "checked_at": "2026-10-28T07:59:16Z"
+        },
+        {
+          "id": "database",
+          "kind": "automated",
+          "description": "共通Writer/transactionで第6セット30問だけ削除し、既存8/対象外全ID形式を保持し反復確認",
+          "verification": "隔離_testで初回/反復/失敗rollback・履歴削除対象を検証後、通常DB前後/再実行比較",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-format-revision-20261028/test-rollback.json",
+            "local-only/mock-format-revision-20261028/test-first.json",
+            "local-only/mock-format-revision-20261028/test-final-repeat.json",
+            "local-only/mock-format-revision-20261028/test-label-final.json",
+            "local-only/mock-format-revision-20261028/normal-first.json",
+            "local-only/mock-format-revision-20261028/normal-label-final.json",
+            "local-only/mock-format-revision-20261028/normal-repeat.json",
+            "local-only/mock-format-revision-20261028/normal-comparison.json"
+          ],
+          "checked_at": "2026-10-28T07:59:16Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が改稿と実装/検証を独立点検",
+          "verification": "作問担当以外の内容・下線/参照/DB更新レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-format-revision-20261028/review-01-02.md",
+            "local-only/mock-format-revision-20261028/review-03-04-iteration2.md",
+            "local-only/mock-format-revision-20261028/review-05-iteration2.md",
+            "local-only/mock-format-revision-20261028/code-review.md",
+            "local-only/mock-format-revision-20261028/app-review.md",
+            "local-only/mock-format-revision-20261028/label-prefix-review.md",
+            "local-only/mock-format-revision-20261028/final-review.md"
+          ],
+          "checked_at": "2026-10-28T08:04:39Z",
+          "reviewer": "revise_01_02 / revise_03_04 / revise_05_06 (independent authorship and app/update reviews)"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "改稿初稿の別担当レビューで、構造/実体下線は改善したが、歴史叙述より読み方の一般論に偏りLEAD02未達。初稿を保持し、原典確認した固有の背景事実を追加する再改稿へ。",
+            "at": "2026-10-28T07:22:22.269Z",
+            "failed_criteria": [
+              "manuscripts",
+              "implementation",
+              "database",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "第2稿の原典/別担当レビューと表記再確認後、5セット150問の本文/103下線/参照を通常DBへ反映。6の30問削除、旧8/全保持ID/形式/解答維持、隔離rollback/反復/合成履歴、通常全16表反復一致、実API/PCSP/361/86/型を確認。",
+            "at": "2026-10-28T08:01:36.037Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_question_order_20261028",
+      "context": "service",
+      "title": "本文ごとの小問の連続配置と下線順の統一",
+      "status": "done",
+      "depends_on": [
+        "mock_format_revision_20261028"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28: リード文と小問を固め、設問を下線部のアルファベット順へ。指定5大問と全体を確認。commit/push/deploy依頼なし。",
+      "next_action": "本依頼は完了。コミット・push・デプロイの追加依頼なし。",
+      "evidence": [
+        "docs/question-order-update-20261028.md",
+        "local-only/mock-question-order-20261028/verification.json",
+        "local-only/mock-question-order-20261028/final-review.md"
+      ],
+      "last_verified_at": "2026-10-28T10:57:51Z",
+      "verification_scope": "通常ローカル全20大問150問の参照順を監査し、16大問81位置を変更。120行は配置/競合版/日時のみ、全内容版/ID/URL/答/400肢/本文/履歴/お気に入り保持。隔離rollback/反復/合成4履歴4お気に入り、通常全16表反復一致、HTTP全150順次/全150既存URL・末尾404、PC/SP20大問150リンク/代表37問、320px操作、server87/関連front11/型・独立レビューを確認。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "order",
+          "kind": "automated",
+          "description": "20大問150問の本文ブロック連続・下線順を確認し方針を記録",
+          "verification": "実本文の出現順/参照から全件監査し、全体参照と同一下線共有も確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-question-order-20261028/audit-review.md",
+            "local-only/mock-question-order-20261028/plan.json",
+            "local-only/mock-question-order-20261028/final-audit.json"
+          ],
+          "checked_at": "2026-10-28T10:57:51Z"
+        },
+        {
+          "id": "preservation",
+          "kind": "automated",
+          "description": "共通Writerで配置のみ変更しID/URL/本文/答/履歴/お気に入りを保持",
+          "verification": "隔離_testの初回/反復/rollbackと通常DB前後/再実行を全行比較",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-question-order-20261028/code-review.md",
+            "local-only/mock-question-order-20261028/test-first.json",
+            "local-only/mock-question-order-20261028/test-repeat.json",
+            "local-only/mock-question-order-20261028/test-rollback.json",
+            "local-only/mock-question-order-20261028/synthetic-verify.json",
+            "local-only/mock-question-order-20261028/normal-first.json",
+            "local-only/mock-question-order-20261028/normal-repeat.json",
+            "local-only/mock-question-order-20261028/normal-comparison.json"
+          ],
+          "checked_at": "2026-10-28T10:57:51Z"
+        },
+        {
+          "id": "navigation",
+          "kind": "automated",
+          "description": "一覧/順次演習/小問リンクが新しい配置を保持",
+          "verification": "関連テストと実API、PC/SPで番号・参照・次問の境界を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-question-order-20261028/navigation-review.md",
+            "local-only/mock-question-order-20261028/grouped-server-final.log",
+            "local-only/mock-question-order-20261028/server-tests-final.log",
+            "local-only/mock-question-order-20261028/typecheck.log",
+            "local-only/mock-question-order-20261028/http-check.json",
+            "local-only/mock-question-order-20261028/ui-pc.json",
+            "local-only/mock-question-order-20261028/ui-sp.json",
+            "local-only/mock-question-order-20261028/ui-walk.json",
+            "local-only/mock-question-order-20261028/ui-320-interaction.json"
+          ],
+          "checked_at": "2026-10-28T10:57:51Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外が方針と配列/保全結果を確認",
+          "verification": "別担当の独立監査/差分レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-question-order-20261028/audit-review.md",
+            "local-only/mock-question-order-20261028/code-review.md",
+            "local-only/mock-question-order-20261028/backend-review.md",
+            "local-only/mock-question-order-20261028/final-review.md"
+          ],
+          "checked_at": "2026-10-28T10:57:51Z",
+          "reviewer": "order_audit (independent plan, worker/backend and saved-result review)"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 4,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "隔離の全150問walk/保全/rollback/反復は成功したが、追加server testの疎番号fixtureが既存上限30を超えて登録422。初回87件86成功/1失敗のログを保持し、許容範囲の疎な番号へ直して再検証する。",
+            "at": "2026-10-28T10:39:39.955Z",
+            "failed_criteria": [
+              "order",
+              "preservation",
+              "navigation",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "全20大問150問の本文/下線順を確認し16大問81位置を並替。全内容/内容版/ID/URL/400肢/履歴/お気に入り保持、隔離rollback/反復/合成履歴、通常反復全16表、実HTTP/PCSP/87server/11front/型と独立レビューが成功。",
+            "at": "2026-10-28T10:58:04.204Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "practice_filter_count_20261028",
+      "context": "service",
+      "title": "条件指定の正確な問題数と文化史のチェックボックス",
+      "status": "done",
+      "depends_on": [
+        "mock_question_order_20261028"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28: 条件指定は最大n問ではなく具体的な件数、文化史の絞り込みをチェックボックスへ。commit/push/deploy依頼なし。",
+      "next_action": "本依頼は完了。コミット・push・デプロイの追加依頼なし。",
+      "evidence": [
+        "docs/practice-filter-count-20261028.md",
+        "local-only/practice-filter-count-20261028/verification.json",
+        "local-only/practice-filter-count-20261028/review.md",
+        "local-only/practice-filter-count-20261028/final-review.md"
+      ],
+      "last_verified_at": "2026-10-28T12:38:32Z",
+      "verification_scope": "条件件数を現在の公開/利用可能な選択模試と一致させ、文化史複数OR・章節AND・旧単値URLを保持。368front/独立_test87server/型/build、実HTTP7条件・全11union・400/回答非公開、PC1440/SP390/320の選択/0/未選択・順次/ランダム、通常16表不変を確認。競合/通信失敗/認証変更は合成単体・コードレビューで、実会員切替や本番は未検証。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "filter",
+          "kind": "automated",
+          "description": "文化史チェックボックスの複数ORと章節AND、旧URL互換を保つ",
+          "verification": "helper単体と独立_testの全体/区分union/0件/invalid/公開/権限検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/practice-filter-count-20261028/server-tests.log",
+            "local-only/practice-filter-count-20261028/frontend-tests.log",
+            "local-only/practice-filter-count-20261028/http-check.json",
+            "local-only/practice-filter-count-20261028/api-review.md"
+          ],
+          "checked_at": "2026-10-28T12:34:57Z"
+        },
+        {
+          "id": "count",
+          "kind": "automated",
+          "description": "現在の条件・利用可能模試に一致する正確な件数を表示し開始する",
+          "verification": "取得中/失敗/0/模試未選択/遅延と認証の世代・開始直前再確認を検証",
+          "status": "passed",
+          "evidence": [
+            "local-only/practice-filter-count-20261028/frontend-tests.log",
+            "local-only/practice-filter-count-20261028/client-check.json",
+            "local-only/practice-filter-count-20261028/ui-pc-checks.json",
+            "local-only/practice-filter-count-20261028/ui-starts.json"
+          ],
+          "checked_at": "2026-10-28T12:34:57Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPでチェック・件数・開始/戻り/入力を実操作できる",
+          "verification": "実DB/HTTPとの照合、1440/390/320画面と順次/ランダム遷移、通常DBの教材/学習記録保持",
+          "status": "passed",
+          "evidence": [
+            "local-only/practice-filter-count-20261028/http-check.json",
+            "local-only/practice-filter-count-20261028/ui-pc-checks.json",
+            "local-only/practice-filter-count-20261028/ui-sp-checks.json",
+            "local-only/practice-filter-count-20261028/ui-320.json",
+            "local-only/practice-filter-count-20261028/ui-starts.json",
+            "local-only/practice-filter-count-20261028/db-comparison.json",
+            "local-only/practice-filter-count-20261028/typecheck.log",
+            "local-only/practice-filter-count-20261028/build.log"
+          ],
+          "checked_at": "2026-10-28T12:34:57Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が条件・非同期・資格・表示を独立確認",
+          "verification": "実装/受入条件/結果のレビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/practice-filter-count-20261028/review.md",
+            "local-only/practice-filter-count-20261028/review-check.json",
+            "local-only/practice-filter-count-20261028/final-review.md",
+            "local-only/practice-filter-count-20261028/final-review.json"
+          ],
+          "checked_at": "2026-10-28T12:38:32Z",
+          "reviewer": "practice_filter_review (independent source and saved-results review)"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 4,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "現在条件の正確な件数と文化史の複数チェックを実装。368front/87server/型/build、実HTTP7条件・PC/SP/320px・順次/ランダム、通常16表不変と独立レビューが成功。",
+            "at": "2026-10-28T12:38:48.698Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "short_answer_hint_20261028",
+      "context": "service",
+      "title": "語句記述の回答欄の補足ヒントを非表示",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-28: short-answer-hintを表示しない。模試4-3-7の文字種/許容表記/正規化説明がヒントになる。コミット・push依頼なし。",
+      "next_action": "本依頼は完了。コミット・push・デプロイの追加依頼なし。",
+      "evidence": [
+        "local-only/short-answer-hint-20261028/verification.json",
+        "local-only/short-answer-hint-20261028/review.json"
+      ],
+      "last_verified_at": "2026-10-28T13:44:38Z",
+      "verification_scope": "共通回答フォームの補足computed/段落/ARIA参照だけ削除。既存入力関連6件、実PC1280/SP390の模試4大問3問7で非表示/有効入力/エラー/横はみ出しなし、独立差分レビューを確認。入力・採点・DB不変。表示削除のみで全体server/型/buildは再実行せず、本番未確認。未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "display",
+          "kind": "automated",
+          "description": "共通フォームから語句記述の補足ヒントとARIA参照を除去し、入力・採点を維持",
+          "verification": "既存の入力/正規化検査、実ローカルPC/SPの模試4大問3問7と入力操作・補足非表示を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/short-answer-hint-20261028/tests.log",
+            "local-only/short-answer-hint-20261028/ui.json",
+            "local-only/short-answer-hint-20261028/verification.json"
+          ],
+          "checked_at": "2026-10-28T13:44:38Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "今回の表示削除と対象外保持を別担当が確認",
+          "verification": "変更差分と関係箇所の読み取りレビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/short-answer-hint-20261028/review.json"
+          ],
+          "checked_at": "2026-10-28T13:44:38Z",
+          "reviewer": "short_hint_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "語句記述の補足表示を削除。既存入力6検査・PC1280/SP390実操作・独立差分レビューが成功し採点処理は保持。",
+            "at": "2026-10-28T13:44:41.853Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "ui_changes_delivery_20261028",
+      "context": "service",
+      "title": "体裁・小問順・条件指定・補足削除の変更をコミットしpush",
+      "status": "doing",
+      "depends_on": [
+        "mock_format_revision_20261028",
+        "mock_question_order_20261028",
+        "practice_filter_count_20261028",
+        "short_answer_hint_20261028"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-28 ユーザー: OKです。コミット・pushしてください。ここまでの変更を送信。旧コピー/原資料/DB/local-onlyを除外。デプロイの依頼なし。",
+      "next_action": "独立レビュー後、正規ファイルをstageし通常commit/pushを実行。現在の検査は367front+再実行3件、168軽量・設定・資料保護が成功。",
+      "evidence": [
+        "docs/ui-changes-delivery-20261028.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "",
+      "acceptance": [
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "承認された正規差分のみを送り原資料・DB・旧コピーを保持",
+          "verification": "NUL区切り一覧とSHA/全履歴保護/設定/軽量検査/送信前フック/skip netlifyを確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "通常push成功と実remote一致・CI成功を確認",
+          "verification": "fetch後の差分、実remote SHA・0/0、対象SHAのGitHub Actions結果を照合",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が変更差分とstage一覧を点検",
+          "verification": "独立差分レビューと除外対象・stage SHAの確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 4,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "送信前front検査は367成功/1失敗。ローカルHTTPS試験が接続制限で127.0.0.1の待受ポートを取得できず停止。ソース変更はせず、該当検査だけ接続可能な環境で再確認する。",
+            "at": "2026-10-28T13:52:43.931Z",
+            "failed_criteria": [
+              "scope",
+              "delivery",
+              "review"
+            ]
           }
         ]
       }

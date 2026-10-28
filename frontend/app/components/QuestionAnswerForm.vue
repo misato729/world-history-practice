@@ -7,7 +7,6 @@ type Choice = { id: number; choice_label: string; content_blocks: LearningBlock[
 const props = defineProps<{ answerType?: string; choices: Choice[]; selectedChoiceId: number | null; submittedText: string; constraints?: InputConstraints; disabled: boolean; submitting: boolean; correctChoiceId?: number; isCorrect?: boolean | null; essayConstraints?: EssayConstraints }>()
 const emit = defineEmits<{ 'update:selectedChoiceId': [value: number]; 'update:submittedText': [value: string]; submit: [] }>()
 const constraintLabel = computed(() => inputConstraintLabel({ ...props.constraints, hint: undefined }))
-const inputHint = computed(() => props.constraints?.hint || (constraintLabel.value ? `${constraintLabel.value}で入力してください。` : ''))
 const inputIssue = computed(() => props.answerType === 'essay' ? essayAnswerIssue(props.submittedText, props.essayConstraints) : shortAnswerIssue(props.submittedText, props.constraints))
 const canSubmit = computed(() => ['short_text', 'essay'].includes(props.answerType ?? '') ? !inputIssue.value : props.selectedChoiceId !== null)
 </script>
@@ -16,8 +15,7 @@ const canSubmit = computed(() => ['short_text', 'essay'].includes(props.answerTy
   <form class="question-answer-form" @submit.prevent="emit('submit')">
     <div v-if="answerType === 'short_text'" class="short-answer">
       <label for="short-answer-input">解答<span v-if="constraintLabel">（{{ constraintLabel }}）</span></label>
-      <input id="short-answer-input" :value="submittedText" type="text" autocomplete="off" :disabled="disabled || submitting" :aria-describedby="inputHint ? 'short-answer-hint' : undefined" @input="emit('update:submittedText', ($event.target as HTMLInputElement).value)">
-      <p v-if="inputHint" id="short-answer-hint" class="input-hint">{{ inputHint }}</p>
+      <input id="short-answer-input" :value="submittedText" type="text" autocomplete="off" :disabled="disabled || submitting" @input="emit('update:submittedText', ($event.target as HTMLInputElement).value)">
       <p v-if="submittedText && inputIssue && !disabled" class="input-issue" role="status">{{ inputIssue }}</p>
     </div>
     <div v-else-if="answerType === 'essay'" class="essay-answer">

@@ -81,6 +81,9 @@ export function validateBlocks(value: unknown, context: BlockContext, published=
   const ids=blocks.flatMap(block=>[...(block.id?[block.id]:[]),...(block.inlines??[]).filter(item=>item.type!=='text').map(item=>('id' in item?item.id:''))])
   if (new Set(ids).size!==ids.length) return invalid('本文内の参照IDが重複しています')
   if (!published) return blocks
+  if (context === 'question' && blocks.some(block => block.inlines?.some(item => item.type === 'anchor' && (!nonblank(item.text) || item.underline === false)))) {
+    return invalid('公開する本文の下線には対象の語句・文を指定し、下線を有効にしてください')
+  }
   const complete=blocks.length>0&&blocks.every(block=>{
     switch(block.type) {
       case 'text':case 'quote':case 'fill_in_text':case 'fill_in_quote': return nonblank(blockText(block))

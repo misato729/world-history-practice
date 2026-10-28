@@ -31,10 +31,14 @@ function questionFilters(params:Record<string,unknown>,conditions:string[],value
  const tc:string[]=[]
  for(const key of ['major_category_code','category_code'])if(present(params[key])){values.push(params[key]);tc.push(`t.${key}=$${values.length}`)}
  if(tc.length)conditions.push(`((${tc.map(part=>part.replace('t.','questions.')).join(' AND ')}) OR EXISTS(SELECT 1 FROM question_topic_links t WHERE t.question_id=questions.id AND ${tc.join(' AND ')}))`)
- const topic=present(params.history_topic)?params.history_topic:'all'
- if(typeof topic!=='string'||!['all','cultural_history',...configuration.cultural_history_categories.map(v=>v.value)].includes(topic))fail(400,'bad_request','演習テーマを正しく指定してください')
+ const topic=params.history_topic??'all'
+ if(typeof topic!=='string')fail(400,'bad_request','演習テーマを正しく指定してください')
  if(topic==='cultural_history')conditions.push('is_cultural_history=true')
- else if(topic!=='all'){values.push(topic);conditions.push('is_cultural_history=true',`cultural_history_category=$${values.length}`)}
+ else if(topic!=='all'){
+  const topics=[...new Set(topic.split(','))],allowed=new Set<string>(configuration.cultural_history_categories.map(v=>v.value))
+  if(topics.some(value=>!allowed.has(value)))fail(400,'bad_request','演習テーマを正しく指定してください')
+  values.push(topics);conditions.push('is_cultural_history=true',`cultural_history_category=ANY($${values.length}::text[])`)
+ }
 }
 export async function authorizeExam(examNumber:number,user:User|null,db?:Database):Promise<void>{if(!paymentsEnabled||examNumber<=freeExamMax||await hasPaidAccess(user,db))return;if(user)fail(403,'paid_membership_required','この模擬試験の利用にはプレミアム会員資格が必要です');fail(401,'unauthorized','この模擬試験を利用するにはログインが必要です')}
 async function visible(id:number,db:Database){const [row]=await query(`SELECT 1 FROM questions WHERE id=$1 AND ${questionVisibility()}`,[id],db);if(!row)return notFound()}
@@ -56,14 +60,22 @@ async function serializePublicQuestion(q:QuestionRecord,user:User|null,db:Databa
 export async function getQuestion(id:number,user:User|null,db:Database=getDatabase()){
  const q=await loadQuestion(id,db,{published:true});await visible(id,db);await authorizeExam(q.exam_number,user,db);return {data:await serializePublicQuestion(q,user,db)}
 }
-const displayOrder="exam_number,COALESCE((SELECT g.group_number FROM question_groups g WHERE g.id=questions.group_id),0),COALESCE(group_question_number,question_number),question_number"
+const questionDisplayOrder=(alias='questions')=>`COALESCE((SELECT g.group_number FROM question_groups g WHERE g.id=${alias}.group_id),0),COALESCE(${alias}.group_question_number,${alias}.question_number),${alias}.question_number`
+const displayOrder=`exam_number,${questionDisplayOrder()}`
 export async function nextQuestion(params:Record<string,unknown>,user:User|null,db:Database=getDatabase()){
  const values:unknown[]=[];const conditions=[questionVisibility()];questionFilters(params,conditions,values)
  let order=displayOrder
  if(present(params.exam_number)){
   const exam=integerParam(params.exam_number,'exam_number');await authorizeExam(exam,user,db);values.push(exam);conditions.push(`exam_number=$${values.length}`)
   if(present(params.question_number)){values.push(integerParam(params.question_number,'question_number'));conditions.push(`question_number=$${values.length}`)}
-  else if(present(params.after_question_number)){values.push(integerParam(params.after_question_number,'after_question_number',0));conditions.push(`question_number>$${values.length}`)}
+  else if(present(params.after_question_number)){
+   const after=integerParam(params.after_question_number,'after_question_number',0)
+   if(after>0){
+    values.push(after);const cursor=`$${values.length}`
+    // A visible cursor follows published display order; absent/private cursors retain the numeric compatibility boundary.
+    conditions.push(`COALESCE((SELECT ROW(${questionDisplayOrder()})>ROW(${questionDisplayOrder('cursor_question')}) FROM questions cursor_question WHERE cursor_question.exam_number=questions.exam_number AND cursor_question.question_number=${cursor} AND ${questionVisibility('cursor_question')}),questions.question_number>${cursor})`)
+   }
+  }
  }else{
   if(present(params.after_question_number)||present(params.question_number))fail(400,'bad_request','exam_numberを指定してください')
   if(!await hasPaidAccess(user,db)){values.push(freeExamMax);conditions.push(`exam_number<=$${values.length}`)}
