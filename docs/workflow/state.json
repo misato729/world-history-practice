@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 118,
-  "updated_at": "2026-10-27T20:09:33.148Z",
+  "revision": 123,
+  "updated_at": "2026-10-28T01:52:16.733Z",
   "workspace_relative_to_repo": ".",
-  "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-27T20-09-33-148Z-r118.json",
+  "active_context": "product",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-28T01-52-16-733Z-r123.json",
   "contexts": [
     {
       "id": "product",
@@ -3022,6 +3022,97 @@
             "outcome": "passed",
             "summary": "最終評価: 6セット180問登録・旧8保持・全件/反復/画面/関連検査/独立レビュー合格。1e2b223通常push、同期0/0、CI40575066363全工程成功。",
             "at": "2026-10-27T20:09:19.375Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_format_requirements_20261028",
+      "context": "product",
+      "title": "過去問の体裁・設計を調べ1セットの作問要件を文書化",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-28 ユーザー: 実装は利用枠復活後。過去問の体裁/設計を研究して模試1回分の要件を文書化、4大問のうち2大問へ論述を1問ずつ。既存大問1のみの複製は不可。",
+      "next_action": "利用枠復活後の実装・原稿/DB改稿の再開時に本要件を使う。今回は文書化で完了、commit/pushなし。",
+      "evidence": [
+        "docs/mock-exam-authoring-requirements-20261028.md",
+        "local-only/mock-format-research-20261028/observations.json",
+        "local-only/mock-format-research-20261028/independent-review.md"
+      ],
+      "last_verified_at": "2026-10-28T01:51:14.782Z",
+      "verification_scope": "2025年全4大問30問/解答一覧と2008〜2012各大問1計37問/旧解答冒頭を原画像確認。44要件・2配分例・下線/本文/論述/図版と限界を文書化。集計/相対リンク/画像9頁同一性/独立レビュー成功。実装/作問改稿/DB更新/commit/pushなし。",
+      "acceptance": [
+        {
+          "id": "sources",
+          "kind": "automated",
+          "description": "確認した年度・範囲・紙面上の根拠を明記",
+          "verification": "原画像確認範囲と形式一覧、2025全30問の配置照合、原資料のローカル専用保持",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-exam-authoring-requirements-20261028.md",
+            "local-only/mock-format-research-20261028/checks.json"
+          ],
+          "checked_at": "2026-10-28T01:51:14.782Z"
+        },
+        {
+          "id": "requirements",
+          "kind": "automated",
+          "description": "4大問30問・異なる2大問に論述、本文/下線/設問の対応と受入検査を文書化",
+          "verification": "要件ID/配分/下線範囲/出典/横断性/全肢解説/承認と後続実装の区別、文書リンク・diffcheck",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-exam-authoring-requirements-20261028.md",
+            "local-only/mock-format-research-20261028/checks.json"
+          ],
+          "checked_at": "2026-10-28T01:51:14.782Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が観察と要件の混同・漏れ・論述配置を点検",
+          "verification": "本タスクの文書に対する独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-exam-authoring-requirements-20261028.md",
+            "local-only/mock-format-research-20261028/independent-review.md"
+          ],
+          "checked_at": "2026-10-28T01:51:14.782Z",
+          "reviewer": "delivery_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回の独立照合で2025大問2問4の正誤指定の記録1件を指摘。原画像の正しい文へ訂正し、元記録と根拠を観察JSONへ保存。残る文書/原画像レビューを継続。",
+            "at": "2026-10-28T01:48:00.540Z",
+            "failed_criteria": [
+              "sources",
+              "requirements",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "文書検査初回で要件IDの抽出が表末尾の改行を跨いで本文中の参照を重複計数。文書の要件を変えず、検査を行頭の定義だけへ限定。",
+            "at": "2026-10-28T01:49:43.695Z",
+            "failed_criteria": [
+              "sources",
+              "requirements",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "passed",
+            "summary": "2025全30問/旧年度G1計37問の形式を画像確認し、1セット44要件と2配分例を文書化。実体下線・論述2大問各1を明記。集計/リンク/独立レビュー合格、実装/DBなし。",
+            "at": "2026-10-28T01:51:19.054Z",
             "failed_criteria": []
           }
         ]

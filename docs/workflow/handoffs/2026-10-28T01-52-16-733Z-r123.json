@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "revision": 123,
+  "state_hash": "db53fc6a104c8e624d771e76fa2dc4804af9b635e7211788eaefc58b203d6a38",
+  "recorded_at": "2026-10-28T01:52:16.733Z",
+  "timezone": "UTC",
+  "context": "product",
+  "task": "mock_format_requirements_20261028",
+  "summary": "過去問体裁の研究と1セット44要件を文書化。異なる2大問の論述・実体下線・本文構成を明記、集計/リンク/原画像独立レビュー・gate合格。実装延期。",
+  "next_action": "利用枠復活後の実装・原稿/DB改稿の再開時に本要件を使う。今回は文書化で完了、commit/pushなし。",
+  "missing_local_files": [],
+  "git": {
+    "available": true,
+    "head": "32a3e113bb7b6fa8e286d3dfefd1813beabd2c28",
+    "changes": [
+      {
+        "status": " M",
+        "path": "AGENTS.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/workflow/contexts/product.md"
+      },
+      {
+        "status": "??",
+        "path": ".github/workflows/ci 2.yml"
+      },
+      {
+        "status": "??",
+        "path": ".gitignore 2"
+      },
+      {
+        "status": "??",
+        "path": "AGENTS 2.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/mock-exam-authoring-requirements-20261028.md"
+      },
+      {
+        "status": "??",
+        "path": "frontend/Dockerfile 2"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/composables/useAuth 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/app/utils/examConfig 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/nuxt.config 2.ts"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/package-lock 2.json"
+      },
+      {
+        "status": "??",
+        "path": "frontend/tests/frontendAccess.test 2.ts"
+      }
+    ]
+  },
+  "file_hashes": {
+    "AGENTS.md": "c5a8adfb94d07c5238b0c1f141f618b6b2500172eb2f7281c95e72a480a71014",
+    "README.md": "e1f2c774d1d9c0ca82c53ec679f267ffc1eea272d66bb55def0de00892e0274f",
+    "config/exam.json": "91ae6087613bd31e22b896b923ad1bf26d49879ad0178c4b878243d8c2dbf067",
+    "docs/classification.md": "9a3b5787ee99061934016d982c989444c5b87a009ebd5bdf6aab836a5ff6ea0b",
+    "docs/verification.md": "95b4bdf80a0149a071fc544cb2fe0e14a6711e6c345c8d2c7f926ae14e9b5ea1",
+    "docs/workflow/README.md": "d5f0794f33467a626398387d4a2e464beafc8cbf836141419f63888632aeec20",
+    "scripts/context.mjs": "3828c41d1cc5a6977b8444035e094e61e1c9895fcaa9451ecb1919e799ecaffc",
+    "scripts/context.test.mjs": "cc4bda3d1f56ca6824603896b7ad640e7a94a60d55b14a1b0eaeef8030b9e323",
+    "docs/workflow/contexts/product.md": "e889899b365ee68452db8105e35f80a5a49b7d33406de458c5a614d767d9ff9e",
+    "docs/workflow/contexts/sources.md": "cfed2efde12cd10fe8e85dee0b2df7416f79e2b0ee846d7589909b901cd09fd1",
+    "docs/workflow/contexts/audit.md": "be64d1c2877baf4c71235e1df8bf474dc3ce59f518bb27dc9835f06da484183f",
+    "docs/workflow/contexts/service.md": "e159d1d797628c8ef520a5194e225da0dcd58990174aeebca50b3b216af5da48",
+    "分析/2025用語集総点検/2025_全30問_総点検.md": "920627a7d3da9f938036d9bd6d1ac8b3cd001dc318a2a1f207a7b48ed3ad2b57",
+    "分析/2025用語集総点検/2025_全30問_総点検.json": "ccad38389b073ae3c40343bb897b9e0fa6de9ca68428a82a1b31c8d56a859caa",
+    "docs/local-only-materials.md": "587a69716771d7702bcfca7420b7ea3cca69cd2dad300499367e9aeda49f8667",
+    "scripts/check-private-sources.mjs": "1d28447b51b39591d42151f236b837b33d695662168ee5c71500205aa0de96af",
+    "scripts/check-private-sources.test.mjs": "f4e19e5ec736d8c90c1790410c889528ec6ca01ecf39342ab99e3d07b85b1b75",
+    ".gitignore": "44b7e116bb889fd78a2b9dc44c62d261806821140c6a321c65da8508751ae268",
+    ".dockerignore": "bec9094f1c7ce7df6f5ff6ec08343b77dc6dba2988a093ebb384072017a36d08",
+    ".githooks/pre-push": "3529b300f7a655102ad899ab31fa8b2c404ec37479d1195aa9bcd3efa97bf90c",
+    "scripts/workflow-policy.mjs": "60535f2c9bf42203c059ca39a0b254c168b7cfb2468904a3842725fe3797141e",
+    "scripts/workflow-policy.test.mjs": "394287e7d1e84756a3ac8833918f964ee66f0ef2c34934d121d055fb37af4782",
+    "docs/workflow/improvements-20261027.md": "86456266139fc5cbc5c7c0c2830f83a478312584c8cddcdbfe08b408613fb75a",
+    "content/questions.json": "2327e8637a79dc480d2bd85641156516376e0a025170a8d43113faad33614625",
+    "frontend/shared/examConfig.ts": "a480ce5a6c8ec6cda23c2fdcbf8cbaac4e52f0576366fe673cf15b267eb19fed",
+    "frontend/app/utils/historyTopics.ts": "557afbc23a2da1c4ba8ddaecbeefaecb92a8bddacb86c030740d1fdc9125caab",
+    "frontend/server/services/learning-validation.ts": "5a3ff05fb502bb4021467ac88d7e646c2c0ef07d09fe3988278240e48d58e54f",
+    "frontend/server/services/learning-writer.ts": "a9ca529c34083ddc63354912dab26a745c61fe07ddaa35f6078995cd8e883e10",
+    "frontend/server/services/learning.ts": "2d10a637da96a31012b931f34bb73fffbc2c6ec455bfaef94278930c71d5d8fc",
+    "frontend/server/database/migrations/004_cultural_history_categories.sql": "efa1479a13c01ebca748846228752430845c7b5691c023cd395b3c3e3d2d1773",
+    "frontend/tests/historyTopics.test.ts": "8d8249a3ec79e980b233907e7ca083ae3d85c50ae5d1e691f0f9bcf3cca8f204",
+    "frontend/server-tests/learning.test.ts": "6b3d59b41da88ea07967af6671aeed95cfd64c0b08e8ff4fb1f1a34128e78fb8",
+    "frontend/app/pages/index.vue": "1f06ac8acb9e89867299009a502ae4cc605b3df99cdfda2b14ece12963f00664",
+    "frontend/app/pages/admin/questions/index.vue": "bded02a715ab5082e62094abcafe4b6c734d655ab1c238c729edacfa5a5f2173",
+    "docs/workflow/policy.json": "e3b00b8f351f93a879fc8f77fe0aebb5d72047f3d25496097cdc93c9da96e12c",
+    "scripts/workspace-policy.mjs": "5c050cc4c89e54c79724a4659ff1115c771346873da7bad1746e9610ad729f86",
+    "scripts/workspace-policy.test.mjs": "3f62840182881f24c556e7da76849a61e7d9dbb755a79ff72f241c4a7598c810",
+    "docs/workflow/template-parity-20261027.md": "f919f0ac26ee483a8adad786dfca45727ee315ce82f60d04aa8e0402378712b3",
+    "local-only/question-draft-20261027/問題と解説.md": "dfd78bbf44557448f6b02a072ff0fc995e646c9087e8ef0dfa27884733c19dff",
+    "local-only/question-draft-20261027/形式検査.json": "72c11fcb1452b72c2aafd24f95ff927a32af11971f025896384ac4052c4ce19c",
+    "local-only/question-draft-20261027/過去問形式確認.md": "4b1b58352ad1d8bc0aac2004567cc4ffd46678a907ca76600608cc5802fccd49",
+    "local-only/question-draft-20261027/独立レビュー.md": "83f182c9e26ef53d7a48cc3180929120e6674cb08be70b13941d002bd2535d4e",
+    "local-only/cross-era-question-20261027/問題と解説.md": "79272185430fd4c143ea6db26c763a44941ac64788dfee4be697322ae3760648",
+    "local-only/cross-era-question-20261027/形式再確認.md": "025ba51069750b0e079777a68b896d9c159defa4a5453e7475e84565110b7661",
+    "local-only/cross-era-question-20261027/形式検査.json": "66f42753aa0b96d29d91ea30fedc54e3f1613f865ab87c0ee962fe8c55fab2da",
+    "local-only/cross-era-question-20261027/前半レビュー.md": "9204a77a039f1beb98fcbd572772e02e49492c975b8c5a793d46dbe7e5bd2631",
+    "local-only/cross-era-question-20261027/後半レビュー.md": "f7987965c743b3b36f8adcd3258730f42ba37470ccf1762dd2ceb0b701b24f11",
+    "docs/grouped-question-design-20261027.md": "ae9f4ad6642b3bde8447122d4c08a088e280811cb4161458828d02bcd6c80e89",
+    "local-only/grouped-question-proposal-20261027/文書検査_履歴削除許容後.json": "3e044619572c8454a8588f20c54503301706b85044d4a0246668cbf787488503",
+    "local-only/grouped-question-proposal-20261027/履歴削除許容後レビュー.md": "64b58a0aa0fa419f6f3929b2d91fb351c7a6d668de573848829113eb9ff3d95d",
+    "local-only/grouped-question-proposal-20261027/UIレビュー_履歴削除許容後.md": "d0871f56b635559aec33fade95e77f96db61cd564c445b11fc7cc0e01cbe67d0",
+    "frontend/app/pages/practice/[examNumber]/[questionNumber].vue": "e545cc1976586f2b94f4890a9531c6e851816dbcce64d45e07d726a8c1988591",
+    "frontend/app/components/SharedPassagePanel.vue": "0eda6c3292db9c1bc5d7d55e800f396bd4671d3a2baf2e3e5c1ba971b9dcdf6f",
+    "frontend/app/utils/practicePassageState.ts": "8b7edb884f7ff545030f987bf4dce4c77a0773e77c40be030e3e416835a80568",
+    "frontend/tests/practicePassageState.test.ts": "ecab9674ebd1dc9b99f1117f900ef9d0b619516d1e7396d41d7d9c34afd76763",
+    "docs/interaction-and-content-update-20261027.md": "1632cf47db2eecaa5de8caba6b4ee3015ed92284300ea35885c4fdb6ffc4993a",
+    "docs/grouped-changes-delivery-20261027.md": "03b0c3256b359db4600735fecf6166bf0762ad6c2479225a923e673a488484e5",
+    "frontend/app/components/ExamSidebar.vue": "9221f54a202d980e57a2176a02c831f8db1577ffa98890a21673633c87bb53d6",
+    "frontend/app/utils/examCatalog.ts": "117d31900f6c193af1a17e51c047d2cf66093de911c626a442707a8c95c5e80e",
+    "frontend/app/utils/practiceSequence.ts": "5d73af70c6313613374989108497f94c334836f4cb0ece12dc2547b74b981a14",
+    "frontend/tests/catalogExamNavigation.test.ts": "aedee9a7173c44a8d7fd7dbebf1fd7ad38ed8b2e87e03fb6965d74ed0f862b2a",
+    "frontend/tests/examSidebarLayout.test.ts": "91acf9f7cbbefa98c04134760d11cf558f3457ab14b9b58566f155e698c2150f",
+    "frontend/tests/groupedLearningPresentation.test.ts": "2edcabd1f999e9a86e3ca55387194f4d27e13550a9040d7be53404b26378e474",
+    "docs/mock-exam-hierarchy-20261027.md": "e4acdb86afe67578493c03d23ac9b800949f0df8604c8d2a0e7901d8bde3a6b4",
+    "docs/architecture.md": "34f6fc076e6620561d859799a0cc73d4310b6a1aa2b34d1833464e81785eac8e",
+    "docs/customization.md": "9c29036929d838809d154af8316251f10ddeb7e1256ef21958cae81627a74271"
+  },
+  "verification_note": "ハッシュ・Git・記録済み完了条件の確認であり、テストや出典照合の自動再実行ではない。依頼・権限は最新のユーザー指示とAGENTS.mdに従う。"
+}
