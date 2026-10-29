@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 158,
-  "updated_at": "2026-10-29T14:09:42.336Z",
+  "revision": 164,
+  "updated_at": "2026-10-29T18:33:08.028Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T14-09-42-336Z-r158.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T18-33-08-028Z-r164.json",
   "contexts": [
     {
       "id": "product",
@@ -106,7 +106,10 @@
     "frontend/app/components/QuestionAnswerForm.vue",
     "docs/priority-fixes-20261029.md",
     "docs/remaining-improvements-20261029.md",
-    "docs/textbook-review-20261029.md"
+    "docs/textbook-review-20261029.md",
+    "docs/textbook-six-revisions-20261029.md",
+    "local-only/textbook-six-revisions-20261029/verification.json",
+    "local-only/textbook-six-revisions-20261029/final-results-review.json"
   ],
   "tasks": [
     {
@@ -3925,7 +3928,7 @@
       ],
       "authorization": "requested",
       "request_ref": "2026-10-29 ユーザーがrepoに詳説世界史.pdfを配置し、用語集同様のリモート禁止運用・重要出典化・再び全問レビューを依頼。問題改稿/DB更新/commit/push/deployの依頼なし。",
-      "next_action": "改善提案の問題改稿やDB出典追加・公開は別途依頼待ち。旧課程/未配置索引は未確認のまま記録する",
+      "next_action": "新規改善6件は追加依頼のtextbook_six_revisions_20261029で改稿・通常DB反映を完了。既知の旧課程/未配置索引や全体課題は別範囲として保持。",
       "evidence": [
         "docs/textbook-review-20261029.md",
         "local-only/textbook-review-20261029/verification.json",
@@ -4045,7 +4048,7 @@
         "remaining_improvements_20261029",
         "textbook_full_review_20261029"
       ],
-      "next_action": "新規改善6件の改稿等は別途依頼待ち。完了記録の最終同期/CIを私的記録へ保存する",
+      "next_action": "fb9a3d1/0559a2bの送信/CIは完了済み。その後の新規6件改稿は別タスクで完了し、今回の新しい差分のGit送信は追加依頼待ち。",
       "evidence": [
         "docs/verification.md",
         "local-only/delivery-20261029-textbook/review.json",
@@ -4109,6 +4112,180 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "textbook_six_revisions_20261029",
+      "context": "audit",
+      "title": "教科書再レビューの新規6件を改稿し問題DBへ反映",
+      "status": "done",
+      "depends_on": [
+        "textbook_full_review_20261029",
+        "remaining_improvements_20261029"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-29 ユーザー「では改めて6問を改稿してください」。直前教科書レビューの新規6件を指す。",
+      "next_action": "追加依頼待ち。commit/push/deployと残る全体課題は未実施。",
+      "evidence": [
+        "docs/textbook-six-revisions-20261029.md",
+        "AGENTS.md",
+        "local-only/textbook-six-revisions-20261029/verification.json",
+        "local-only/textbook-six-revisions-20261029/final-results-review.json",
+        "local-only/textbook-six-revisions-20261029/files.md"
+      ],
+      "last_verified_at": "2026-10-29T15:48:58.414Z",
+      "verification_scope": "対象6問/20肢/語句の原画像と担当間独立確認。共通Writerによる通常DB6件更新/反復0、各版+1、他144問/400肢ID等保持。独立_test DBで7履歴から対象6だけ削除/7fav等保持・3件後rollback全16表行不変・採点20肢/3語句/旧版6/再送6・実HTTP150問。CUA実操作PC1440x1000/SP393x852各6問（実機ではない）、追加別名正解、新解説表示。UI後は回数制限のみ変化。SPのAX操作/補助処理の初期問題を記録保持し修正・最終確認済み。通常履歴0→0、原本SHA不変。アプリコード/schema/seed/権限/commit/push/deploy変更なし。",
+      "acceptance": [
+        {
+          "id": "source",
+          "kind": "automated",
+          "description": "6問の全判断点・訂正・追加解説を原典原画像で確認",
+          "verification": "版/PDF頁/印刷頁を区別した原画像確認・全肢/語句の根拠記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-revisions-20261029/review-a.json",
+            "local-only/textbook-six-revisions-20261029/review-b.json",
+            "local-only/textbook-six-revisions-20261029/review-c.json"
+          ],
+          "checked_at": "2026-10-29T15:48:58.414Z"
+        },
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "新規6件だけ改稿し同一問題として一意性・難度を維持",
+          "verification": "ID14/75/103/115/135/145・正答位置/形式/配置/分類保持、語形ヒント/肢の比較粒度を点検",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-revisions-20261029/combine-check.json",
+            "local-only/textbook-six-revisions-20261029/structure-check.json"
+          ],
+          "checked_at": "2026-10-29T15:48:58.414Z"
+        },
+        {
+          "id": "preservation",
+          "kind": "automated",
+          "description": "共通Writerで更新しID・対象外・履歴の影響を保全",
+          "verification": "全16表の前後比較・隔離DBの対象履歴削除/他履歴とお気に入り保持・rollback/反復",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-revisions-20261029/test-comparison.json",
+            "local-only/textbook-six-revisions-20261029/normal-comparison.json"
+          ],
+          "checked_at": "2026-10-29T15:48:58.414Z"
+        },
+        {
+          "id": "integration",
+          "kind": "automated",
+          "description": "実APIとPC/SPで改稿後の出題・採点が成立",
+          "verification": "6問の公開/回答API・入力/選択・実表示・旧版拒否/二重送信・セット構造検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-revisions-20261029/test-grades.json",
+            "local-only/textbook-six-revisions-20261029/http-check.json",
+            "local-only/textbook-six-revisions-20261029/ui-check.json",
+            "local-only/textbook-six-revisions-20261029/ui-preservation.json",
+            "local-only/textbook-six-revisions-20261029/ui-after-qa-group-close.txt"
+          ],
+          "checked_at": "2026-10-29T15:48:58.414Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "改稿者以外が各稿と適用結果を確認",
+          "verification": "担当間の原典/一意性/設問間影響レビューと適用結果の独立確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-revisions-20261029/review-a.json",
+            "local-only/textbook-six-revisions-20261029/review-b.json",
+            "local-only/textbook-six-revisions-20261029/review-c.json",
+            "local-only/textbook-six-revisions-20261029/review-writer-v2.json",
+            "local-only/textbook-six-revisions-20261029/final-results-review.json"
+          ],
+          "checked_at": "2026-10-29T15:48:58.414Z",
+          "reviewer": "revise_design_six_20261029_b6 + textbook_sets34 + textbook_protection"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "6問の原稿/独立レビュー/隔離DB/通常DB反復/公開150APIは成功。SP115のAX送信が不発でUI検証を一度停止、原画像座標の押下で別名正解を確認し操作方法を修正。",
+            "at": "2026-10-29T15:15:20.041Z",
+            "failed_criteria": [
+              "integration"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "6問の通常DB反映・反復/保持・隔離採点/rollback・公開150API・PC/SP各6問の実操作と新解説が成功。SP操作記録/cleanupを補い最終独立確認合格、原典/対象外/権限/アプリコードは保持。",
+            "at": "2026-10-29T15:49:04.304Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "textbook_six_delivery_20261030",
+      "context": "service",
+      "title": "6問改稿に伴う基準・検証記録をコミット・push",
+      "status": "doing",
+      "depends_on": [
+        "textbook_six_revisions_20261029"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-30 ユーザー「OKです。コミット・pushしてください」",
+      "next_action": "対象13件をcommit/pushしremote一致と対象SHAのCIを確認",
+      "evidence": [
+        "local-only/textbook-six-delivery-20261030/before.json"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "既に改稿済みの問題DBへ追加書込せず、作問基準/改稿・検証記録/進捗のGit納品。原本/画像/OCR/全問題原稿/DB/旧稿等はlocal-onlyへ保持、デプロイ/Netlify設定変更なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "送信差分と原典保護・前回確定成果物の保持が一致",
+          "verification": "10件の範囲と追加納品記録・96固定SHA・NUL ignore/index・全Git履歴保護/hook・差分/進捗検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-delivery-20261030/private-sources.log",
+            "local-only/textbook-six-delivery-20261030/scope-check.json",
+            "local-only/textbook-six-delivery-20261030/previous-review-hash-check.json",
+            "local-only/textbook-six-delivery-20261030/remote-before.json"
+          ],
+          "checked_at": "2026-10-29T18:33:01.699Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が公開差分と納品範囲を確認",
+          "verification": "原本/正答一覧/秘密の混入なし・beforeと最終stage SHAの独立照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-delivery-20261030/review-final.json",
+            "local-only/textbook-six-delivery-20261030/review-hash-check.json"
+          ],
+          "checked_at": "2026-10-29T18:33:01.699Z",
+          "reviewer": "revise_design_six_20261029_b6"
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "mainへの送信と対象SHAのCI成功を確認",
+          "verification": "公開範囲・pre-push成功・remote SHA/差分0/0・対象SHAのharness/verify完了",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],
