@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 164,
-  "updated_at": "2026-10-29T18:33:08.028Z",
+  "revision": 166,
+  "updated_at": "2026-10-29T18:37:40.223Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T18-33-08-028Z-r164.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T18-37-40-223Z-r166.json",
   "contexts": [
     {
       "id": "product",
@@ -4232,18 +4232,23 @@
       "id": "textbook_six_delivery_20261030",
       "context": "service",
       "title": "6問改稿に伴う基準・検証記録をコミット・push",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "textbook_six_revisions_20261029"
       ],
       "authorization": "requested",
       "request_ref": "2026-10-30 ユーザー「OKです。コミット・pushしてください」",
-      "next_action": "対象13件をcommit/pushしremote一致と対象SHAのCIを確認",
+      "next_action": "追加依頼待ち。完了記録の最終同期/CIは私的送信記録へ保存する。",
       "evidence": [
-        "local-only/textbook-six-delivery-20261030/before.json"
+        "docs/verification.md",
+        "local-only/textbook-six-delivery-20261030/review-final.json",
+        "local-only/textbook-six-delivery-20261030/index-check.json",
+        "local-only/textbook-six-delivery-20261030/first-push.json",
+        "local-only/textbook-six-delivery-20261030/ci-first.json",
+        "local-only/textbook-six-delivery-20261030/scope-check.json"
       ],
-      "last_verified_at": null,
-      "verification_scope": "既に改稿済みの問題DBへ追加書込せず、作問基準/改稿・検証記録/進捗のGit納品。原本/画像/OCR/全問題原稿/DB/旧稿等はlocal-onlyへ保持、デプロイ/Netlify設定変更なし。",
+      "last_verified_at": "2026-10-29T18:37:29.153Z",
+      "verification_scope": "基準・6問改稿報告・進捗等13件を06c3723でmainへpush、pre-push成功/実remoteSHA一致/差分0/0。CI40932002597のharness/verify（API/隔離DB・frontend/type/build/cleanup）全工程成功。元10差分/最終12差分の独立確認・96固定SHA・9除外候補/hook・全履歴保護・進捗/差分検査成功。原典/原稿/画像/OCR/DB控えは送信せず、今回のDB書込/Netlify設定変更/デプロイなし。停止状態今回直接確認は未了、skip指定使用。",
       "acceptance": [
         {
           "id": "checks",
@@ -4277,15 +4282,26 @@
           "kind": "automated",
           "description": "mainへの送信と対象SHAのCI成功を確認",
           "verification": "公開範囲・pre-push成功・remote SHA/差分0/0・対象SHAのharness/verify完了",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-six-delivery-20261030/first-push.json",
+            "local-only/textbook-six-delivery-20261030/ci-first.json"
+          ],
+          "checked_at": "2026-10-29T18:37:29.153Z"
         }
       ],
       "execution": {
         "worker": "root",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "13件を06c3723でmainへ送信、pre-push/remote一致0/0と対象CI40932002597全工程成功。原資料/DB控え/固定96成果物を保持、設定/DB/デプロイ変更なし。",
+            "at": "2026-10-29T18:37:36.395Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
