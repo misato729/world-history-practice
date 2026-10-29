@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 156,
-  "updated_at": "2026-10-29T14:04:54.375Z",
+  "revision": 158,
+  "updated_at": "2026-10-29T14:09:42.336Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T14-04-54-375Z-r156.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T14-09-42-336Z-r158.json",
   "contexts": [
     {
       "id": "product",
@@ -4037,7 +4037,7 @@
       "id": "quality_review_delivery_20261029",
       "context": "service",
       "title": "問題品質点検・修正と教科書保護/全問レビューをコミット・push",
-      "status": "doing",
+      "status": "done",
       "authorization": "requested",
       "request_ref": "2026-10-29 ユーザー「一旦ここでコミット・pushしておきましょうか。」",
       "depends_on": [
@@ -4045,12 +4045,17 @@
         "remaining_improvements_20261029",
         "textbook_full_review_20261029"
       ],
-      "next_action": "skip付きコミットをmainへ送信し、remote SHAとGitHub Actionsを確認する",
+      "next_action": "新規改善6件の改稿等は別途依頼待ち。完了記録の最終同期/CIを私的記録へ保存する",
       "evidence": [
-        "local-only/delivery-20261029-textbook/before.json"
+        "docs/verification.md",
+        "local-only/delivery-20261029-textbook/review.json",
+        "local-only/delivery-20261029-textbook/index-check.json",
+        "local-only/delivery-20261029-textbook/first-push.json",
+        "local-only/delivery-20261029-textbook/ci-first.json",
+        "local-only/delivery-20261029-textbook/scope-check.json"
       ],
-      "last_verified_at": null,
-      "verification_scope": "今回のGit納品だけ。問題DB追加編集/原典送信/Netlify設定変更/デプロイなし。",
+      "last_verified_at": "2026-10-29T14:09:34.183Z",
+      "verification_scope": "レビュー済み35件をfb9a3d1でmainへpush、pre-push原典全履歴検査/remoteSHA一致/差分0/0、CI40888081085のharness/verify(API/DB・フロント・型/build)成功。169軽量検査・テンプレート・9除外候補・10既存コピーSHA保持・独立確認合格。原典/私的根拠/DB/重複コピーを送信せず、Netlify設定未変更/世界史の登録・停止状態は未確認、skip付使用。問題DB追加編集/デプロイなし。",
       "acceptance": [
         {
           "id": "checks",
@@ -4084,15 +4089,26 @@
           "kind": "automated",
           "description": "依頼されたmainへの送信と対象SHAのCIが成功",
           "verification": "公開範囲確認・remoteSHA/差分0/0・対象SHAのGitHub Actions",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "local-only/delivery-20261029-textbook/first-push.json",
+            "local-only/delivery-20261029-textbook/ci-first.json"
+          ],
+          "checked_at": "2026-10-29T14:09:34.183Z"
         }
       ],
       "execution": {
         "worker": "root",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "35件をfb9a3d1としてmainへpush、remote一致/差分0/0・pre-push成功。CI40888081085の全工程成功、原典と10既存コピーを対象外保持。",
+            "at": "2026-10-29T14:09:38.095Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
