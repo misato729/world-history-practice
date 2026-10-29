@@ -51,7 +51,7 @@ export function isLocalOnlyPath(path, policy = DEFAULT_WORKSPACE_POLICY) {
   if (typeof path !== 'string') return false
   const parts = folded(path).replaceAll('\\', '/').split('/').filter(Boolean)
   // Copyrighted world-history sources stay protected even if optional policy is absent or changed.
-  const requiredSource = parts.some(part => ['past-exam', '分析'].includes(part) || part.startsWith('glossary') || /^歴検1級世界史_.*\.(pdf|zip)$/.test(part))
+  const requiredSource = parts.some(part => ['past-exam', '分析'].includes(part) || part.startsWith('glossary') || part.startsWith('詳説世界史') || /^歴検1級世界史_.*\.(pdf|zip)$/.test(part))
   return requiredSource || parts.some(part => policy.local_only.directory_names.some(name => folded(name) === part))
     || policy.local_only.filename_prefixes.some(prefix => (parts.at(-1) ?? '').startsWith(folded(prefix)))
 }

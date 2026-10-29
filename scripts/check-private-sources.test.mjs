@@ -45,6 +45,7 @@ test('protected source paths are distinguished from public code and documentatio
   for (const path of [
     'past-exam/question.pdf', 'nested/past-exam/image.png',
     'glossary.pdf', 'Glossary-old.pdf', 'nested/GLOSSARY_backup.zip',
+    '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-原画像/page.png',
     'nested/GLOSSARY-data/inner.pdf', 'nested/PAST-EXAM/inner.pdf', 'nested\\past-exam\\scan.png',
     '分析/full-ocr.txt', 'nested/分析/scan.png',
     '歴検1級世界史_2025.pdf', 'nested/歴検1級世界史_解答解説_2008-2012.pdf', '歴検1級世界史_2025.zip',
@@ -287,6 +288,7 @@ test('custom protection policy cannot disable mandatory world history source pro
   const protectedPaths = [
     'nested/PAST-EXAM/question.pdf', 'nested/GLOSSARY-data/inner.pdf',
     'nested/分析/scan.png', 'nested/歴検1級世界史_2025.zip',
+    '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-OCR/full.txt',
   ]
   for (const path of protectedPaths) assert.equal(isPrivateSource(path, policy), true, path)
   const f = fixture(t, policy)
@@ -294,4 +296,19 @@ test('custom protection policy cannot disable mandatory world history source pro
   f.git(['add', '--force', ...protectedPaths])
   assert.deepEqual([...inspect(f.root).tracked].sort(), [...protectedPaths].sort())
   assert.equal(capture(() => main([], f.root)).code, 1)
+})
+
+
+test('textbook backups and derived directories remain blocked in deleted history after optional policy replacement', t => {
+  const f = fixture(t, policyFor(['extra-only'], ['unrelated-']))
+  const paths = ['詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-原画像/page.png']
+  for (const path of paths) write(join(f.root, path))
+  f.git(['add', ...paths]); f.commit('Synthetic textbook protection fixtures')
+  f.git(['rm', ...paths]); f.commit('Remove synthetic textbook protection fixtures')
+  const result = inspect(f.root)
+  assert.deepEqual(result.tracked, [])
+  assert.deepEqual([...result.history].sort(), [...paths].sort())
+  assert.equal(capture(() => main([], f.root)).code, 1)
+  const line = `refs/heads/main ${f.head()} refs/heads/main ${ZERO}\n`
+  assert.equal(capture(() => main(['--pre-push'], f.root, line)).code, 1)
 })

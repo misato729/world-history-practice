@@ -5,7 +5,8 @@
       "local-only"
     ],
     "filename_prefixes": [
-      "classification.md"
+      "classification.md",
+      "詳説世界史"
     ]
   }
 }

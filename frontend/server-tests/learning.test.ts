@@ -178,6 +178,51 @@ test('anonymous exercise never exposes answer fields until answering and rejects
   assert.equal(rows[0]!.total, 0)
 }))
 
+test('public short-answer constraints omit private hints and unknown metadata across question and history paths', integration, async () => isolated(async (db, exam) => {
+  const owner = await user(db)
+  const publicRules = { script: 'kanji' as const, exact_length: 3, max_length: 8 }
+  const privateHint = 'Private synthetic hint naming 合成語'
+  const privateMetadata = 'Private synthetic answer metadata'
+  const question = await saveQuestion(input({ exam_number: exam, answer_type: 'short_text', choices: [],
+    accepted_answers: ['合成語'], input_constraints: { ...publicRules, hint: privateHint } }), { db })
+  // Stored legacy/future metadata must stay private even when it is not a current writer field.
+  await query('UPDATE questions SET input_constraints=input_constraints || $2::jsonb WHERE id=$1',
+    [question.id, JSON.stringify({ private_answer_note: privateMetadata })], db)
+  const stored = await loadQuestion(question.id, db)
+  assert.equal(stored.input_constraints.hint, privateHint)
+  assert.equal((stored.input_constraints as Record<string, unknown>).private_answer_note, privateMetadata)
+
+  const assertPublicQuestion = (value: Record<string, any>) => {
+    assert.deepEqual(value.input_constraints, publicRules)
+    for (const field of ['accepted_answers', 'essay_config', 'model_answer', 'explanation_blocks', 'source_references', 'source_text']) {
+      assert.equal(field in value, false)
+    }
+    assert.equal(JSON.stringify(value).includes(privateHint), false)
+    assert.equal(JSON.stringify(value).includes(privateMetadata), false)
+    assert.equal((value.choices as Record<string, unknown>[]).some(choice => 'is_correct' in choice), false)
+  }
+  assertPublicQuestion((await getQuestion(question.id, null, db)).data)
+  assertPublicQuestion((await getQuestion(question.id, owner, db)).data)
+  assertPublicQuestion((await nextQuestion({ exam_number: exam, question_number: 1 }, null, db)).data)
+
+  const answer = await answerQuestion(question.id, { answer_type: 'short_text', submitted_text: '合成語',
+    question_version: stored.content_version, submission_key: randomUUID() }, owner, db)
+  assert.equal(answer.data.is_correct, true)
+  assert.equal(answer.data.correct_answer, '合成語')
+  assertPublicQuestion((await getHistory(answer.data.answer_history_id!, owner, db)).data.question)
+  await putFavorite(question.id, owner, db)
+  for (const rows of [(await listHistory(owner, {}, db)).data, (await listFavorites(owner, {}, db)).data]) {
+    assert.equal(rows.length, 1)
+    assert.equal('input_constraints' in rows[0]!.question, false)
+    assert.equal(JSON.stringify(rows).includes(privateHint), false)
+    assert.equal(JSON.stringify(rows).includes(privateMetadata), false)
+  }
+  assert.deepEqual((await loadQuestion(question.id, db)).input_constraints, stored.input_constraints)
+
+  const empty = await saveQuestion(input({ exam_number: exam, question_number: 2 }), { db })
+  assert.deepEqual((await getQuestion(empty.id, null, db)).data.input_constraints, {})
+}))
+
 test('next-question selection is ordered and validates parameters without returning private content', integration, async () => isolated(async (db, exam) => {
   const first = await saveQuestion(input({ exam_number: exam }), { db })
   await saveQuestion(input({ exam_number: exam, question_number: 2, publication_status: 'private' }), { db })

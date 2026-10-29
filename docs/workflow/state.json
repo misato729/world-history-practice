@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 141,
-  "updated_at": "2026-10-28T14:04:10.648Z",
+  "revision": 156,
+  "updated_at": "2026-10-29T14:04:54.375Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-28T14-04-10-648Z-r141.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T14-04-54-375Z-r156.json",
   "contexts": [
     {
       "id": "product",
@@ -103,7 +103,10 @@
     "frontend/app/composables/usePracticeFilterCatalog.ts",
     "frontend/app/utils/practiceFilterCatalog.ts",
     "frontend/tests/practiceFilterCatalog.test.ts",
-    "frontend/app/components/QuestionAnswerForm.vue"
+    "frontend/app/components/QuestionAnswerForm.vue",
+    "docs/priority-fixes-20261029.md",
+    "docs/remaining-improvements-20261029.md",
+    "docs/textbook-review-20261029.md"
   ],
   "tasks": [
     {
@@ -173,15 +176,18 @@
     {
       "id": "old_sources",
       "context": "sources",
-      "title": "旧課程用語集・旧新課程の日本語教科書の提供待ち",
+      "title": "旧課程用語集・旧課程の日本語教科書の提供待ち",
       "status": "waiting_for_material",
       "depends_on": [],
       "request_ref": "この会話：旧課程と新課程の両方を参照したいという方針",
       "authorization": "requested",
-      "next_action": "ユーザーからPDFが届いたら版・奥付・欠落ページ・OCR可否を確認し、確認済み資料一覧を更新する。スキャン店の予約・購入を代行しない。",
-      "evidence": [],
-      "last_verified_at": null,
-      "verification_scope": "未受領の資料を確認済みにしない。資料の到着を自動で監視する設定はしていない。"
+      "next_action": "今回の世界史探究・世探704の教科書は受領確認済み。旧課程用語集/旧課程日本語教科書の提供時に版/奥付/頁/電子化を確認する。",
+      "evidence": [
+        "docs/workflow/contexts/sources.md",
+        "local-only/textbook-review-20261029/source-metadata.json"
+      ],
+      "last_verified_at": "2026-10-29T12:28:22.246Z",
+      "verification_scope": "2026-03-05発行の世界史探究教科書の受領と原画像確認を反映。旧課程2種は未受領のままで確認済みにしない。"
     },
     {
       "id": "edition_comparison",
@@ -3600,6 +3606,493 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "mock_quality_audit_20261029",
+      "context": "product",
+      "title": "無料ベータ公開前の5セット150問の品質総点検",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-29: 11/15の歴検に向け今週中に5模試・課金なしのベータ公開を希望。問題総点検（範囲偏り・難易度・メタ読み等）。今回は監査・修正案作成。DB改稿/公開/送信は別。",
+      "next_action": "総点検を報告。公開前優先4件と構成改善の実装/改稿・本番公開は別の依頼範囲。",
+      "evidence": [
+        "docs/mock-quality-audit-20261029.md",
+        "local-only/mock-quality-audit-20261029/report.md",
+        "local-only/mock-quality-audit-20261029/verification.json",
+        "local-only/mock-quality-audit-20261029/aggregate.json",
+        "local-only/mock-quality-audit-20261029/final-review.json"
+      ],
+      "last_verified_at": "2026-10-28T20:51:45Z",
+      "verification_scope": "現DB5セット150問400肢40語句10論述を全件点検、表示ID網羅と出典既存記録対応・重要原画像/一次資料再確認、主分類/難度/整序/モデル/漏洩・HTTP150/22hint・47許容/別名4形不受理・前後16表不変・独立統合レビュー。P1=4/P2=19、設計難度62/62/26、履歴0で実測なし。全原画像再照合や未提供版の確認はしていない。DB/実装/料金/本番未変更、未commit/push/deploy。",
+      "acceptance": [
+        {
+          "id": "coverage",
+          "kind": "automated",
+          "description": "現在の5セット150問と400選択肢・40語句・10論述の点検記録が揃う",
+          "verification": "実DB snapshotと各問レビューの期待ID集合・件数・hashを照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-quality-audit-20261029/aggregate.json",
+            "local-only/mock-quality-audit-20261029/structure-check.json",
+            "local-only/mock-quality-audit-20261029/index.json",
+            "local-only/mock-quality-audit-20261029/review-12.json",
+            "local-only/mock-quality-audit-20261029/review-34.json",
+            "local-only/mock-quality-audit-20261029/review-5.json"
+          ],
+          "checked_at": "2026-10-28T20:51:45Z"
+        },
+        {
+          "id": "quality",
+          "kind": "automated",
+          "description": "範囲/難度/メタ読み/重複/本文参照/解答成立を評価し問題別の優先修正案を提示",
+          "verification": "全件行の評価と全体集計、原画像/照合記録・必要な一次資料による重要指摘の根拠を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-quality-audit-20261029/report.md",
+            "local-only/mock-quality-audit-20261029/metrics.json",
+            "local-only/mock-quality-audit-20261029/cross-set-review.md",
+            "local-only/mock-quality-audit-20261029/public-check.json",
+            "local-only/mock-quality-audit-20261029/short-answer-validation.json",
+            "local-only/mock-quality-audit-20261029/preservation.json"
+          ],
+          "checked_at": "2026-10-28T20:51:45Z"
+        },
+        {
+          "id": "report",
+          "kind": "review",
+          "description": "別担当と指摘の妥当性・限界を照合して統合報告",
+          "verification": "分担レビューと親の横断評価・重大指摘相互確認を記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-quality-audit-20261029/final-review.json",
+            "local-only/mock-quality-audit-20261029/final-review.md"
+          ],
+          "checked_at": "2026-10-28T20:51:45Z",
+          "reviewer": "quality_sets34 (independent review of parent synthesis and saved evidence)"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 4,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "現DB150問400肢の総点検と表示ID網羅が完了。P1=4/P2=19、範囲/設計難度/形式・実HTTP漏洩・別表記不受理・前後DB保持・独立統合レビューを確認。修正は未実施。",
+            "at": "2026-10-28T20:52:06.382Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "priority_fixes_20261029",
+      "context": "service",
+      "title": "品質監査の優先4件を修正し問題DBへ反映",
+      "status": "done",
+      "depends_on": [
+        "mock_quality_audit_20261029"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-29 ユーザー「まずは優先修正事項を直してください」。API管理補足の非公開・2問別表記・5-3-6改稿とDB反映。送信/本番公開の依頼なし。",
+      "next_action": "残る監査19件と範囲/難度等の改善は次の依頼範囲。コミット・push・公開は別途依頼を待つ",
+      "evidence": [
+        "docs/priority-fixes-20261029.md",
+        "local-only/priority-fixes-20261029/verification.json",
+        "local-only/priority-fixes-20261029/result.md",
+        "local-only/priority-fixes-20261029/files.md"
+      ],
+      "last_verified_at": "2026-10-28T21:50:11.130Z",
+      "verification_scope": "一般APIの入力条件を許可リスト化。語句記述2問の別表記と5-3-6の最終V2を通常開発DBへWriter更新。対象3問のみ版+1、他147問/400肢/本文/利用者/お気に入り保持。独立_testでrollback/反復/合成履歴/25表記/旧版/再送を確認。server88/front368/型、実HTTP150問hint0、実PC/SP393入力/結果。build未再実行。検証用環境終了、commit/push/deployなし。",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "回答前のAPIで管理hintを除去し必要な入力条件・管理データを保つ",
+          "verification": "server回帰/HTTP150/履歴等共通経路・許可リストと未知フィールドを確認",
+          "status": "passed",
+          "evidence": [
+            "frontend/server/services/learning.ts",
+            "frontend/server-tests/learning.test.ts",
+            "local-only/priority-fixes-20261029/server-tests.log",
+            "local-only/priority-fixes-20261029/http-check.json"
+          ],
+          "checked_at": "2026-10-28T21:50:11.130Z"
+        },
+        {
+          "id": "content",
+          "kind": "automated",
+          "description": "正当な別表記と成立する高難度短答を原典根拠付きで用意",
+          "verification": "字種/字数/一意性/全セット漏洩・別名・作者外レビュー",
+          "status": "passed",
+          "evidence": [
+            "local-only/priority-fixes-20261029/replacement-v2.json",
+            "local-only/priority-fixes-20261029/payload.json",
+            "local-only/priority-fixes-20261029/content-review.json",
+            "local-only/priority-fixes-20261029/replacement-source-record.json"
+          ],
+          "checked_at": "2026-10-28T21:50:11.130Z"
+        },
+        {
+          "id": "database",
+          "kind": "automated",
+          "description": "Writer/transactionで3問だけ更新しID/お気に入り/対象外を保持",
+          "verification": "独立_testの初回/反復/rollback/合成履歴後に通常バックアップ・全表前後比較",
+          "status": "passed",
+          "evidence": [
+            "local-only/priority-fixes-20261029/normal-comparison.json",
+            "local-only/priority-fixes-20261029/test-comparison.json",
+            "local-only/priority-fixes-20261029/synthetic-v2-grade.json",
+            "local-only/priority-fixes-20261029/normal-first.json",
+            "local-only/priority-fixes-20261029/normal-repeat-result.json"
+          ],
+          "checked_at": "2026-10-28T21:50:11.130Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPで新問/許容別表記と補足非表示を使える",
+          "verification": "実APIの新内容・採点・PCSP入力/結果を合成DBの確認と区別",
+          "status": "passed",
+          "evidence": [
+            "local-only/priority-fixes-20261029/ui-check.json",
+            "local-only/priority-fixes-20261029/ui-preservation.json",
+            "local-only/priority-fixes-20261029/ui-pc-new-question.png",
+            "local-only/priority-fixes-20261029/ui-sp-art.png",
+            "local-only/priority-fixes-20261029/ui-sp-new-question.ax.txt"
+          ],
+          "checked_at": "2026-10-28T21:50:11.130Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が実装・原稿・更新範囲を点検",
+          "verification": "担当の所有ファイルを分け、独立レビューと保存結果の照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/priority-fixes-20261029/code-review.json",
+            "local-only/priority-fixes-20261029/content-review.json"
+          ],
+          "checked_at": "2026-10-28T21:50:11.130Z",
+          "reviewer": "priority_db_review"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "優先4件の実装・原典レビュー・通常DB3問更新と対象外保持、隔離反復/rollback/採点、実HTTP150問・PC/SP、server88/front368/型を確認した",
+            "at": "2026-10-28T21:50:59.123Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "remaining_improvements_20261029",
+      "context": "service",
+      "title": "品質監査の残る個別改善19件を改稿しDB反映",
+      "status": "done",
+      "depends_on": [
+        "priority_fixes_20261029"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-29 ユーザー「続けて、残りの改善19件も修正してください。」。対象19件の改稿・原典照合・通常ローカルDB更新。commit/push/deployの依頼なし。",
+      "next_action": "全体配分/非欧米論述/資料形式/合計得点等は別の依頼範囲。送信・公開は明示依頼を待つ",
+      "evidence": [
+        "docs/remaining-improvements-20261029.md",
+        "local-only/remaining-improvements-20261029/verification.json",
+        "local-only/remaining-improvements-20261029/integration-review.json",
+        "local-only/remaining-improvements-20261029/files.md"
+      ],
+      "last_verified_at": "2026-10-28T22:45:05.524Z",
+      "verification_scope": "個別P2全19件を原典照合/作者外レビューして通常開発DBへWriter反映。対象版各+1・再実行0、他131問/全400肢ID/10論述/本文/利用者/お気に入り保持。隔離rollback/44肢/22語句/旧版19/再送19、実HTTP150hint0、PC1440/SP390各19問の実入力・参照・レイアウトと5ゲスト正解。初期失敗と比較修正を保持。実機iOS/全体test/type/build/commit/push/deployは今回未実施。",
+      "acceptance": [
+        {
+          "id": "content",
+          "kind": "automated",
+          "description": "指摘19件を個別に改稿し原典・全肢・短答の再生負荷を確認",
+          "verification": "現稿集合一致/全肢の根拠/語句頻度又は説明文/メタ読み/先行解説露出を点検",
+          "status": "passed",
+          "evidence": [
+            "local-only/remaining-improvements-20261029/patches-12.json",
+            "local-only/remaining-improvements-20261029/patches-34.json",
+            "local-only/remaining-improvements-20261029/patches-5.json",
+            "local-only/remaining-improvements-20261029/review-12-by-5.json",
+            "local-only/remaining-improvements-20261029/review-34-by-12.json",
+            "local-only/remaining-improvements-20261029/review-5.json",
+            "local-only/remaining-improvements-20261029/integration-review.json"
+          ],
+          "checked_at": "2026-10-28T22:45:05.524Z"
+        },
+        {
+          "id": "structure",
+          "kind": "automated",
+          "description": "公開5セット150問の形式と回答前情報・参照順を保持",
+          "verification": "19件の回答形式/ID/選択肢ID/20-8-2/本文A-B/下線順/回答前APIを確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/remaining-improvements-20261029/structure-check.json",
+            "local-only/remaining-improvements-20261029/chronology-check.json",
+            "local-only/remaining-improvements-20261029/http-check.json"
+          ],
+          "checked_at": "2026-10-28T22:45:05.524Z"
+        },
+        {
+          "id": "database",
+          "kind": "automated",
+          "description": "Writer更新で対象19問だけ変更し履歴と対象外を保全",
+          "verification": "隔離_testで失敗rollback/初回/反復/再送/旧版/全選択肢採点、通常backup/全表比較",
+          "status": "passed",
+          "evidence": [
+            "local-only/remaining-improvements-20261029/test-comparison.json",
+            "local-only/remaining-improvements-20261029/synthetic-grade.json",
+            "local-only/remaining-improvements-20261029/normal-comparison.json",
+            "local-only/remaining-improvements-20261029/failed-attempt.json",
+            "local-only/remaining-improvements-20261029/ui-preservation.json"
+          ],
+          "checked_at": "2026-10-28T22:45:05.524Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "新内容を実APIとPC/SPで確認",
+          "verification": "19問の取得と参照表示、代表的な長文選択/新短答/採点をPCSPで確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/remaining-improvements-20261029/ui-check.json",
+            "local-only/remaining-improvements-20261029/ui-viewport-check.json",
+            "local-only/remaining-improvements-20261029/ui-sp-71-viewport.png",
+            "local-only/remaining-improvements-20261029/ui-pc-48-question.png"
+          ],
+          "checked_at": "2026-10-28T22:45:05.524Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "改稿者以外が各19問とDB更新範囲をレビュー",
+          "verification": "分担した原稿を相互独立レビューし、親が統合漏洩・保存結果を照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/remaining-improvements-20261029/review-12-by-5.json",
+            "local-only/remaining-improvements-20261029/review-34-by-12.json",
+            "local-only/remaining-improvements-20261029/review-5.json",
+            "local-only/remaining-improvements-20261029/code-review-final.json"
+          ],
+          "checked_at": "2026-10-28T22:45:05.524Z",
+          "reviewer": "improve_5"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "隔離更新の保存後比較が失敗し全16表rollbackを確認。関連分類の集合順比較と安全な失敗診断を修正し、最終別表記も確定した",
+            "at": "2026-10-28T22:21:24.497Z",
+            "failed_criteria": [
+              "content",
+              "structure",
+              "database",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "残る個別改善19件を通常DBへ反映。原典/作者外レビュー・隔離rollback/反復/44肢22入力・対象外保持・実HTTP150・PC/SP各19問が成功",
+            "at": "2026-10-28T22:45:28.598Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "textbook_full_review_20261029",
+      "context": "audit",
+      "title": "詳説世界史を固定保護し重要出典として150問を全問再レビュー",
+      "status": "done",
+      "depends_on": [
+        "remaining_improvements_20261029"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-29 ユーザーがrepoに詳説世界史.pdfを配置し、用語集同様のリモート禁止運用・重要出典化・再び全問レビューを依頼。問題改稿/DB更新/commit/push/deployの依頼なし。",
+      "next_action": "改善提案の問題改稿やDB出典追加・公開は別途依頼待ち。旧課程/未配置索引は未確認のまま記録する",
+      "evidence": [
+        "docs/textbook-review-20261029.md",
+        "local-only/textbook-review-20261029/verification.json",
+        "local-only/textbook-review-20261029/aggregate.json",
+        "local-only/textbook-review-20261029/files.md"
+      ],
+      "last_verified_at": "2026-10-29T12:51:09.520Z",
+      "verification_scope": "教科書の全階層固定保護・軽量46検査・Gitローカル全履歴/未追跡/hook・独立確認。PDF400頁の文字層抽出と表紙/奥付/必要原画像を確認、重要出典として運用明記。現150問400肢40語句10論述34本文の全IDレビュー集合一致、直接44/消去9/補完68/未定位29、新規P2提案6と既知記録課題3を区別。DB全16表/原本SHA不変、全体アプリtest/type/build/UI・問題改稿/DB出典更新・commit/push/deployなし。",
+      "acceptance": [
+        {
+          "id": "protection",
+          "kind": "automated",
+          "description": "詳説世界史の原本・複製・派生ディレクトリをGit/Docker/履歴送信検査で固定保護",
+          "verification": "設定欠落/置換を含む軽量回帰・NUL比較・全履歴検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-review-20261029/protection-review.json",
+            "local-only/textbook-review-20261029/protection-tests.log",
+            "local-only/textbook-review-20261029/protection-history-check.log",
+            "local-only/textbook-review-20261029/independent-protection-review.json"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z"
+        },
+        {
+          "id": "source",
+          "kind": "automated",
+          "description": "提供教科書の版/頁/重要出典としての役割を原本確認して記録",
+          "verification": "表紙/奥付/目次・原本hash・PDF頁と印刷頁・資料カード/AGENTS更新",
+          "status": "passed",
+          "evidence": [
+            "AGENTS.md",
+            "docs/workflow/contexts/sources.md",
+            "local-only/textbook-review-20261029/source-metadata.json",
+            "local-only/textbook-review-20261029/extraction.json"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z"
+        },
+        {
+          "id": "coverage",
+          "kind": "automated",
+          "description": "現DB150問・400肢・40語句・10論述・34本文の期待集合とレビュー集合が一致",
+          "verification": "教科書の判断経路/用語集補完/未確認を分け全問全肢の記録を突合",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-review-20261029/aggregate.json",
+            "local-only/textbook-review-20261029/question-table.md",
+            "local-only/textbook-review-20261029/review-12.json",
+            "local-only/textbook-review-20261029/review-34.json",
+            "local-only/textbook-review-20261029/review-5.json"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z"
+        },
+        {
+          "id": "quality",
+          "kind": "automated",
+          "description": "教科書を主軸に史実・難度・範囲・メタ読み・設問間影響を再評価",
+          "verification": "最小到達経路と全肢/訂正/解説、短答/論述・本文の指摘を根拠付き整理",
+          "status": "passed",
+          "evidence": [
+            "docs/textbook-review-20261029.md",
+            "local-only/textbook-review-20261029/aggregate.json",
+            "local-only/textbook-review-20261029/metrics.json",
+            "local-only/textbook-review-20261029/chronology-check.json",
+            "local-only/textbook-review-20261029/essay-model-check.json"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z"
+        },
+        {
+          "id": "preservation",
+          "kind": "automated",
+          "description": "問題DBと対象外ファイル・旧検証記録を保持",
+          "verification": "前後の読取専用DB全16表比較・開始時ファイルhashの保持",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-review-20261029/preservation.json",
+            "local-only/textbook-review-20261029/files.md"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立した担当が分担全問と保護・集約結果を点検",
+          "verification": "3担当の全件原典レビューと親の集約・重要疑義/コードの別担当確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/textbook-review-20261029/independent-protection-review.json",
+            "local-only/textbook-review-20261029/final-review.json"
+          ],
+          "checked_at": "2026-10-29T12:51:09.520Z",
+          "reviewer": "textbook_sets34 + textbook_protection"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "新教科書の固定保護/版/重要出典化と150問400肢34本文の再レビューを完了。独立照合・DB/原本不変を確認し、新規改善6件と既知確認3件を記録",
+            "at": "2026-10-29T12:51:13.691Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "quality_review_delivery_20261029",
+      "context": "service",
+      "title": "問題品質点検・修正と教科書保護/全問レビューをコミット・push",
+      "status": "doing",
+      "authorization": "requested",
+      "request_ref": "2026-10-29 ユーザー「一旦ここでコミット・pushしておきましょうか。」",
+      "depends_on": [
+        "priority_fixes_20261029",
+        "remaining_improvements_20261029",
+        "textbook_full_review_20261029"
+      ],
+      "next_action": "skip付きコミットをmainへ送信し、remote SHAとGitHub Actionsを確認する",
+      "evidence": [
+        "local-only/delivery-20261029-textbook/before.json"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "今回のGit納品だけ。問題DB追加編集/原典送信/Netlify設定変更/デプロイなし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "送信差分・私的資料保護・軽量検査が成功",
+          "verification": "169軽量検査・template・index差分/全履歴・ignore/hook・既存コピー保持",
+          "status": "passed",
+          "evidence": [
+            "local-only/delivery-20261029-textbook/harness.log",
+            "local-only/delivery-20261029-textbook/template.log",
+            "local-only/delivery-20261029-textbook/private-sources.log",
+            "local-only/delivery-20261029-textbook/scope-check.json"
+          ],
+          "checked_at": "2026-10-29T14:04:18.315Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が納品差分と公開内容を確認",
+          "verification": "公開報告の正答名省略と秘密/原典全文が含まれないことを独立確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/delivery-20261029-textbook/review.json",
+            "local-only/delivery-20261029-textbook/review-hash-check.json"
+          ],
+          "checked_at": "2026-10-29T14:03:26.165Z",
+          "reviewer": "textbook_sets34"
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "依頼されたmainへの送信と対象SHAのCIが成功",
+          "verification": "公開範囲確認・remoteSHA/差分0/0・対象SHAのGitHub Actions",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

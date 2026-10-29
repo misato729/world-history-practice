@@ -23,6 +23,11 @@ function integerParam(v:unknown,name:string,min=1,max=Number.MAX_SAFE_INTEGER):n
 function pagination(p:Record<string,unknown>){return {page:integerParam(present(p.page)?p.page:1,'page'),perPage:integerParam(present(p.per_page)?p.per_page:20,'per_page',1,100)}}
 function meta(page:number,perPage:number,total:number,atLeastOne=false){return {current_page:page,per_page:perPage,total_count:total,total_pages:Math.max(atLeastOne?1:0,Math.ceil(total/perPage))}}
 const serializeChoice=(c:ChoiceRecord)=>({id:Number(c.id),choice_label:c.choice_label,content_blocks:c.content_blocks,display_order:Number(c.display_order)})
+const serializeInputConstraints=(rules:QuestionRecord['input_constraints'])=>({
+ ...(rules.script!==undefined?{script:rules.script}:{}),
+ ...(rules.exact_length!==undefined?{exact_length:rules.exact_length}:{}),
+ ...(rules.max_length!==undefined?{max_length:rules.max_length}:{}),
+})
 export const questionVisibility=(alias='questions')=>`${alias}.publication_status='published' AND NOT EXISTS(SELECT 1 FROM exam_sets es WHERE es.exam_number=${alias}.exam_number AND es.publication_status<>'published') AND ((${alias}.group_id IS NULL AND NOT EXISTS(SELECT 1 FROM exam_sets shape WHERE shape.exam_number=${alias}.exam_number AND shape.format_code<>'legacy_practice')) OR (${alias}.group_id IS NOT NULL AND EXISTS(SELECT 1 FROM question_groups g JOIN exam_sets shape ON shape.exam_number=g.exam_number WHERE g.id=${alias}.group_id AND g.exam_number=${alias}.exam_number AND g.publication_status='published' AND shape.format_code<>'legacy_practice')))`
 function questionFilters(params:Record<string,unknown>,conditions:string[],values:unknown[]){
  const major=params.major_category_code,category=params.category_code
@@ -43,7 +48,7 @@ function questionFilters(params:Record<string,unknown>,conditions:string[],value
 export async function authorizeExam(examNumber:number,user:User|null,db?:Database):Promise<void>{if(!paymentsEnabled||examNumber<=freeExamMax||await hasPaidAccess(user,db))return;if(user)fail(403,'paid_membership_required','この模擬試験の利用にはプレミアム会員資格が必要です');fail(401,'unauthorized','この模擬試験を利用するにはログインが必要です')}
 async function visible(id:number,db:Database){const [row]=await query(`SELECT 1 FROM questions WHERE id=$1 AND ${questionVisibility()}`,[id],db);if(!row)return notFound()}
 async function serializePublicQuestion(q:QuestionRecord,user:User|null,db:Database){
- const payload:Record<string,any>={id:q.id,exam_number:q.exam_number,question_number:q.question_number,content_blocks:q.content_blocks,major_category_code:q.major_category_code,category_code:q.category_code,is_cultural_history:q.is_cultural_history,is_art_history:q.is_art_history,cultural_history_category:q.cultural_history_category,choices:q.choices.map(serializeChoice),answer_type:q.answer_type,input_constraints:q.input_constraints,question_version:q.content_version,group_question_number:q.group_question_number,group:null,shared_passages:[],passage_references:q.passage_references}
+ const payload:Record<string,any>={id:q.id,exam_number:q.exam_number,question_number:q.question_number,content_blocks:q.content_blocks,major_category_code:q.major_category_code,category_code:q.category_code,is_cultural_history:q.is_cultural_history,is_art_history:q.is_art_history,cultural_history_category:q.cultural_history_category,choices:q.choices.map(serializeChoice),answer_type:q.answer_type,input_constraints:serializeInputConstraints(q.input_constraints),question_version:q.content_version,group_question_number:q.group_question_number,group:null,shared_passages:[],passage_references:q.passage_references}
  if(q.answer_type==='essay'){
   const profile=requireCurrentEssayProfile(q.essay_config)
   payload.essay_constraints={max_characters:profile.max_characters,required_terms:profile.required_terms}
