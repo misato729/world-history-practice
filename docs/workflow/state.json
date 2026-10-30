@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 181,
-  "updated_at": "2026-10-30T14:48:06.967Z",
+  "revision": 184,
+  "updated_at": "2026-10-30T15:22:03.329Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T14-48-06-967Z-r181.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T15-22-03-329Z-r184.json",
   "contexts": [
     {
       "id": "product",
@@ -4570,52 +4570,68 @@
       "id": "essay_scoring_delivery_20261030",
       "context": "service",
       "title": "論述採点の変更をコミットpushしCIを確認",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "essay_weighted_scoring_20261030"
       ],
       "authorization": "requested",
       "request_ref": "2026-10-30 ユーザー「OKです。コミット・pushしてください」",
-      "next_action": "承認された論述変更のみstageし、資料保護・通常push・main同期とCIを確認",
+      "next_action": "確認記録のみ追送して最終同期を確認。公開・デプロイは変更しない。",
       "evidence": [
-        "docs/essay-scoring-delivery-20261030.md"
+        "docs/essay-scoring-delivery-20261030.md",
+        "local-only/essay-scoring-delivery-20261030/index-review.md",
+        "local-only/essay-scoring-delivery-20261030/ci-first-final.json"
       ],
-      "last_verified_at": null,
-      "verification_scope": "論述採点の実装/検証文書と送信用進捗のみ。並行の費用資料を手元に保持、DB書込・公開変更・デプロイなし。",
+      "last_verified_at": "2026-10-30T15:21:09.579Z",
+      "verification_scope": "実装399bb10を通常pre-push/main同期0/0/CI 41078568651harness+verify成功まで確認。23pathと共有ファイル投影を独立確認、全履歴保護成功。同梱Git使用、費用差分/DB/公開状態保持。確認文書のみ追送。Netlify停止状態は未確認、skip付き、デプロイ操作なし。",
       "acceptance": [
         {
           "id": "scope",
           "kind": "automated",
           "description": "対象を限定し非公開資料を送信しない",
           "verification": "明示stage/隔離tree参照整合/全履歴保護/通常pre-push",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/essay-scoring-delivery-20261030.md"
+          ],
+          "checked_at": "2026-10-30T15:21:09.579Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "送信範囲を実装者外が確認",
           "verification": "送信treeと共有ファイル投影を独立レビュー",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/essay-scoring-delivery-20261030.md"
+          ],
+          "checked_at": "2026-10-30T15:21:09.579Z",
+          "reviewer": "essay_delivery_review"
         },
         {
           "id": "remote_ci",
           "kind": "automated",
           "description": "mainへのpush・SHA同期とCIを確認",
           "verification": "remote SHA/差分/Actions両job",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/essay-scoring-delivery-20261030.md"
+          ],
+          "checked_at": "2026-10-30T15:21:09.579Z"
         }
       ],
       "execution": {
         "worker": "root",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "実装399bb10の承認範囲23path、保護フック・main同期0/0・CI両job成功と並行差分保持を確認",
+            "at": "2026-10-30T15:21:16.795Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],

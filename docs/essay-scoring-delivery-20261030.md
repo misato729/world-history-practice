@@ -9,4 +9,6 @@
 - 原本PDF・全文OCR・ローカルの原稿/DB控え/画像は送信しない。全履歴保護検査と通常pre-pushフックを使用し、各コミットへ`[skip netlify]`を付ける。
 - Netlify管理画面の読み込みが完了せず、対象プロジェクトの停止状態は今回も確認できていない。設定変更・再開・デプロイ操作は行わない。
 
-送信前の段階。コミットSHA・リモート同期・GitHub CIの結果は確認後に追記する。CIはデプロイではない。詳しい点検・送信ログはローカル専用 `local-only/essay-scoring-delivery-20261030/` に保持する。
+実装コミットは[399bb10](https://github.com/misato729/world-history-practice/commit/399bb10f1199f33256508322f96fae7b8f4e7f5e)。通常のpre-push検査を通してmainへ送信し、実リモートSHA一致・差分0/0を確認した。[GitHub CI 41078568651](https://github.com/misato729/world-history-practice/actions/runs/41078568651)はharness/verifyの両jobが成功。API/セキュリティ・フロント全体テスト・型検査・本番用ビルドが成功し、前段のローカル未完了とは分けて記録する。通常画面全体の手動操作確認は追加していない。CIはデプロイではない。
+
+標準Gitはコミット結果表示のオブジェクト読み取りで待機した。同梱Git 2.53.0で同じ全履歴保護検査と通常pre-pushを実行し、既存GitHub認証を当該pushだけへ指定して送信した。保護スクリプト・フックを変更/無効化せず、強制push・履歴書換え・秘密の保存は行っていない。確認結果の文書・進捗だけを追送する。詳しいログはローカル専用 `local-only/essay-scoring-delivery-20261030/`。

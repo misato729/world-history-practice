@@ -275,3 +275,8 @@ APIテストは独立した `world_history_test` に接続しています。認�
 - 検証用アプリ・タブを閉じ、viewportを復元し、この作業で作成した独立DBだけを削除。通常DB210問/公開150問/下書60問を再確認。公開状態は維持、今回のGit送信・デプロイは実施範囲外。
 
 詳細・画像・独立レビュー・失敗と修正はローカル専用の [検証記録](../local-only/essay-weighted-scoring-20261030/verification.md)、全変更ファイルは [一覧](../local-only/essay-weighted-scoring-20261030/files.md)。
+
+
+## 2026年10月31日：論述採点の送信とCI
+
+実装[399bb10](https://github.com/misato729/world-history-practice/commit/399bb10f1199f33256508322f96fae7b8f4e7f5e)をskip netlify付きでmainへ通常pushし、保護フック・実SHA一致・差分0/0を確認。[CI 41078568651](https://github.com/misato729/world-history-practice/actions/runs/41078568651)のharness/verifyが成功し、全体テスト・型検査・本番用ビルドも通過した。表示部品のPC/SP確認と、未実施の通常画面全体の手動操作は区別する。並行の費用資料は送信せず保持し、公式APIで進捗の送信版を生成。DB追加書込・公開・配信設定変更・デプロイ操作なし。詳細は[送信記録](essay-scoring-delivery-20261030.md)。
