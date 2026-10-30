@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { EssayGrade } from '../../shared/types/essay'
+import { essayElementCountLabel } from '../utils/essayPresentation'
 
 defineProps<{ result: EssayGrade; modelAnswer?: string; submittedText?: string }>()
 const statusLabel = { matched: '確認できた', contradicted: '誤りの条件に一致', pending: '判定保留' }
@@ -7,9 +8,7 @@ const statusLabel = { matched: '確認できた', contradicted: '誤りの条件
 
 <template>
   <div class="essay-score">
-    <p v-if="result.grading_status === 'invalid'" class="essay-score-summary">字数・指定語の条件を確認してください。参考点は未確定です。</p>
-    <p v-else-if="result.score !== null" class="essay-score-summary">ルール採点の参考点：<strong>{{ result.score }} / {{ result.max_points }}点</strong></p>
-    <p v-else class="essay-score-summary">確認できた得点：<strong>{{ result.confirmed_points }} / {{ result.max_points }}点</strong><span>残り{{ result.pending_points }}点分は判定保留です。</span></p>
+    <p class="essay-score-summary">{{ essayElementCountLabel(result) }}・<template v-if="result.grading_status === 'invalid'">参考点未確定<span>字数・指定語の条件を確認してください。</span></template><template v-else><strong>参考{{ result.confirmed_points }} / {{ result.max_points }}点</strong><span v-if="result.pending_points > 0">残り{{ result.pending_points }}点分は判定保留です。</span></template></p>
     <p class="essay-score-note">登録した表現と誤りの条件による学習用の参考採点です。判定保留は不正解を意味しません。模範解答と各要素を照らして確認してください。</p>
     <div class="essay-conditions">
       <span>字数：{{ result.constraints.character_count }} / {{ result.constraints.max_characters }}字</span>

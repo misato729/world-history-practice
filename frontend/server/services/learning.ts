@@ -5,7 +5,7 @@ import {getDatabase,query,transaction,type Database} from '../core/db.ts'
 import {fail} from '../core/errors.ts'
 import type {EssayGrade} from '../../shared/types/essay.ts'
 import {gradeEssay} from './essay-scoring.ts'
-import {essayRuleProfiles} from '../data/essay-rule-profiles.ts'
+import {allEssayRuleProfiles} from '../data/essay-rule-profiles.ts'
 import {requireCurrentEssayProfile,hasUnsupportedEssayCharacters} from './essay-profile.ts'
 import {excerptFrom,integer,sanitizeQuestionInput,normalizeAnswerText,checkTextConstraints,record} from './learning-validation.ts'
 import {deleteQuestion,loadQuestion,saveQuestion,QUESTION_WRITE_LOCK,type ChoiceRecord,type QuestionRecord} from './learning-writer.ts'
@@ -198,7 +198,7 @@ async function dispatchLearning(event:H3Event,parts:string[],user:User|null):Pro
  if(parts.length===1&&parts[0]==='favorites'&&method==='GET')return listFavorites(user,getQuery(event))
  if(parts[0]==='admin'){
   checkAdmin(user)
-  if(parts.length===2&&parts[1]==='essay_profiles'&&method==='GET')return {data:essayRuleProfiles.map(({id,version,title,max_characters,required_terms,elements})=>({id,version,title,max_characters,required_terms,elements:elements.map(({id,label,points})=>({id,label,points}))}))}
+  if(parts.length===2&&parts[1]==='essay_profiles'&&method==='GET')return {data:allEssayRuleProfiles.map(({id,version,title,max_characters,required_terms,elements})=>({id,version,title,max_characters,required_terms,elements:elements.map(({id,label,points})=>({id,label,points}))}))}
   if(parts[1]==='exams'){
    if(parts.length===2&&method==='GET')return {data:await listExamSets(db)}
    const n=idFrom(parts[2]);if(n>configuration.exam.set_count)return notFound()

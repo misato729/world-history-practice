@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { EssayGrade } from '../../shared/types/essay'
+import { essayResultSummary } from '../utils/essayPresentation'
 definePageMeta({ middleware: 'auth' })
 
 type HistoryItem = {
@@ -142,7 +143,7 @@ const historyLink = (history: HistoryItem) => ({
         <article v-for="history in histories" :key="history.id" class="history-card">
           <NuxtLink v-if="!history.locked" :to="historyLink(history)">
             <div class="history-card-head">
-              <span v-if="history.answer_type === 'essay'" class="result-badge essay-badge"><UIcon name="i-lucide-clipboard-check" />{{ history.essay_result?.score !== null && history.essay_result?.score !== undefined ? `参考 ${history.essay_result.score} / ${history.essay_result.max_points}点` : '論述・判定保留' }}</span>
+              <span v-if="history.answer_type === 'essay'" class="result-badge essay-badge"><UIcon name="i-lucide-clipboard-check" />{{ essayResultSummary(history.essay_result) }}</span>
               <span v-else class="result-badge" :class="{ correct: history.is_correct }">
                 <UIcon :name="history.is_correct ? 'i-lucide-circle-check' : 'i-lucide-circle-x'" />
                 {{ history.is_correct ? '正解' : '不正解' }}
@@ -191,7 +192,7 @@ const historyLink = (history: HistoryItem) => ({
 </template>
 
 <style scoped>
-.essay-badge { color: var(--teal-dark); background: var(--surface-tint); }
+.result-badge.essay-badge { max-width: 100%; padding-block: 6px; overflow-wrap: anywhere; line-height: 1.5; color: var(--teal-dark); background: var(--surface-tint); }
 .empty-icon { width: 34px; height: 34px; color: var(--teal); }
 .error-icon { color: var(--coral); }
 .history-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; color: var(--muted); }
@@ -206,6 +207,7 @@ const historyLink = (history: HistoryItem) => ({
 .result-badge.correct { background: var(--success-soft); color: var(--success); }
 .locked-badge { background: var(--surface-tint); color: var(--text-secondary); }
 .result-badge :deep(svg) { width: 17px; height: 17px; }
+.essay-badge :deep(svg) { flex-shrink: 0; }
 .history-question { min-width: 0; display: grid; gap: 7px; }
 .history-question > span { color: var(--teal-dark); font-size: 0.875rem; font-weight: 800; }
 .history-question strong { overflow-wrap: anywhere; font-size: 1.125rem; line-height: 1.65; }

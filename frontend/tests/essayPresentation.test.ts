@@ -1,8 +1,51 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { essayAnswerIssue, essayCharacterCount } from '../app/utils/essayPresentation.ts'
+import { essayAnswerIssue, essayCharacterCount, essayElementCountLabel, essayResultSummary } from '../app/utils/essayPresentation.ts'
+import type { EssayGrade } from '../shared/types/essay.ts'
 import { createEmptyQuestion } from '../app/types/adminQuestion.ts'
 import { normalizeAdminQuestion, prepareAdminQuestion, selectEssayProfile, essayProfileKey } from '../app/utils/adminQuestionForm.ts'
+
+const resultForPresentation = (): EssayGrade => ({
+  engine_version: 'test', profile_id: 'test', profile_version: 1,
+  max_points: 8, confirmed_points: 3, pending_points: 5, score: null,
+  grading_status: 'pending', reference_only: true,
+  constraints: { character_count: 20, max_characters: 80, within_limit: true, missing_required_terms: [] },
+  elements: [
+    { id: 'cause', label: '原因', points: 3, awarded_points: 3, status: 'matched', evidence: ['答案の一文'], reason: '確認' },
+    { id: 'change', label: '変化', points: 3, awarded_points: null, status: 'pending', evidence: [], reason: '保留' },
+    { id: 'result', label: '結果', points: 2, awarded_points: null, status: 'pending', evidence: [], reason: '保留' },
+  ],
+})
+
+test('essay summaries show confirmed element count separately from weighted reference points', () => {
+  const result = resultForPresentation()
+  assert.equal(essayElementCountLabel(result), '3要素中1要素を確認')
+  assert.equal(essayResultSummary(result), '3要素中1要素を確認・参考3 / 8点（5点分は判定保留）')
+  assert.equal(result.score, null)
+  assert.equal(result.elements[1]!.awarded_points, null)
+  result.elements.forEach(element => { element.status = 'matched'; element.awarded_points = element.points })
+  result.confirmed_points = result.score = 8
+  result.pending_points = 0
+  result.grading_status = 'complete'
+  assert.equal(essayResultSummary(result), '3要素中3要素を確認・参考8 / 8点')
+})
+
+test('essay summaries keep invalid totals unconfirmed and missing results pending', () => {
+  const result = resultForPresentation()
+  result.grading_status = 'invalid'
+  result.constraints.within_limit = false
+  assert.equal(essayResultSummary(result), '3要素中1要素を確認・参考点未確定')
+  assert.equal(essayResultSummary(undefined), '論述・判定保留')
+})
+
+test('explicit contradictions count as zero confirmed elements without counting pending criteria as incorrect', () => {
+  const result = resultForPresentation()
+  result.elements.forEach(element => { element.status = 'contradicted'; element.awarded_points = 0 })
+  result.confirmed_points = result.score = 0
+  result.pending_points = 0
+  result.grading_status = 'complete'
+  assert.equal(essayResultSummary(result), '3要素中0要素を確認・参考0 / 8点')
+})
 
 test('essay word limits count Unicode characters and punctuation, without whitespace or width conversion', () => {
   assert.equal(essayCharacterCount('人口は\n増加。　'), 6)

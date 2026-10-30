@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { essayRuleProfiles, getEssayRuleProfile } from '../server/data/essay-rule-profiles.ts'
+import { allEssayRuleProfiles, essayRuleProfiles, getEssayRuleProfile } from '../server/data/essay-rule-profiles.ts'
 import { gradeEssay, validateEssayProfile } from '../server/services/essay-scoring.ts'
 import { essayModelAnswers, essayRuleCases } from './fixtures/essayRuleCases.ts'
 
@@ -16,6 +16,17 @@ test('12 profiles retain 53 source rubric elements, 8 points, and distinct stabl
     assert.equal(getEssayRuleProfile(profile.id, profile.version), profile)
     assert.equal(getEssayRuleProfile(profile.id, 999), undefined)
     assert.ok(essayRuleCases.filter(item => item.profile_id === profile.id).length >= 8)
+  }
+})
+
+test('catalog exposes every explicit version and selects the latest without replacing historical profiles', () => {
+  assert.equal(allEssayRuleProfiles.length, 19)
+  assert.equal(new Set(allEssayRuleProfiles.map(profile => `${profile.id}:${profile.version}`)).size, 19)
+  for (const profile of allEssayRuleProfiles) {
+    validateEssayProfile(profile)
+    assert.equal(getEssayRuleProfile(profile.id, profile.version), profile)
+    const latest = Math.max(...allEssayRuleProfiles.filter(item => item.id === profile.id).map(item => item.version))
+    assert.equal(getEssayRuleProfile(profile.id)?.version, latest)
   }
 })
 

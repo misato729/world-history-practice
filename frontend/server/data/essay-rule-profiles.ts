@@ -1,4 +1,6 @@
 import type { EssayScoringProfile } from '../../shared/types/essay.ts'
+import { NEW_CURRICULUM_ESSAY_PROFILES } from './new-curriculum-essay-profiles.ts'
+import { buildWeightedEssayProfileRevisions } from './weighted-essay-profile-revisions.ts'
 
 /** Reviewed, versioned scoring rules; this catalog never inserts questions into a database. */
 export const essayRuleProfiles: EssayScoringProfile[] = [
@@ -2949,6 +2951,14 @@ export const essayRuleProfiles: EssayScoringProfile[] = [
   }
 ]
 
+/** Historic versions remain available for pinned questions and saved results. */
+export const allEssayRuleProfiles: EssayScoringProfile[] = [
+  ...essayRuleProfiles,
+  ...buildWeightedEssayProfileRevisions(essayRuleProfiles),
+  ...NEW_CURRICULUM_ESSAY_PROFILES,
+]
+
 export function getEssayRuleProfile(id: string, version?: number): EssayScoringProfile | undefined {
-  return essayRuleProfiles.find(profile => profile.id === id && (version === undefined || profile.version === version))
+  if (version !== undefined) return allEssayRuleProfiles.find(profile => profile.id === id && profile.version === version)
+  return allEssayRuleProfiles.filter(profile => profile.id === id).sort((a, b) => b.version - a.version)[0]
 }
