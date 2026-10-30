@@ -46,6 +46,7 @@ test('protected source paths are distinguished from public code and documentatio
     'past-exam/question.pdf', 'nested/past-exam/image.png',
     'glossary.pdf', 'Glossary-old.pdf', 'nested/GLOSSARY_backup.zip',
     '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-原画像/page.png',
+    '新課程用語.pdf', 'nested/新課程用語 2.PDF', 'nested/新課程用語-原画像/page.png',
     'nested/GLOSSARY-data/inner.pdf', 'nested/PAST-EXAM/inner.pdf', 'nested\\past-exam\\scan.png',
     '分析/full-ocr.txt', 'nested/分析/scan.png',
     '歴検1級世界史_2025.pdf', 'nested/歴検1級世界史_解答解説_2008-2012.pdf', '歴検1級世界史_2025.zip',
@@ -54,6 +55,7 @@ test('protected source paths are distinguished from public code and documentatio
     'README.md', 'scripts/check-private-sources.mjs', 'docs/past-exam-notes.md',
     'docs/classification.md', 'frontend/public/images/logo.svg', 'content/questions.json',
     'docs/分析方針.md', 'docs/歴検1級世界史_notes.md',
+    'docs/new-curriculum-authoring.md',
   ]) assert.equal(isPrivateSource(path), false, path)
 })
 
@@ -289,6 +291,7 @@ test('custom protection policy cannot disable mandatory world history source pro
     'nested/PAST-EXAM/question.pdf', 'nested/GLOSSARY-data/inner.pdf',
     'nested/分析/scan.png', 'nested/歴検1級世界史_2025.zip',
     '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-OCR/full.txt',
+    '新課程用語.pdf', 'nested/新課程用語 2.PDF', 'nested/新課程用語-OCR/full.txt',
   ]
   for (const path of protectedPaths) assert.equal(isPrivateSource(path, policy), true, path)
   const f = fixture(t, policy)
@@ -299,9 +302,9 @@ test('custom protection policy cannot disable mandatory world history source pro
 })
 
 
-test('textbook backups and derived directories remain blocked in deleted history after optional policy replacement', t => {
+test('textbook and new curriculum backups and derived directories remain blocked in deleted history after optional policy replacement', t => {
   const f = fixture(t, policyFor(['extra-only'], ['unrelated-']))
-  const paths = ['詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-原画像/page.png']
+  const paths = ['詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-原画像/page.png', '新課程用語.pdf', 'nested/新課程用語 2.PDF', 'nested/新課程用語-原画像/page.png']
   for (const path of paths) write(join(f.root, path))
   f.git(['add', ...paths]); f.commit('Synthetic textbook protection fixtures')
   f.git(['rm', ...paths]); f.commit('Remove synthetic textbook protection fixtures')

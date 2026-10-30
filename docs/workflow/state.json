@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 166,
-  "updated_at": "2026-10-29T18:37:40.223Z",
+  "revision": 171,
+  "updated_at": "2026-10-30T11:51:56.921Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-29T18-37-40-223Z-r166.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T11-51-56-921Z-r171.json",
   "contexts": [
     {
       "id": "product",
@@ -4302,6 +4302,168 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "new_curriculum_mocks_20261030",
+      "context": "product",
+      "title": "新課程用語リスト全件を原本照合し模試6・7の新稿60問を作成",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-30 新課程用語.pdf全用語を用語集原本で参照し、模試6・7をこれら中心に作問する依頼。",
+      "next_action": "原稿完成。次の依頼でDB登録・新論述4問の機械採点・公開の範囲を確認する。",
+      "evidence": [
+        "docs/new-curriculum-mocks-20261030.md",
+        "local-only/new-curriculum-mocks-20261030/README.md",
+        "local-only/new-curriculum-mocks-20261030/verification.json",
+        "local-only/new-curriculum-mocks-20261030/reviews/coverage-final.json"
+      ],
+      "last_verified_at": "2026-10-30T07:51:49.076Z",
+      "verification_scope": "原稿60問（各4大問30問/20選択8語句2論述/時事2大問）、全160肢/語句16/論述4を作者外レビュー。193項目原本参照と集合一致、保護46件成功。実下線/本文・小問順/短答露出0/原稿根拠SHA/PC1280・SP390の冊子表示を確認。新稿のみでDB書込・登録・公開・Git送信なし。中断前DB再取得はDocker停止で未確認、現在DB値の再読確認とはしない。",
+      "acceptance": [
+        {
+          "id": "source",
+          "kind": "automated",
+          "description": "全用語を赤黒を問わず原本参照し新資料をローカル専用保護",
+          "verification": "11頁一覧と用語集合の一致、用語集原画像確認の記録、未確認を区別、保護テストと原本SHA",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-mocks-20261030/source-ledger/coverage.json",
+            "local-only/new-curriculum-mocks-20261030/protection/final-review.json"
+          ],
+          "checked_at": "2026-10-30T07:51:49.076Z"
+        },
+        {
+          "id": "structure",
+          "kind": "automated",
+          "description": "模試6・7が各4大問30問の体裁と配分を満たす",
+          "verification": "60問集合/20+8+2/異なる2大問論述/本文A順と実下線順/本文構成/時事2テーマを機械検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-mocks-20261030/structure-check.json",
+            "local-only/new-curriculum-mocks-20261030/preview/browser-check.json"
+          ],
+          "checked_at": "2026-10-30T07:51:49.076Z"
+        },
+        {
+          "id": "quality",
+          "kind": "automated",
+          "description": "独自問題の全肢・語句・論述と出典、設問間漏洩を検証",
+          "verification": "各肢判断点、短答原画像頻度と別名、論述字数・因果要素、2セットと既存問題の重複/解説漏洩の確認記録",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-mocks-20261030/content-check.json",
+            "local-only/new-curriculum-mocks-20261030/verification.json",
+            "local-only/new-curriculum-mocks-20261030/author-c/cross-set-review.json"
+          ],
+          "checked_at": "2026-10-30T07:51:49.076Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "作者以外が原典一致・難度・メタ読み・体裁をレビュー",
+          "verification": "担当間レビューと指摘修正後の原稿SHAを照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-mocks-20261030/reviews/coverage-final.json",
+            "local-only/new-curriculum-mocks-20261030/reviews/review-author-a-final.json",
+            "local-only/new-curriculum-mocks-20261030/reviews/review-parent-final.json",
+            "local-only/new-curriculum-mocks-20261030/reviews/review-author-b-final.json",
+            "local-only/new-curriculum-mocks-20261030/reviews/review-author-c-final.json"
+          ],
+          "checked_at": "2026-10-30T07:51:49.076Z",
+          "reviewer": "textbook_sets34, review_b_resume, review_c_resume; root reviewed author A, author A reviewed root"
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "全193項目の原本参照、60問160肢の作者外レビュー、配分・実下線・短答露出・根拠SHA・冊子表示、資料保護46件を確認。新稿のみでDB・公開・Git送信なし。",
+            "at": "2026-10-30T07:51:49.846Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "new_curriculum_registration_delivery_20261030",
+      "context": "service",
+      "title": "新課程中心の模試6・7を下書き登録し関連変更をコミットpush",
+      "status": "doing",
+      "depends_on": [
+        "new_curriculum_mocks_20261030"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-30 ユーザーのDB登録、コミット、push依頼",
+      "next_action": "限定stageと独立確認後、skip netlify付きでpushしmain同期/CIを確認する。",
+      "evidence": [
+        "docs/new-curriculum-registration-20261030.md",
+        "local-only/new-curriculum-registration-20261030/verification.json"
+      ],
+      "last_verified_at": "2026-10-30T11:51:50.886Z",
+      "verification_scope": "新60問の原稿一致・8大問・実下線/空欄/表・語句許容・模範解答保持、既存5セット150問と履歴等保持、新セットdraft、資料非送信、main同期とCI。",
+      "acceptance": [
+        {
+          "id": "registration",
+          "kind": "automated",
+          "description": "承認済み60問を共通Writerから下書き登録",
+          "verification": "隔離_test DBで保存/rollback/内容比較後、通常DBで210問と既存150問等の保持を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-registration-20261030/normal-comparison.json",
+            "local-only/new-curriculum-registration-20261030/normal-verify.json",
+            "local-only/new-curriculum-registration-20261030/test-rollback.json",
+            "local-only/new-curriculum-registration-20261030/test-apply.json"
+          ],
+          "checked_at": "2026-10-30T11:51:50.886Z"
+        },
+        {
+          "id": "protection",
+          "kind": "automated",
+          "description": "資料の非送信と限定した設定変更",
+          "verification": "固定保護・履歴検査・差分/設定/非公開導線を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-registration-20261030/protection-tests.log",
+            "local-only/new-curriculum-registration-20261030/exam-config-test.log",
+            "local-only/new-curriculum-registration-20261030/template-check.log",
+            "local-only/new-curriculum-registration-20261030/private-sources.log",
+            "local-only/new-curriculum-registration-20261030/netlify-check.json"
+          ],
+          "checked_at": "2026-10-30T11:51:50.886Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "変換と保存の独立確認",
+          "verification": "作者外担当が原稿/分類/ブロック/保存対応を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-registration-20261030/payload-review.json",
+            "local-only/new-curriculum-registration-20261030/runner-review.json"
+          ],
+          "checked_at": "2026-10-30T11:51:50.886Z",
+          "reviewer": "registration_payload_review"
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "コミットpushとCI完了",
+          "verification": "skip netlify/明示stage/pre-push/公開状態/remote SHA/CI成功を確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "root",
+        "max_attempts": 5,
+        "attempts": []
       }
     }
   ],

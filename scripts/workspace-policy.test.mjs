@@ -88,13 +88,14 @@ test('policy aliases, outside parents, dangling links, and oversized files are r
 
 test('world-history source protection survives missing or replaced optional policy', t => {
   const f = fixture(t)
-  const paths = ['past-exam/test.pdf', 'nested/PAST-EXAM/test.pdf', '分析/result.md', 'nested/分析/pages/001.png', 'glossary.pdf', 'nested/GLOSSARY-data/images/page.png', 'nested\\glossary-old\\page.png', '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-旧課程.zip', 'nested/詳説世界史-原画像/page.png', 'nested\\詳説世界史-OCR\\full.txt', '歴検1級世界史_2025.pdf', 'nested/歴検1級世界史_2008.ZIP', 'nested/歴検1級世界史_2025.PDF/derived.txt']
+  const paths = ['past-exam/test.pdf', 'nested/PAST-EXAM/test.pdf', '分析/result.md', 'nested/分析/pages/001.png', 'glossary.pdf', 'nested/GLOSSARY-data/images/page.png', 'nested\\glossary-old\\page.png', '詳説世界史.pdf', 'nested/詳説世界史 2.PDF', 'nested/詳説世界史-旧課程.zip', 'nested/詳説世界史-原画像/page.png', 'nested\\詳説世界史-OCR\\full.txt', '新課程用語.pdf', 'nested/新課程用語 2.PDF', 'nested/新課程用語-旧版.zip', 'nested/新課程用語-原画像/page.png', 'nested\\新課程用語-OCR\\full.txt', '歴検1級世界史_2025.pdf', 'nested/歴検1級世界史_2008.ZIP', 'nested/歴検1級世界史_2025.PDF/derived.txt']
   for (const path of paths) assert(isLocalOnlyPath(path, loadWorkspacePolicy(f.repo)), path)
   f.save({ schema_version: 1, local_only: { directory_names: ['extra-only'], filename_prefixes: [] } })
   for (const path of paths) assert(isLocalOnlyPath(path, loadWorkspacePolicy(f.repo)), path)
   assert(isLocalOnlyPath('extra-only/extra.pdf', loadWorkspacePolicy(f.repo)))
   assert(!isLocalOnlyPath('docs/local-only-materials.md', loadWorkspacePolicy(f.repo)))
   assert(!isLocalOnlyPath('docs/textbook-source-review.md', loadWorkspacePolicy(f.repo)))
+  assert(!isLocalOnlyPath('docs/new-curriculum-authoring.md', loadWorkspacePolicy(f.repo)))
   rmSync(f.path)
   for (const path of paths) assert(isLocalOnlyPath(path, loadWorkspacePolicy(f.repo)), path)
 })
