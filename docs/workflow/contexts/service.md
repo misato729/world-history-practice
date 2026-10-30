@@ -106,3 +106,5 @@ git diff --stat
 
 - 最新依頼により模試6・7の60問を共通Writer/単一transactionで通常ローカルDBへ追加。計210問、公開は既存150問、新60問は下書き。教材番号枠を7へ拡張し、論述4問は採点未設定でモデル/参考要素を保存。既存150問/400肢と対象外行の保持、隔離DBのrollback、全60問再読込/匿名404を確認。[登録・送信記録](../../new-curriculum-registration-20261030.md)。
 - 原本・原稿・DB控えは送信対象外。新論述採点・公開・デプロイは未実施。承認済みcommit/pushを進め、main同期とCIを別記する。
+
+- 登録関連21件を`d4b81a7`でmainへ送信し、pre-push/remote同期・CI41051920932のharness/verify成功を確認。登録・納品の正本は[登録記録](../../new-curriculum-registration-20261030.md)。完了記録もskip付きで送信する。DBへの追加書込み・公開・デプロイは行わない。

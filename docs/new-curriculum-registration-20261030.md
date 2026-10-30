@@ -33,3 +33,5 @@ DBは計210問、既存5セット150問は公開、新2セット60問は下書�
 現在のアクセス可能なNetlifyチーム一覧に世界史プロジェクトは見つからず、世界史固有の停止状態は未確認。設定変更・ビルド再開・デプロイは行わず、全コミットに`[skip netlify]`を付ける。送信前の限定ステージ・独立確認・pre-push検査と、push後のmain同期・CI結果を記録する。
 
 [私的検証集約](../local-only/new-curriculum-registration-20261030/verification.json)・[変更ファイル一覧](../local-only/new-curriculum-registration-20261030/files.md)を参照。
+
+登録・保全・資料保護と21ファイルの独立ステージ確認を経て、`d4b81a7c8a04897c24368933724daac69626dbf4`を通常mainへpushした。実pre-push検査成功、リモートSHA一致、差分0/0を確認。[CI 41051920932](https://github.com/misato729/world-history-practice/actions/runs/41051920932)は対象SHA一致でharness・verifyとも成功し、隔離DBのAPI/DB/運用、フロントテスト、型検査、ビルドを完了した。これはCIでありデプロイではない。本完了記録も同じ承認範囲で送信し、最終headの同期とCIは私的送信記録へ保存する。

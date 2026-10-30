@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 171,
-  "updated_at": "2026-10-30T11:51:56.921Z",
+  "revision": 173,
+  "updated_at": "2026-10-30T12:04:23.791Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T11-51-56-921Z-r171.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T12-04-23-791Z-r173.json",
   "contexts": [
     {
       "id": "product",
@@ -4394,19 +4394,19 @@
       "id": "new_curriculum_registration_delivery_20261030",
       "context": "service",
       "title": "新課程中心の模試6・7を下書き登録し関連変更をコミットpush",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "new_curriculum_mocks_20261030"
       ],
       "authorization": "requested",
       "request_ref": "2026-10-30 ユーザーのDB登録、コミット、push依頼",
-      "next_action": "限定stageと独立確認後、skip netlify付きでpushしmain同期/CIを確認する。",
+      "next_action": "新教材は下書き。公開と新4論述の採点ルール追加は次の依頼範囲。最終送信結果は私的記録へ。",
       "evidence": [
         "docs/new-curriculum-registration-20261030.md",
         "local-only/new-curriculum-registration-20261030/verification.json"
       ],
-      "last_verified_at": "2026-10-30T11:51:50.886Z",
-      "verification_scope": "新60問の原稿一致・8大問・実下線/空欄/表・語句許容・模範解答保持、既存5セット150問と履歴等保持、新セットdraft、資料非送信、main同期とCI。",
+      "last_verified_at": "2026-10-30T12:03:45.391Z",
+      "verification_scope": "通常DB下書き60問追加（計210/公開150）・旧150問400肢/対象外行保持・8大問13本文59下線/空欄表/44語句許容/4論述モデル保存・匿名404・独立DBrollbackと再読込確認。資料保護46/設定7/テンプレート/21stage作者外確認、d4b81a7通常push/pre-push/実main同期0/0とCI41051920932両job成功。原資料送信・公開・本番変更・デプロイなし。",
       "acceptance": [
         {
           "id": "registration",
@@ -4455,15 +4455,27 @@
           "kind": "automated",
           "description": "コミットpushとCI完了",
           "verification": "skip netlify/明示stage/pre-push/公開状態/remote SHA/CI成功を確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "local-only/new-curriculum-registration-20261030/first-commit.json",
+            "local-only/new-curriculum-registration-20261030/ci-first.json",
+            "local-only/new-curriculum-registration-20261030/delivery-stage-review.json"
+          ],
+          "checked_at": "2026-10-30T12:03:45.391Z"
         }
       ],
       "execution": {
         "worker": "root",
         "max_attempts": 5,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "下書き60問登録・旧150問400肢と対象外行保持、資料非送信、d4b81a7のmain同期0/0・CI41051920932成功を確認。",
+            "at": "2026-10-30T12:03:54.728Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
