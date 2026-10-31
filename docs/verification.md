@@ -297,3 +297,8 @@ APIテストは独立した `world_history_test` に接続しています。認�
 画像：[PC・開いた状態](screenshots/sidebar-desktop-open.jpg)、[PC・閉じた状態](screenshots/sidebar-desktop-closed.jpg)、[モバイル](screenshots/sidebar-mobile.jpg)。いずれも実部品と合成の一覧データを使った検証画面。
 
 通常Nuxt環境はサーバーの起動・初回SSRまで進んだが、ブラウザ側の初期化完了を確認できなかった。原因・変更前との比較は未確認。全体の`vue-tsc`は長時間化したためPC負荷を抑えて中断し、全体型検査・本番ビルドの成功とは報告しない。今回追加でDBを更新せず、起動した通常Nuxtプロセスと検証用サーバーは確認後に停止済み。デプロイ・コミット・pushは行っていない。既存の費用資料等の未コミット差分は保持した。
+
+
+## 2026年10月31日：PCサイドバーの送信とCI
+
+ユーザー承認により[6e384f6](https://github.com/misato729/world-history-practice/commit/6e384f690612c1b762499ff2e4b801da9dda6085)をskip netlify付きでmainへ通常push。11ファイルの独立stageレビュー、関連14件/軽量169件/設定/全履歴保護、通常pre-push、実remote一致と差分0/0が成功。[CI 41150127975](https://github.com/misato729/world-history-practice/actions/runs/41150127975)のharness/verifyが成功し、全体テスト・型検査・本番ビルドを確認。部品の合成応答PC/SP操作と、未実施の通常Nuxt全体の追加手動操作を区別する。費用資料は送信版から分けて手元に保持。Netlifyの確認したチームでは世界史未登録、既存サイトは停止表示。設定変更・DB書込・デプロイなし。[送信記録](sidebar-delivery-20261031.md)。

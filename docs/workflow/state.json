@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 187,
-  "updated_at": "2026-10-31T00:24:41.721Z",
+  "revision": 190,
+  "updated_at": "2026-10-31T00:28:37.698Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-31T00-24-41-721Z-r187.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-31T00-28-37-698Z-r190.json",
   "contexts": [
     {
       "id": "product",
@@ -4706,52 +4706,66 @@
       "id": "desktop_sidebar_delivery_20261031",
       "context": "service",
       "title": "PC横開閉サイドバーをコミットpushしCIを確認",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "desktop_sidebar_toggle_20261031"
       ],
       "authorization": "requested",
       "request_ref": "2026-10-31 ユーザー「OKです。コミット・pushしてください」",
-      "next_action": "サイドバー変更のみ送信し、保護フック・main同期・CIを確認する",
+      "next_action": "確認結果の文書・進捗のみ追送し最終同期を確認する",
       "evidence": [
         "docs/sidebar-delivery-20261031.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "サイドバー実装・検証と対象の進捗。費用資料を保持し、DB書込・公開変更・デプロイなし。",
+      "last_verified_at": "2026-10-31T00:28:35.286Z",
+      "verification_scope": "サイドバー実装6e384f6の11pathを独立stage確認、関連14/軽量169/設定/全履歴保護/通常pre-push成功。実remote同期0/0・CI 41150127975両jobと全体テスト/型/本番ビルド成功。費用task/watch/link/資料を手元に保持。確認チーム世界史未登録・既存停止表示、設定変更/DB書込/デプロイなし。確認文書のみ追送。",
       "acceptance": [
         {
           "id": "scope",
           "kind": "automated",
           "description": "対象を限定しローカル専用資料を送信しない",
           "verification": "明示stage・送信版の参照整合・全履歴保護・通常pre-push",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/sidebar-delivery-20261031.md"
+          ],
+          "checked_at": "2026-10-31T00:28:35.286Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "別担当が送信範囲を確認",
           "verification": "送信treeと共有ファイルの対象部分を独立レビュー",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/sidebar-delivery-20261031.md"
+          ],
+          "checked_at": "2026-10-31T00:28:35.286Z",
+          "reviewer": "sidebar_push_review"
         },
         {
           "id": "remote_ci",
           "kind": "automated",
           "description": "mainへのpush・同期とCIが成功",
           "verification": "実remote SHA・差分0/0・GitHub Actions両job",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/sidebar-delivery-20261031.md"
+          ],
+          "checked_at": "2026-10-31T00:28:35.286Z"
         }
       ],
       "execution": {
         "worker": "sidebar_delivery_owner",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "サイドバー11path・送信版分離・通常保護push・実remote同期・CI両job成功を独立レビューと確認",
+            "at": "2026-10-31T00:28:35.763Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
