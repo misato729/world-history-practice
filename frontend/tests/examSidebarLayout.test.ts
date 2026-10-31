@@ -8,8 +8,8 @@ const header = source('components/SiteHeader.vue')
 const sidebar = source('components/ExamSidebar.vue')
 
 test('one shared exam sidebar is rendered inside the sticky site header', () => {
-  assert.equal(layout.match(/<ExamSidebar\s*\/>/g)?.length, 1)
-  assert.match(layout, /<SiteHeader>\s*<ExamSidebar\s*\/>\s*<\/SiteHeader>/)
+  assert.equal(layout.match(/<ExamSidebar\b/g)?.length, 1)
+  assert.match(layout, /<SiteHeader>\s*<ExamSidebar\b[^>]*\/>\s*<\/SiteHeader>/)
   assert.match(header, /<slot\s*\/>\s*<\/header>/)
   assert.match(header, /\.site-header\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;/)
 })
@@ -27,7 +27,7 @@ test('mobile accordion starts closed and keeps a separate group accordion', () =
 test('navigation closes the mobile list and shares the published catalog', () => {
   assert.match(sidebar, /watch\(\(\) => route.fullPath, closeMobileList\)/)
   assert.equal(sidebar.match(/@click="closeMobileList"/g)?.length, 2)
-  assert.match(sidebar, /@keydown.esc="closeMobileOnEscape"/)
+  assert.match(sidebar, /@keydown.esc="closeSidebarOnEscape"/)
   assert.match(sidebar, /mobileToggle.value\?\.focus\(\)/)
   assert.match(sidebar, /usePublicExamCatalog\(\)/)
   assert.doesNotMatch(sidebar, /\b(?:useFetch|useApi|\$fetch)\s*\(/)

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 184,
-  "updated_at": "2026-10-30T15:22:03.329Z",
+  "revision": 187,
+  "updated_at": "2026-10-31T00:24:41.721Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-30T15-22-03-329Z-r184.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-10-31T00-24-41-721Z-r187.json",
   "contexts": [
     {
       "id": "product",
@@ -109,7 +109,8 @@
     "docs/textbook-review-20261029.md",
     "docs/textbook-six-revisions-20261029.md",
     "local-only/textbook-six-revisions-20261029/verification.json",
-    "local-only/textbook-six-revisions-20261029/final-results-review.json"
+    "local-only/textbook-six-revisions-20261029/final-results-review.json",
+    "frontend/app/layouts/default.vue"
   ],
   "tasks": [
     {
@@ -4632,6 +4633,125 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "desktop_sidebar_toggle_20261031",
+      "context": "service",
+      "title": "PCの模擬試験サイドバーを横方向に開閉",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-31 ユーザー: PCでサイドバーを開閉式にしたい。追答: ヨコに開閉",
+      "next_action": "今回の実装と限定した検証結果を報告。コミット・push・デプロイは追加の明示依頼を待つ",
+      "evidence": [
+        "docs/verification.md",
+        "docs/screenshots/sidebar-desktop-open.jpg",
+        "docs/screenshots/sidebar-desktop-closed.jpg",
+        "docs/screenshots/sidebar-mobile.jpg"
+      ],
+      "last_verified_at": "2026-10-30T19:43:07.021Z",
+      "verification_scope": "一般画面のPC横開閉。関連14検査・2SFCコンパイル、実5部品/合成catalog/認証とVue RouterのPC1440/1024/761/SP760/390/320操作・画像目視・独立ソースレビュー合格。260→64/本文196px拡張・keyboard/route/resize/reduced-motion保持。通常Nuxt初期化未確認、全体vue-tsc中断/本番build未実行。DB更新/commit/push/deployなし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "関連14フロント検査・2SFCコンパイル・進捗と差分検査に合格",
+          "verification": "関連既存テスト14件、2 SFCのscript/templateコンパイル、差分・進捗形式検査。全体型検査は中断し未確認として区別",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-30T19:43:07.021Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC横開閉で本文幅が変わりモバイルの開閉とリンクを保持",
+          "verification": "実5部品とscoped CSS・Vue Routerを合成catalog/認証でPC1440/1024/761/SP760/390/320実操作・目視。通常Nuxt全体の初期化未確認と区別",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-30T19:43:07.021Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装者外が横方向の開閉・アクセシビリティ・モバイル保持を確認",
+          "verification": "desktop_sidebar_reviewによる差分と表示根拠の独立確認",
+          "status": "passed",
+          "evidence": [
+            "docs/verification.md"
+          ],
+          "checked_at": "2026-10-30T19:43:07.021Z",
+          "reviewer": "desktop_sidebar_review"
+        }
+      ],
+      "execution": {
+        "worker": "desktop_sidebar_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "PC横開閉と幅連動を実装。関連14件/2SFC構文、実部品と合成catalogのPC/SP操作・3画像目視・独立レビュー合格。通常Nuxt初期化/全体型検査の未確認範囲を明記",
+            "at": "2026-10-30T19:46:26.321Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "desktop_sidebar_delivery_20261031",
+      "context": "service",
+      "title": "PC横開閉サイドバーをコミットpushしCIを確認",
+      "status": "doing",
+      "depends_on": [
+        "desktop_sidebar_toggle_20261031"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-10-31 ユーザー「OKです。コミット・pushしてください」",
+      "next_action": "サイドバー変更のみ送信し、保護フック・main同期・CIを確認する",
+      "evidence": [
+        "docs/sidebar-delivery-20261031.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "サイドバー実装・検証と対象の進捗。費用資料を保持し、DB書込・公開変更・デプロイなし。",
+      "acceptance": [
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "対象を限定しローカル専用資料を送信しない",
+          "verification": "明示stage・送信版の参照整合・全履歴保護・通常pre-push",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が送信範囲を確認",
+          "verification": "送信treeと共有ファイルの対象部分を独立レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        },
+        {
+          "id": "remote_ci",
+          "kind": "automated",
+          "description": "mainへのpush・同期とCIが成功",
+          "verification": "実remote SHA・差分0/0・GitHub Actions両job",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "sidebar_delivery_owner",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

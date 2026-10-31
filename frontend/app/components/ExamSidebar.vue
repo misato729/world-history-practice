@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup } from '~/utils/examCatalog'
 
+const props = withDefaults(defineProps<{ desktopOpen?: boolean }>(), { desktopOpen: true })
+const emit = defineEmits<{ 'toggle-desktop': [] }>()
 const route = useRoute()
 const openExam = ref<number | null>(null)
 const mobileOpen = ref(false)
 const mobileToggle = ref<HTMLButtonElement | null>(null)
+const desktopToggle = ref<HTMLButtonElement | null>(null)
 const { user, accessToken, ensureCurrentUser } = useAuth()
 const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = await usePublicExamCatalog()
 const accessStatus = ref<'ready' | 'pending' | 'error'>(
@@ -63,7 +66,13 @@ const toggleExam = (exam: number) => {
 }
 
 const closeMobileList = () => { mobileOpen.value = false }
-const closeMobileOnEscape = () => {
+const closeSidebarOnEscape = () => {
+  if (window.matchMedia('(min-width: 761px)').matches) {
+    if (!props.desktopOpen) return
+    emit('toggle-desktop')
+    desktopToggle.value?.focus()
+    return
+  }
   if (!mobileOpen.value) return
   closeMobileList()
   mobileToggle.value?.focus()
@@ -81,13 +90,27 @@ const examTarget = (exam: ExamCatalogEntry) => (
 <template>
   <aside
     class="exam-sidebar"
-    :class="{ 'mobile-open': mobileOpen }"
+    :class="{ 'mobile-open': mobileOpen, 'desktop-collapsed': !desktopOpen }"
     aria-label="模擬試験一覧"
-    @keydown.esc="closeMobileOnEscape"
+    @keydown.esc="closeSidebarOnEscape"
   >
     <div class="sidebar-heading">
-      <UIcon name="i-lucide-files" />
-      <span>模擬試験</span>
+      <span class="sidebar-title">
+        <UIcon name="i-lucide-files" />
+        <span>模擬試験</span>
+      </span>
+      <button
+        ref="desktopToggle"
+        class="desktop-exam-toggle"
+        type="button"
+        :aria-expanded="desktopOpen"
+        aria-controls="exam-sidebar-content"
+        :aria-label="desktopOpen ? 'サイドバーを閉じる' : 'サイドバーを開く'"
+        :title="desktopOpen ? 'サイドバーを閉じる' : 'サイドバーを開く'"
+        @click="emit('toggle-desktop')"
+      >
+        <UIcon :name="desktopOpen ? 'i-lucide-chevron-left' : 'i-lucide-chevron-right'" />
+      </button>
     </div>
 
     <button
@@ -175,7 +198,7 @@ const examTarget = (exam: ExamCatalogEntry) => (
 
 <style scoped>
 .exam-sidebar {
-  width: 260px;
+  width: var(--exam-sidebar-width, 260px);
   min-height: calc(100vh - var(--header-height));
   padding: 22px 16px;
   border-right: 1px solid var(--line);
@@ -186,13 +209,29 @@ const examTarget = (exam: ExamCatalogEntry) => (
   min-height: 40px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 9px;
-  padding: 0 10px 10px;
+  padding: 0 0 10px 10px;
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 800;
 }
 
+.sidebar-title { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+.desktop-exam-toggle {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.desktop-exam-toggle:hover { background: var(--surface-selected); }
 .mobile-exam-toggle { display: none; }
 
 .sidebar-loading {
@@ -349,7 +388,13 @@ const examTarget = (exam: ExamCatalogEntry) => (
     left: 0;
     height: calc(100vh - var(--header-height));
     overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 180ms ease, padding 180ms ease;
   }
+  .desktop-collapsed { padding: 22px 6px; }
+  .desktop-collapsed .sidebar-heading { padding: 0; justify-content: center; }
+  .desktop-collapsed .sidebar-title,
+  .desktop-collapsed .sidebar-content { display: none; }
 }
 
 @media (max-width: 760px) {
@@ -447,5 +492,9 @@ const examTarget = (exam: ExamCatalogEntry) => (
   .exam-group:nth-child(even) .group-list {
     margin-left: calc(-100% - var(--exam-grid-gap));
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-sidebar { transition: none; }
 }
 </style>
