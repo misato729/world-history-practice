@@ -110,6 +110,7 @@
     "docs/textbook-six-revisions-20261029.md",
     "local-only/textbook-six-revisions-20261029/verification.json",
     "local-only/textbook-six-revisions-20261029/final-results-review.json",
+    "docs/hosting-costs.md",
     "frontend/app/layouts/default.vue"
   ],
   "tasks": [
@@ -4562,6 +4563,61 @@
             "outcome": "passed",
             "summary": "通常DB7問反映・対象348検査/API3/strict定義5ファイル・実部品PCSPと独立レビュー・清掃を確認。全体Nuxt検査は未完了と区別。",
             "at": "2026-10-30T14:15:42.688Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "hosting_billing_note_20261030",
+      "context": "service",
+      "title": "Fly.io個人組織の5ドル未満免除を記録し配信費用を再試算",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-30 ユーザー: 毎月届くFly.io個人組織の5ドル未満請求100%免除メールをドキュメントに記録し、条件を踏まえて費用を再計算",
+      "next_action": "文書と免除反映後の費用比較を報告。配信設定変更・コミット・push・デプロイは別の明示依頼を待つ",
+      "evidence": [
+        "docs/hosting-costs.md",
+        "docs/architecture.md",
+        "docs/workflow/contexts/service.md"
+      ],
+      "last_verified_at": "2026-10-30T14:09:18.839Z",
+      "verification_scope": "文書のみ追加・参照整備。ユーザー提示メールの個人組織合計5ドル未満免除と公開料金を区別し、Decimalで全試算/4.99・5.00・5.01境界、相対リンク48、diff/進捗形式、既存62タスク/既存変更15SHA保持と独立レビューが成功。アプリ/DB/課金・配信設定を変更せず、commit/push/deploy未実施。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "料金試算・境界値・文書リンク・進捗形式の軽量確認が成功する",
+          "verification": "Decimalによる試算と閾値境界の検算、相対リンク実在、git diff --check、context check",
+          "status": "passed",
+          "evidence": [
+            "docs/hosting-costs.md"
+          ],
+          "checked_at": "2026-10-30T14:09:18.839Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外がメールの適用範囲と計算・推論の区別を確認する",
+          "verification": "billing_math_reviewによる出典・閾値・組織合計・再試算の独立レビュー",
+          "status": "passed",
+          "evidence": [
+            "docs/hosting-costs.md"
+          ],
+          "checked_at": "2026-10-30T14:08:51.446Z",
+          "reviewer": "billing_math_review"
+        }
+      ],
+      "execution": {
+        "worker": "hosting_billing_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "個人組織の5ドル未満免除と再試算を文書化。算術・閾値・相対リンク48・差分/進捗形式・既存62タスク/15ファイル保持・独立レビュー合格",
+            "at": "2026-10-30T14:09:48.853Z",
             "failed_criteria": []
           }
         ]

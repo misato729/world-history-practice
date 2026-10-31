@@ -6,6 +6,7 @@
 
 - 学習設計：[商品コンテキスト](product.md)。実装ルール：[AGENTS.md](../../../AGENTS.md)。
 - 構成・API：[architecture.md](../../architecture.md)。Nuxt 4／Nitro・H3／TypeScript、`pg`、PostgreSQL、番号付きSQL移行。Prismaは未導入。
+- 配信費用：[hosting-costs.md](../../hosting-costs.md)。2026-10-30のユーザー提示メールに基づき、既存Fly.io個人組織の月次合計5ドル未満の100%免除を費用計画へ反映。5.00ドルは条件外、他アプリ/通信等も合算し、新規組織へ一般化しない。構成比較と再試算の記録であり、デプロイは未実施。
 - 試験構成・分類・料金：[config/exam.json](../../../config/exam.json)。実問題の正本はDBであり、[content/questions.json](../../../content/questions.json)を同期元として再投入しない。
 - 分類の運用：`docs/classification.md`（ローカル専用・配布対象外）。問題の通常編集：[customization.md](../../customization.md)。
 
