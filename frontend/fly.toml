@@ -1,0 +1,13 @@
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "npm run db:migrate"
+
+[env]
+  FRONTEND_URL = "https://world-history-practice.fly.dev"
+  CORS_ORIGINS = "https://world-history-practice.fly.dev"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
