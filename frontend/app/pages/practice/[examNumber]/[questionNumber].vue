@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { PracticeAttempt } from '../../../../shared/types/practiceAttempt'
 import type { NitroFetchOptions } from 'nitropack/types'
 import { EXAM_CATALOG, FREE_EXAM_MAX, publishedQuestionNumbers, type ExamCatalogEntry } from '~/utils/examCatalog'
 import type { LearningBlock as ContentBlock, GroupPassage, PassageReference, InputConstraints, SourceReference as StructuredSource } from '../../../../shared/types/learning'
@@ -87,6 +88,17 @@ definePageMeta({
 })
 
 const route = useRoute()
+const attemptApi = usePracticeAttempt()
+const activeAttempt = ref<PracticeAttempt | null>(null)
+const attemptId = computed(() => typeof route.query.attempt === 'string' ? route.query.attempt : null)
+const attemptError = ref('')
+const ending = ref(false)
+const confirmEnd = ref(false)
+const endError = ref('')
+const firstUnanswered = computed(() => activeAttempt.value?.manifest.items.find(q => !activeAttempt.value!.answers[q.id]))
+const unansweredCount = computed(() => activeAttempt.value?.manifest.items.filter(q => !activeAttempt.value!.answers[q.id]).length ?? practiceSequence.value.length)
+let attemptLoadVersion = 0
+
 const { $api: api } = useNuxtApp()
 const { isLoggedIn, user, accessToken, authHeaders, logout } = useAuth()
 const { canUseFavorites, isFavorite, setFavorite, toggleFavorite } = useFavorites()
@@ -176,7 +188,7 @@ const isRandomPractice = computed(() => (
   && practiceSeed.value !== null
 ))
 const practiceSequence = computed<PracticePosition[]>(() => (
-  isRandomPractice.value
+  activeAttempt.value ? activeAttempt.value.manifest.items.map(q => ({ examNumber: q.exam_number, questionNumber: q.question_number })) : isRandomPractice.value
     ? shufflePracticeSequence(basePracticeSequence.value, practiceSeed.value!)
     : basePracticeSequence.value
 ))
@@ -189,6 +201,8 @@ const nextPracticePosition = computed(() => (
     : null
 ))
 const practiceNavigationQuery = computed(() => {
+  if (attemptId.value) return { attempt: attemptId.value }
+
   if (hasConditionSelection.value) {
     const query: Record<string, string> = {
       exams: selectedPracticeExamNumbers.value.join(','),
@@ -317,7 +331,7 @@ const loadErrorMessage = computed(() => {
   return ''
 })
 const practiceProgress = computed(() => (
-  hasConditionSelection.value && currentPracticeIndex.value >= 0
+  (hasConditionSelection.value || activeAttempt.value) && currentPracticeIndex.value >= 0
     ? `${isRandomPractice.value ? 'ランダム ' : ''}${currentPracticeIndex.value + 1} / ${practiceSequence.value.length}`
     : ''
 ))
@@ -386,9 +400,77 @@ watch(questionErrorStatus, (errorStatus) => {
   if (errorStatus === 401 && isLoggedIn.value) logout()
 })
 
+let preparingAttempt: Promise<PracticeAttempt> | null = null
+const prepareAttempt = async () => {
+  const originPath = route.path
+  const originScope = conditionScope.value
+  const originToken = accessToken.value
+  const originId = attemptId.value
+  if (originId) {
+    const loaded = await attemptApi.get(originId)
+    if (!pageActive || attemptId.value !== originId || route.path !== originPath || accessToken.value !== originToken) throw Error('画面または認証状態が変わりました。')
+    activeAttempt.value = loaded
+    return loaded
+  }
+  if (!practiceSequence.value.length || catalogStatus.value !== 'success') throw Error('演習する問題を読み込んでから開始してください。')
+  const started = await attemptApi.start(practiceSequence.value)
+  if (route.path !== originPath || conditionScope.value !== originScope || !pageActive) throw Error('演習の開始中に画面が変わりました。もう一度開始してください。')
+  activeAttempt.value = started
+  await navigateTo({ path: route.path, query: { ...route.query, attempt: started.id } }, { replace: true })
+  if (!pageActive || route.path !== originPath || accessToken.value !== originToken || attemptId.value !== started.id) throw Error('画面または認証状態が変わりました。')
+  activeAttempt.value = started
+  return started
+}
+const ensureAttempt = () => {
+  if (!preparingAttempt) preparingAttempt = prepareAttempt().finally(() => { preparingAttempt = null })
+  return preparingAttempt
+}
+const finishPractice = async (confirmed = false) => {
+  if (ending.value || submitting.value || loadingNext.value) return
+  const originPath = route.path
+  const originToken = accessToken.value
+  ending.value = true
+  endError.value = ''
+  try {
+    const attempt = await ensureAttempt()
+    if (!pageActive || route.path !== originPath || accessToken.value !== originToken) return
+    if (!confirmed && attempt.manifest.items.some(q => !attempt.answers[q.id])) { confirmEnd.value = true; return }
+    await attemptApi.finish(attempt.id, confirmed)
+    if (!pageActive || route.path !== originPath || attemptId.value !== attempt.id || accessToken.value !== originToken) return
+    await navigateTo(`/practice/results/${attempt.id}`)
+  } catch (error: any) { if (error?.data?.error?.code === 'attempt_invalidated') { activeAttempt.value = null; answerResult.value = null; attemptError.value = error.data.error.message }
+    endError.value = attemptApi.message(error, '終了できませんでした。') }
+  finally { ending.value = false }
+}
+const reloadAttempt = async () => {
+  const version = ++attemptLoadVersion
+  if (activeAttempt.value?.id !== attemptId.value) activeAttempt.value = null
+  attemptError.value = ''
+  if (!import.meta.client || !attemptId.value) return
+  try {
+    const loaded = await attemptApi.get(attemptId.value)
+    if (version === attemptLoadVersion) activeAttempt.value = loaded
+  } catch (error: any) { if (version === attemptLoadVersion) attemptError.value = attemptApi.message(error, '演習を読み込めませんでした。') }
+}
+watch([attemptId, accessToken, () => user.value?.id], ([, token, id], previous) => {
+  if (previous && (token !== previous[1] || id !== previous[2])) { activeAttempt.value = null; answerResult.value = null; submittedText.value = ''; selectedChoiceId.value = null }
+  void reloadAttempt()
+}, { immediate: true })
+watch([question, activeAttempt], () => {
+  if (!question.value || !activeAttempt.value) return
+  const item = activeAttempt.value.manifest.items.find(q => q.id === question.value!.id)
+  if (!item || item.question_version !== question.value.question_version) { attemptError.value = '問題が更新されたため、新しい回として始めてください。'; return }
+  const saved = activeAttempt.value.answers[item.id]
+  if (saved) {
+    answerResult.value = saved as unknown as AnswerResult
+    selectedChoiceId.value = typeof saved.selected_choice_id === 'number' ? saved.selected_choice_id : null
+    submittedText.value = typeof saved.submitted_text === 'string' ? saved.submitted_text : ''
+  }
+}, { immediate: true })
 const submitAnswer = async () => {
-  if (!question.value || submitting.value || answerResult.value) return
+  if (!question.value || submitting.value || answerResult.value || activeAttempt.value?.status === 'completed') return
   if (question.value.answer_type === 'essay' ? Boolean(essayAnswerIssue(submittedText.value, question.value.essay_constraints)) : question.value.answer_type === 'short_text' ? Boolean(shortAnswerIssue(submittedText.value, question.value.input_constraints)) : selectedChoiceId.value === null) return
+  const answerPayload = { answer_type: question.value.answer_type ?? 'single_choice', question_version: question.value.question_version ?? 1, ...(['short_text', 'essay'].includes(question.value.answer_type ?? '') ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) }
   const currentId = question.value.id
   const currentVersion = question.value.question_version ?? 1
   const requestVersion = ++answerRequestVersion
@@ -400,19 +482,27 @@ const submitAnswer = async () => {
   answerError.value = ''
 
   try {
+    const attempt = await ensureAttempt()
+    if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value || !requestIsCurrent(answerContext)) return
+    if (attempt.status !== 'active') throw Error('この演習は終了しています。新しい回として始めてください。')
     const response = await api<ApiResponse<AnswerResult>>(
-      `/api/v1/questions/${question.value.id}/answer`,
+      `/api/v1/questions/${currentId}/answer`,
       {
         method: 'POST',
         headers: authHeaders.value,
-        body: { answer_type: question.value.answer_type ?? 'single_choice', question_version: currentVersion, submission_key: submissionKey.value, ...(['short_text', 'essay'].includes(question.value.answer_type ?? '') ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) },
+        body: { ...answerPayload, submission_key: submissionKey.value, ...(!attempt.guest ? { practice_attempt_id: attempt.id } : {}) },
       },
     )
     if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value) return
+    if (attempt.guest) attemptApi.recordGuest(attempt.id, currentId, response.data)
+    attempt.answers[currentId] = response.data
+    activeAttempt.value = attempt
     answerResult.value = response.data
   }
   catch (error: any) {
     if (requestVersion !== answerRequestVersion || currentId !== question.value?.id || currentToken !== accessToken.value) return
+    if (error?.data?.error?.code === 'attempt_invalidated') { activeAttempt.value = null; answerResult.value = null; attemptError.value = error.data.error.message; return }
+    if (error?.data?.error?.code === 'attempt_answered') { activeAttempt.value = await attemptApi.get(attemptId.value!); return }
     if ((error?.statusCode ?? error?.status) === 409) {
       await refresh()
       // Refresh changes the request counter and content version, not the answer's location.
@@ -498,10 +588,14 @@ watch(
 )
 
 const goToNextQuestion = async () => {
-  if (!question.value || loadingNext.value) return
+  if (!question.value || loadingNext.value || submitting.value || ending.value) return
+  const originPath = route.path
+  const originToken = accessToken.value
+  if (!attemptId.value) { try { await ensureAttempt() } catch (error: any) { endError.value = attemptApi.message(error, '演習を開始できませんでした。'); return } }
 
+  if (!pageActive || route.path !== originPath || accessToken.value !== originToken) return
   if (!nextPracticePosition.value) {
-    completed.value = true
+    await finishPractice()
     return
   }
 
@@ -559,7 +653,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
 <template>
   <div class="page-wrap practice-wrap">
-    <div v-if="questionLoading && !retainedPassageContext" class="state-panel" role="status" aria-live="polite" aria-busy="true">
+    <div v-if="attemptError" class="state-panel error-panel" role="alert"><h1>この回の演習を続けられません</h1><p>{{ attemptError }}</p><button class="secondary-link" type="button" @click="reloadAttempt">再読み込み</button><NuxtLink class="secondary-link" to="/">新しい演習を選ぶ</NuxtLink></div>
+    <div v-else-if="questionLoading && !retainedPassageContext" class="state-panel" role="status" aria-live="polite" aria-busy="true">
       <UIcon class="spin" name="i-lucide-loader-circle" aria-hidden="true" />
       <p>問題を読み込んでいます</p>
     </div>
@@ -586,6 +681,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
     </div>
 
     <template v-else>
+      <aside v-if="!route.query.answer_history_id" class="attempt-controls">
+        <p v-if="!isLoggedIn">結果はこのタブでのみ確認できます。再読込すると消えます。</p>
+        <p v-if="activeAttempt?.status === 'completed'">終了した演習の振り返りです。</p>
+        <NuxtLink v-if="activeAttempt?.status === 'completed'" class="secondary-link" :to="`/practice/results/${activeAttempt.id}`">結果へ戻る</NuxtLink>
+        <button v-else type="button" class="secondary-link" :disabled="ending || submitting || loadingNext || !question" @click="finishPractice()">演習を終了して結果を見る</button>
+        <div v-if="confirmEnd" role="alert" class="end-confirm"><p>未回答の問題が{{ unansweredCount }}問あります。</p><NuxtLink v-if="firstUnanswered && activeAttempt" class="secondary-link" :to="{path:`/practice/${firstUnanswered.exam_number}/${firstUnanswered.question_number}`,query:{attempt:activeAttempt.id}}" @click="confirmEnd = false">未回答の問題へ戻る</NuxtLink><button class="secondary-link" type="button" @click="confirmEnd = false">演習を続ける</button><button class="primary-link" type="button" :disabled="ending" @click="finishPractice(true)">未回答のまま終了する</button></div>
+        <p v-if="endError" role="alert">{{ endError }}</p>
+      </aside>
+      <button v-if="question && !answerResult && activeAttempt?.status !== 'completed' && !route.query.answer_history_id" class="secondary-link skip-question" type="button" :disabled="loadingNext || submitting || ending" @click="goToNextQuestion">未回答で次へ</button>
       <header class="practice-head">
         <div>
           <div class="practice-context">
@@ -641,7 +745,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
         <div v-if="question.passage_references?.length" class="passage-references" aria-label="参照する本文">
           <button v-for="reference in question.passage_references" :key="`${reference.passage_id}-${reference.anchor_id ?? 'all'}`" type="button" @click="showReference(reference)">{{ referenceLabel(reference) }}を確認</button>
         </div>
-        <QuestionAnswerForm v-model:selected-choice-id="selectedChoiceId" v-model:submitted-text="submittedText" :answer-type="question.answer_type" :choices="question.choices" :constraints="question.input_constraints" :essay-constraints="question.essay_constraints" :disabled="Boolean(answerResult)" :submitting="submitting" :correct-choice-id="answerResult?.correct_choice?.id" :is-correct="answerResult?.is_correct" @submit="submitAnswer" />
+        <QuestionAnswerForm v-model:selected-choice-id="selectedChoiceId" v-model:submitted-text="submittedText" :answer-type="question.answer_type" :choices="question.choices" :constraints="question.input_constraints" :essay-constraints="question.essay_constraints" :disabled="Boolean(answerResult) || activeAttempt?.status === 'completed'" :submitting="submitting" :correct-choice-id="answerResult?.correct_choice?.id" :is-correct="answerResult?.is_correct" @submit="submitAnswer" />
 
         <p v-if="answerError" class="inline-error" role="alert">{{ answerError }}</p>
 
@@ -697,8 +801,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
             <p>{{ completionMessage }}</p>
             <NuxtLink class="secondary-link" to="/">トップへ戻る</NuxtLink>
           </div>
-          <button v-else class="primary-link next-button" type="button" :disabled="loadingNext" @click="goToNextQuestion">
-            {{ loadingNext ? '読み込み中です' : '次の問題' }}
+          <button v-else class="primary-link next-button" type="button" :disabled="loadingNext || submitting || ending" @click="goToNextQuestion">
+            {{ loadingNext ? '読み込み中です' : nextPracticePosition ? '次の問題' : '結果を見る' }}
             <UIcon name="i-lucide-arrow-right" />
           </button>
         </section>
@@ -747,6 +851,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
 
 <style scoped>
 .practice-wrap { max-width: 900px; }
+.attempt-controls { margin-bottom: 24px; padding: 16px; border: 1px solid var(--line); background: var(--surface-tint); }
+.attempt-controls p { line-height: 1.8; }
+.end-confirm { margin-top: 16px; }
+.end-confirm button { margin: 4px 12px 4px 0; min-height: 44px; }
+.skip-question { margin-bottom: 20px; }
 .practice-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
 .group-question-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .group-question-nav a { padding: 8px 13px; border: 1px solid var(--line); border-radius: 4px; color: var(--teal-dark); text-decoration: none; font-weight: 700; }

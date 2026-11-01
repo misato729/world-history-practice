@@ -38,6 +38,7 @@
       "③",
       "④"
     ],
+    "scoring": { "version": 1, "single_choice": 3, "short_text": 3, "essay": 8 },
     "formats": {
       "group_practice": { "group_count": 1, "allowed_group_question_counts": [7, 8] },
       "rekiken_mock": { "group_count": 4, "question_count": 30, "allowed_group_question_counts": [7, 8] }

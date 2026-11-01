@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 202,
-  "updated_at": "2026-11-01T01:13:17.387Z",
+  "revision": 206,
+  "updated_at": "2026-11-01T02:32:36.340Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T01-13-17-387Z-r202.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T02-32-36-340Z-r206.json",
   "contexts": [
     {
       "id": "product",
@@ -113,7 +113,17 @@
     "docs/hosting-costs.md",
     "frontend/app/layouts/default.vue",
     "docs/deployment-settings-fix-20261101.md",
-    "docs/manual-change-audit-20261101.md"
+    "docs/manual-change-audit-20261101.md",
+    "docs/mock-results-20261101.md",
+    "frontend/shared/types/practiceAttempt.ts",
+    "frontend/shared/practiceResults.ts",
+    "frontend/server/database/migrations/008_practice_attempts.sql",
+    "frontend/server/services/practice-attempts.ts",
+    "frontend/app/composables/usePracticeAttempt.ts",
+    "frontend/app/pages/practice/results/[attemptId].vue",
+    "frontend/app/components/PracticeAttemptResults.vue",
+    "frontend/server-tests/practice-attempts.test.ts",
+    "frontend/tests/practiceResults.test.ts"
   ],
   "tasks": [
     {
@@ -5114,6 +5124,143 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "mock_results_20261101",
+      "context": "service",
+      "title": "今回の演習単位の集計・終了・結果画面",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー: 模擬試験終了後の結果発表画面、集計・終了操作まで実装する。追加承認: Chrome切断後に「別の検証用ブラウザーで進める」を明示指定。",
+      "next_action": "依頼の実装は完了。利用環境への008適用・commit/push/deployは別の明示依頼を待つ",
+      "evidence": [
+        "docs/mock-results-20261101.md",
+        "docs/screenshots/mock-results-desktop.png",
+        "docs/screenshots/mock-results-mobile.png",
+        "docs/screenshots/mock-results-mobile-320.png"
+      ],
+      "last_verified_at": "2026-11-01T02:19:11.283Z",
+      "verification_scope": "試行単位の開始/初回回答/終了/本人保存結果/タブ限定参考結果と画面を実装。API新3・既存回帰38、front470の469通常成功+待受ファイル3再実行成功、strictTS/全体vue-tsc成功。明示承認の独立ブラウザーで全30問100/100、保存結果再読込/再ログイン/振り返り/空の別回/未回答終了/ゲスト通信再確認と再読込消失、PC1440/SP390/320を確認。3画像目視・独立レビュー合格。初期不合格保持。008は隔離_testのみ、検証サーバー/ブラウザー終了・DB2件削除。通常/公開DB・配信設定、commit/push/deploy未実施。",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "試行単位・初回回答・本人認証・失効・集計",
+          "verification": "隔離DBのAPI/transactionテスト",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:19:11.283Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "終了/未回答/結果/振り返りのPC/SP操作",
+          "verification": "実部品とAPIのブラウザー操作・画像",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:19:11.283Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外のレビュー",
+          "verification": "mock_results_reviewによる差分確認",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:19:11.283Z",
+          "reviewer": "mock_results_review"
+        }
+      ],
+      "execution": {
+        "worker": "mock_results_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "主要実装とAPI/型/回帰検査・ソースレビューは成功。初期fixture/終了日時を修正。PC/SP主要操作後にブラウザー接続が切れ、追加UI受入条件が未達",
+            "at": "2026-11-01T01:54:37.608Z",
+            "failed_criteria": [
+              "ui"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "初期不合格を修正し、明示承認の独立ブラウザー10段階・PC/SP3画像・API/型/回帰検査・独立レビューに合格。隔離検証環境を終了、通常環境未変更",
+            "at": "2026-11-01T02:19:21.176Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_results_release_20261101",
+      "context": "service",
+      "title": "結果保存DB更新・承認済みGit送信と本番配信",
+      "status": "doing",
+      "depends_on": [
+        "mock_results_20261101"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー: 結果保存用のDB更新およびコミット・push・デプロイまで行なってください",
+      "next_action": "Git送信、Fly API/Netlify静的配信、本番保存結果の再表示確認",
+      "evidence": [
+        "docs/mock-results-release-20261101.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "作業中",
+      "acceptance": [
+        {
+          "id": "db",
+          "kind": "automated",
+          "description": "結果保存用008と既存データ保持",
+          "verification": "既存全表の件数/内容ダイジェスト比較",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "release",
+          "kind": "automated",
+          "description": "対象ソース送信と既存配信先への反映",
+          "verification": "保護検査・build・Git同期・CI・Fly/Netlify反映",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "公開環境の保存結果再表示",
+          "verification": "既存管理者の限定的な演習終了/保存/再読込確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当のリリース根拠確認",
+          "verification": "実装担当以外の根拠レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "mock_results_release_owner",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

@@ -1,3 +1,4 @@
+import {answerInAttempt} from './practice-attempts.ts'
 import {getMethod,getQuery,readBody,setResponseStatus,type H3Event} from 'h3'
 import {hasPaidAccess,type User} from '../core/auth.ts'
 import {configuration,freeExamMax,paymentsEnabled} from '../core/config.ts'
@@ -103,7 +104,8 @@ function answerResult(q:QuestionRecord,row:{id?:number;answer_type:string;submit
  if(row.answer_type==='essay')return {...base,submitted_text:row.submitted_text,essay_result:row.essay_result??null,model_answer:q.essay_config&&'model_answer' in q.essay_config?q.essay_config.model_answer:''}
  return row.answer_type==='short_text'?{...base,submitted_text:row.submitted_text,correct_answer:q.accepted_answers[0]}:{...base,selected_choice_id:row.selected_choice_id,correct_choice:serializeChoice(q.choices.find(c=>c.is_correct)!)}
 }
-export async function answerQuestion(id:number,answer:unknown,user:User|null,db?:Database){
+export async function answerQuestion(id:number,answer:unknown,user:User|null,db?:Database):Promise<{data:any}>{
+ if(record(answer)&&answer.practice_attempt_id!==undefined)return answerInAttempt(id,answer,user,db)
  return transaction(async connection=>{
   await query('SELECT pg_advisory_xact_lock($1)',[QUESTION_WRITE_LOCK],connection)
   const q=await loadQuestion(id,connection,{published:true,lock:true});await visible(id,connection);await authorizeExam(q.exam_number,user,connection)

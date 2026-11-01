@@ -17,7 +17,7 @@ export type ExamConfiguration = {
     contact_email: string
     overview: { title: string, body: string }[]
   }
-  exam: { set_count: number, questions_per_exam: number, choice_labels: string[], formats?: Record<string, ExamFormatRules> }
+  exam: { scoring?: { version: number; single_choice: number; short_text: number; essay: number }; set_count: number, questions_per_exam: number, choice_labels: string[], formats?: Record<string, ExamFormatRules> }
   categories: {
     major: { value: string, label: string }[]
     minor: { value: string, label: string, major_category_value: string }[]
@@ -44,6 +44,10 @@ export const parseExamConfig = (input: unknown): ExamConfiguration => {
   requireValue(typeof site.contact_email === 'string' && (site.contact_email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(site.contact_email)), 'contact_email must be empty or a valid email')
   requireValue(Array.isArray(site.overview) && site.overview.every(item => item && nonempty(item.title) && nonempty(item.body)), 'overview must contain title and body entries')
   requireValue(config.exam && positive(config.exam.set_count) && config.exam.set_count <= 10000 && positive(config.exam.questions_per_exam) && config.exam.questions_per_exam <= 10000, 'exam counts must be positive integers')
+  if (config.exam.scoring !== undefined) {
+    const scoring = config.exam.scoring
+    requireValue(scoring && typeof scoring === 'object' && ['version', 'single_choice', 'short_text', 'essay'].every(key => Number.isSafeInteger(scoring[key as keyof typeof scoring]) && scoring[key as keyof typeof scoring] > 0 && scoring[key as keyof typeof scoring] <= 1000), 'scoring requires positive integer version and points')
+  }
   if (config.exam.formats !== undefined) {
     requireValue(config.exam.formats && typeof config.exam.formats === 'object' && !Array.isArray(config.exam.formats), 'formats must be an object')
     for (const [code, rules] of Object.entries(config.exam.formats)) {

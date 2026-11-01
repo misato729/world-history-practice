@@ -1,3 +1,4 @@
+import {handlePracticeAttempts} from '../../services/practice-attempts.ts'
 import { defineEventHandler, getRequestURL, setResponseStatus, type H3Event } from 'h3'
 import { authenticate } from '../../core/auth.ts'
 import { configuration } from '../../core/config.ts'
@@ -22,8 +23,8 @@ export async function apiHandler(event: H3Event) {
     if (route === 'health' && ['GET', 'HEAD'].includes(event.method)) return { status: 'ok', app: `${configuration.site.name} API` }
     // Signup, login and Stripe signatures supply their own authentication.
     const user = route.startsWith('auth/') || route === 'webhooks/stripe' ? null : await authenticate(event)
-    if (event.method === 'POST' && /^questions\/[^/]+\/answer$/.test(route)) await throttle(event, 'answer')
-    for (const handler of [handleAccounts, handleLearning, handlePayments]) {
+    if (event.method === 'POST' && (/^questions\/[^/]+\/answer$/.test(route) || route.startsWith('practice_attempts'))) await throttle(event, 'answer')
+    for (const handler of [handleAccounts, handlePracticeAttempts, handleLearning, handlePayments]) {
       const result = await handler(event, parts, user)
       if (result !== undefined) return result
     }
