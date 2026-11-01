@@ -162,3 +162,7 @@ Netlify一般公開、Fly共有IPv4、Neonへの問題7表スナップショッ�
 ## Netlify自動デプロイの許可（2026-11-01）
 
 ユーザーがPersonalへ加入し世界史ラボの自動デプロイ再開を許可。旧「停止維持・skip netlify必須」をAGENTS/READMEで更新。Git送信自体の明示許可、Fly手動配信・DB変更等の範囲確認は維持。約1ヶ月後（12月1日頃）にFreeへ戻す予定だが請求周期未確認・変更予約は行っていない。Netlify世界史overviewで従来のBuilds are stopped/Activate buildsがなく、Deploys from GitHubの通常表示を確認。既に再開された状態のため、こちらで設定変更や手動ビルド起動は行っていない。今回commit/pushなし。
+
+## 2026-11-02：トップページ改善
+
+h1を「世界史ラボとは」、試験概要を「→試験概要を見る」のテキストリンクへ変更。既存文言と演習ロジックを保持し、紹介エリア・タブ・演習/利用案内カードを整備。型検査、PC1440/SP390/320の実API画面・タブ/文化史件数/リンク遷移、独立レビュー成功。画像はlocal-only内。DB書込・commit/push/deployなし。[検証記録](../../homepage-refresh-20261102.md)。

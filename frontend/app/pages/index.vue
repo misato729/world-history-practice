@@ -157,24 +157,25 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 
 <template>
   <div class="home-main">
-    <section class="overview-section">
+    <section class="overview-section" aria-labelledby="overview-title">
       <div class="overview-copy">
-        <h1 class="section-heading">
-          <span>{{ SITE.tagline }}</span>
-        </h1>
+        <h1 id="overview-title">世界史ラボとは</h1>
+        <p class="overview-tagline">{{ SITE.tagline }}</p>
         <p>
           {{ SITE.description }}
         </p>
         <div class="overview-actions">
-          <NuxtLink class="secondary-link" to="/exam-overview">試験概要を見る</NuxtLink>
+          <NuxtLink class="overview-link" to="/exam-overview">→試験概要を見る</NuxtLink>
         </div>
+      </div>
+      <div class="overview-art" aria-hidden="true">
+        <div class="globe-orbit"></div>
+        <div class="globe-grid"><UIcon name="i-lucide-globe-2" /></div>
+        <span class="orbit-point"></span>
       </div>
     </section>
 
     <section id="practice-launcher" class="practice-launcher" aria-labelledby="practice-launcher-title">
-      <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開中の模擬試験を読み込んでいます。</p>
-      <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">模擬試験を読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
-      <p v-else-if="!availableExams.length" role="status">現在利用できる公開問題はありません。</p>
       <div class="launcher-heading">
         <div>
           <h2 id="practice-launcher-title" class="section-heading">
@@ -218,6 +219,12 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
         role="tabpanel"
         aria-labelledby="exam-mode-tab"
       >
+        <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" class="catalog-loading" role="status">
+          <span class="catalog-spinner" aria-hidden="true"></span>
+          <span>模擬試験を読み込んでいます</span>
+        </p>
+        <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">模擬試験を読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
+        <p v-else-if="!availableExams.length" role="status">現在利用できる公開問題はありません。</p>
         <div class="exam-grid-heading">
           <p><strong>公開中 {{ catalogExams.length }}回</strong><span>大問の順に演習</span></p>
           <NuxtLink v-if="!hasFullAccess" class="premium-info-link" to="/premium">
@@ -380,25 +387,29 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 </template>
 
 <style scoped>
-.home-main { min-width: 0; background: var(--surface-soft); }
+.home-main { min-width: 0; background: var(--surface-soft); --home-gutter: clamp(24px, 4vw, 64px); }
 .practice-launcher {
   scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px);
-  padding: 52px clamp(28px, 6vw, 86px) 58px;
+  padding: 44px var(--home-gutter) 52px;
   border-top: 1px solid var(--line);
-  background: var(--surface-tint);
+  background: var(--surface-soft);
 }
-.launcher-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; }
+.launcher-heading { display: grid; grid-template-columns: minmax(220px, .9fr) minmax(0, 1fr); align-items: center; gap: 24px; }
 .launcher-heading h2 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
 .launcher-heading > p { max-width: 480px; margin: 0; color: var(--muted); line-height: 1.8; }
 .section-heading { display: flex; align-items: center; gap: 10px; }
-.section-heading::before { content: ''; flex: 0 0 4px; width: 4px; height: 26px; background: var(--teal-dark); }
+.section-heading::before { content: ''; flex: 0 0 6px; width: 6px; height: 24px; border-radius: 3px; background: #267ba4; }
 .section-heading > span { min-width: 0; }
 .launcher-tabs {
   width: min(400px, 100%);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 30px;
-  border-bottom: 1px solid var(--line);
+  margin-top: 28px;
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #e7eef4;
 }
 .launcher-tabs button {
   min-height: 48px;
@@ -407,15 +418,18 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-bottom: 3px solid transparent;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
   font-weight: 800;
   cursor: pointer;
 }
-.launcher-tabs button.active { border-color: var(--teal); color: var(--teal-dark); }
+.launcher-tabs button.active { background: var(--surface); color: var(--teal-dark); box-shadow: 0 2px 6px rgba(var(--shadow-color), .08); }
 .launcher-tabs :deep(svg) { width: 19px; height: 19px; }
 .launcher-panel { padding-top: 28px; }
+.catalog-loading { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; color: var(--text-secondary); line-height: 1.8; }
+.catalog-spinner { flex: 0 0 18px; width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--teal); border-radius: 50%; animation: catalog-spin .8s linear infinite; }
+@keyframes catalog-spin { to { transform: rotate(360deg); } }
 .exam-grid-heading {
   min-height: 32px;
   display: flex;
@@ -429,26 +443,27 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .exam-grid-heading span { color: var(--muted); font-size: 0.8125rem; font-weight: 700; }
 .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
 .exam-card {
-  min-height: 90px;
+  min-height: 104px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   padding: 20px 22px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 14px;
   background: var(--surface);
   color: var(--ink);
   text-decoration: none;
+  box-shadow: 0 3px 12px rgba(var(--shadow-color), .025);
   transition: border-color .15s, background .15s, transform .15s;
 }
-.exam-card:hover { border-color: var(--teal); background: var(--surface-soft); transform: translateY(-1px); }
+.exam-card:hover { border-color: var(--teal); background: var(--surface-soft); transform: translateY(-2px); }
 .exam-card-copy { min-width: 0; display: grid; gap: 7px; }
 .exam-card strong { color: var(--teal-dark); font-size: 1.125rem; line-height: 1.4; }
 .exam-card-copy > span { color: var(--muted); font-size: 0.8125rem; }
 .exam-card :deep(.iconify) { flex: 0 0 20px; width: 20px; height: 20px; color: var(--teal-dark); }
 .premium-info-link { display: inline-flex; align-items: center; gap: 5px; color: var(--teal-dark); font-size: 0.8125rem; font-weight: 800; }
-.condition-form { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.condition-form { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
 .condition-fields { display: grid; gap: 28px; padding: 28px; }
 .condition-help { margin: 10px 0; color: var(--muted); font-size: .8125rem; line-height: 1.7; }
 .subject-select-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
@@ -528,17 +543,28 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .condition-actions button:disabled { opacity: .45; cursor: not-allowed; }
 .subject-label { white-space: nowrap; }
 .overview-section {
-  min-height: 280px;
-  padding: 52px clamp(28px, 6vw, 86px);
-  display: flex;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
   align-items: center;
-  background: var(--surface);
+  gap: 32px;
+  padding: 56px var(--home-gutter);
+  background: linear-gradient(115deg, #fff 38%, #e9f5fc 100%);
 }
 .overview-copy { max-width: 680px; }
-.overview-copy h1 { margin: 0; font-size: 1.875rem; line-height: 1.3; }
-.overview-copy > p { margin: 22px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.9; }
-.overview-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
-.home-section { padding: 62px clamp(28px, 6vw, 86px); }
+.overview-copy h1 { margin: 0; font-size: clamp(2rem, 3vw, 3rem); font-weight: 800; letter-spacing: .025em; line-height: 1.4; }
+.overview-copy > p { margin: 16px 0 0; color: var(--text-secondary); font-size: 1rem; line-height: 1.95; }
+.overview-copy > .overview-tagline { margin-top: 20px; color: #24617e; font-size: 1.0625rem; font-weight: 700; }
+.overview-actions { margin-top: 22px; }
+.overview-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--teal-dark); font-weight: 700; text-decoration: underline; text-decoration-color: #94b7cc; text-underline-offset: 6px; }
+.overview-link:hover { color: #24617e; text-decoration-color: currentColor; }
+.overview-art { position: relative; display: grid; place-items: center; width: 200px; height: 200px; }
+.globe-grid { display: grid; place-items: center; width: 152px; height: 152px; border-radius: 50%; background: #dcedf7; box-shadow: inset 0 0 32px #f4fbff, 0 16px 40px #203b6110; }
+.globe-grid :deep(.iconify) { width: 146px; height: 146px; color: #6494af; stroke-width: .65; }
+.globe-orbit { position: absolute; inset: 2px; border: 1px solid #b2cfdf; border-radius: 50%; transform: rotate(-30deg) scaleY(.7); }
+.orbit-point { position: absolute; top: 52px; right: 12px; width: 10px; height: 10px; border: 3px solid #eef8fe; border-radius: 50%; background: #267ba4; box-sizing: content-box; }
+.home-section { padding: 44px var(--home-gutter) 52px; }
 .section-title { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
 .section-title h2 { margin: 0; font-size: 1.875rem; }
 .updates-section { background: var(--surface-soft); }
@@ -550,13 +576,16 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px);
   background: var(--surface);
 }
-.usage-details { margin: 0; border-top: 1px solid var(--line); }
+.usage-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin: 0; }
 .usage-row {
   display: grid;
-  grid-template-columns: minmax(180px, .3fr) minmax(0, 1fr);
-  gap: 32px;
-  padding: 26px 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
 }
 .usage-row dt { color: var(--ink); font-size: 1rem; font-weight: 700; line-height: 1.9; }
 .usage-row dd { min-width: 0; margin: 0; color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.9; }
@@ -579,6 +608,9 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .usage-premium-link :deep(.iconify) { flex: 0 0 16px; width: 16px; height: 16px; }
 
 @media (max-width: 960px) {
+  .overview-section { grid-template-columns: minmax(0, 1fr); }
+  .overview-art { display: none; }
+  .launcher-heading { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .usage-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 
@@ -602,9 +634,17 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   .condition-actions { width: 100%; flex-direction: column; }
   .condition-actions button { width: 100%; }
   .overview-section { min-height: auto; padding: 36px 20px; }
-  .overview-actions { align-items: stretch; flex-direction: column; }
+  .overview-copy h1 { font-size: 2rem; }
+  .overview-copy > .overview-tagline { font-size: 1rem; }
+  .usage-details { grid-template-columns: minmax(0, 1fr); }
   .home-section { padding: 44px 20px; }
   .update-list article { grid-template-columns: 1fr; gap: 5px; padding: 15px 0; }
-  .usage-row { padding: 22px 0; }
+  .usage-row { padding: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-spinner { animation: none; }
+  .exam-card { transition: none; }
+  .exam-card:hover { transform: none; }
 }
 </style>

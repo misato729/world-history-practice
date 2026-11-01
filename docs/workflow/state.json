@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 209,
-  "updated_at": "2026-11-01T02:45:59.641Z",
+  "revision": 211,
+  "updated_at": "2026-11-01T21:33:09.172Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T02-45-59-641Z-r209.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T21-33-09-172Z-r211.json",
   "contexts": [
     {
       "id": "product",
@@ -5289,6 +5289,70 @@
           }
         ]
       }
+    },
+    {
+      "id": "homepage_refresh_20261102",
+      "context": "service",
+      "title": "トップページの見出し・試験概要リンクとモダンなデザイン",
+      "status": "done",
+      "depends_on": [],
+      "request_ref": "2026-11-02 ユーザーのトップページ改善依頼",
+      "evidence": [
+        "docs/homepage-refresh-20261102.md"
+      ],
+      "last_verified_at": "2026-11-01T21:32:56.998Z",
+      "verification_scope": "トップページのみ。型検査成功。Chrome実APIでPC1440/SP390/320表示・横はみ出しなし、タブ/文化史件数/試験概要遷移成功。独立レビュー合格。DB書込・Git送信・本番変更なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "見出しとリンク、既存機能の維持",
+          "verification": "型検査・差分検査",
+          "status": "passed",
+          "evidence": [
+            "docs/homepage-refresh-20261102.md"
+          ],
+          "checked_at": "2026-11-01T21:32:56.998Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPの表示と実操作",
+          "verification": "ローカルブラウザで表示とタブ・リンクを確認",
+          "status": "passed",
+          "evidence": [
+            "docs/homepage-refresh-20261102.md"
+          ],
+          "checked_at": "2026-11-01T21:32:56.998Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "別担当の差分確認",
+          "status": "passed",
+          "evidence": [
+            "docs/homepage-refresh-20261102.md"
+          ],
+          "checked_at": "2026-11-01T21:32:56.998Z",
+          "reviewer": "homepage_review"
+        }
+      ],
+      "execution": {
+        "worker": "homepage_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "トップ見出し・テキストリンク・デザイン改善、型検査とPC/SP実操作・独立レビュー成功",
+            "at": "2026-11-01T21:33:04.020Z",
+            "failed_criteria": []
+          }
+        ]
+      },
+      "authorization": "requested",
+      "next_action": "追加依頼待ち。コミット・push・デプロイは未実施"
     }
   ],
   "gate_policy": {
