@@ -4,15 +4,24 @@ import test from 'node:test'
 
 const source = (name: string) => readFileSync(new URL(`../app/pages/${name}.vue`, import.meta.url), 'utf8')
 
-test('legal drafts are accessible without application login and identify customization needs', () => {
+test('legal pages are accessible without application login', () => {
   for (const name of ['terms', 'privacy-policy', 'commercial-disclosure']) {
     const page = source(name)
     assert.doesNotMatch(page, /middleware\s*:\s*['"](?:auth|admin)/)
     assert.doesNotMatch(page, /(?:authenticate|ensureCurrentUser|authHeaders)/)
-    assert.match(page, /テンプレートの草案/)
     assert.match(page, /SITE.name/)
-    assert.doesNotMatch(page, /情報教認|高等学校|Netlify|Sentry|2026年10月21日/)
+    assert.doesNotMatch(page, /情報教認|高等学校|2026年10月21日/)
   }
+})
+
+test('published free-service policies omit draft and payment terms', () => {
+  for (const name of ['terms', 'privacy-policy']) {
+    const page = source(name)
+    assert.doesNotMatch(page, /テンプレートの草案|公開前に完成|Stripe|プレミアム|返金|買い切り|PRICE_LABEL/)
+  }
+  assert.match(source('terms'), /公開中の問題は無料で演習できます/)
+  assert.match(source('privacy-policy'), /SITE.contact_email/)
+  assert.match(source('privacy-policy'), /mailto:/)
 })
 
 test('commercial disclosure retains seller readiness checks and request-based contact disclosure', () => {
