@@ -49,3 +49,9 @@ Fly CLIのconfig validateは隔離した設定ディレクトリでは認証が�
 2026-11-01の追加依頼で設定修正と手動変更の点検資料をcommit/pushし、CI完了まで確認する。開始HEAD704f5b7はfetch後のorigin/mainと一致（0/0）。このUI表示順変更は既に別コミットで送信済みで、今回の新規変更に含めない。Netlify管理画面でBuilds are stoppedを読取確認し、設定未変更。skip netlifyを使用し、デプロイは行わない。原資料保護とdiff checkは成功。送信・CIの結果は確認後に追記する。
 
 送信前settings_reviewでstage12ファイルを独立確認：設定3ファイルと関連文書/workflowだけ、原資料/秘密/UIファイルなし、diff check成功、未解決の指摘なし。
+
+### 送信とCIの確認結果
+
+設定・資料12ファイルを76295aeef711ab3142ad53335d4b0de03f72454aでmainへ通常push。保護hook成功、送信直後origin/mainとの差分0/0、未コミット変更なし。GitHub Actions [41259876358](https://github.com/misato729/world-history-practice/actions/runs/41259876358) は対象SHAでharness（8秒）/verify（2分4秒）が成功。DB/API、フロントのテスト/型/build、新設の非rootproduction image build/検査と後片付けまで全step成功。既存actionsのNode20廃止とubuntu-latest移行に関する通知は警告であり、今回の失敗ではない。
+
+この完了記録とworkflow状態を文書のみの追送コミットにまとめる。その最終SHAのCIは追送後に確認する。コード・本番・通常DBへの追加変更は行わない。

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 200,
-  "updated_at": "2026-11-01T01:03:59.945Z",
+  "revision": 202,
+  "updated_at": "2026-11-01T01:13:17.387Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T01-03-59-945Z-r200.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T01-13-17-387Z-r202.json",
   "contexts": [
     {
       "id": "product",
@@ -5065,25 +5065,29 @@
       "id": "deployment_settings_delivery_20261101",
       "context": "service",
       "title": "設定修正・手動履歴の資料を送信しCI完了を確認",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "deployment_settings_fix_20261101"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-01 ユーザー「設定修正とドキュメントをコミット・pushして、CIが通るところまで確認してください」",
-      "next_action": "対象差分を限定してcommit/pushしCIを確認。本番デプロイしない",
-      "evidence": [],
-      "last_verified_at": null,
-      "verification_scope": "Git納品とCI。既存704f5b7はリモート一致済みで、UI差分の追加編集なし",
+      "next_action": "追加依頼待ち。設定・資料は送信済み、デプロイは別途の明示指示が必要",
+      "evidence": [
+        "docs/deployment-settings-fix-20261101.md"
+      ],
+      "last_verified_at": "2026-11-01T01:12:38.826Z",
+      "verification_scope": "設定・資料12件の独立stage review、全履歴保護/hook・76295ae main push/同期0/0、CI41259876358対象SHAのharness/verify全工程成功。Netlify停止確認、deployなし。完了記録のみ追送。",
       "acceptance": [
         {
           "id": "delivery_ci",
           "kind": "automated",
           "description": "資料保護を通して設定と資料をpushし対象SHAのCI成功を確認",
           "verification": "git diff/check-private-sources/実remote同期/GitHub Actions両jobの完了",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/deployment-settings-fix-20261101.md"
+          ],
+          "checked_at": "2026-11-01T01:12:38.826Z"
         },
         {
           "id": "review",
@@ -5101,7 +5105,15 @@
       "execution": {
         "worker": "settings_delivery_owner",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "設定・資料76295aeをpush、全履歴保護/remote同期とCI両job全工程成功、Netlify停止維持",
+            "at": "2026-11-01T01:12:49.991Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],

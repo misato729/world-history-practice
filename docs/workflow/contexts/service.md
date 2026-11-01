@@ -145,3 +145,5 @@ Netlify一般公開、Fly共有IPv4、Neonへの問題7表スナップショッ�
 ## 2026-11-01：Fly/Docker設定を修正（ローカル検証済み）
 
 [設定修正と検証](../../deployment-settings-fix-20261101.md)：Flyのパスをルートcontext基準へ統一、未使用env/メモリ重複を削除、本番を非root独立イメージへ分離。Nuxt production依存・CLI/移行/安全パッチは保持し、開発専用依存2件とapp/tests/gitを除外。production/development build、CI追加stepのローカル実行、隔離_test DBの7 migration→0/HTTP200・匿名admin401・CORS204/運用audit/seed skipped・DB0件を確認。検証初稿のseed終了コード期待の誤りは記録して修正後再実行成功、専用2コンテナ/ネットワーク削除。独立レビュー成功。通常DB/本番と既存Composeは未変更、未commit/push/deploy。途中で出現したEssayScoringResult.vueの並行UI差分は本作業で編集していない。
+
+- 2026-11-01追加依頼で設定と手動履歴の資料12件を76295aeとしてmainへpush。保護hook・remote同期0/0、CI41259876358のharness/verify（新設の本番非root image検査含む）全工程成功。Netlify停止を管理画面で確認しskip指定、deployなし。完了記録だけ追送し最終CIを確認する。[送信結果](../../deployment-settings-fix-20261101.md)。
