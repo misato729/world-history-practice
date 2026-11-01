@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 190,
-  "updated_at": "2026-10-31T00:28:37.698Z",
+  "revision": 197,
+  "updated_at": "2026-11-01T00:07:35.631Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-10-31T00-28-37-698Z-r190.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T00-07-35-631Z-r197.json",
   "contexts": [
     {
       "id": "product",
@@ -4819,6 +4819,178 @@
             "outcome": "passed",
             "summary": "サイドバー11path・送信版分離・通常保護push・実remote同期・CI両job成功を独立レビューと確認",
             "at": "2026-10-31T00:28:35.763Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "production_migration_20261031",
+      "context": "service",
+      "title": "初回本番配信・210問移行と下書公開・管理検証",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-10-31 ユーザーのデプロイ・問題移行・本番検証・下書公開依頼",
+      "next_action": "本番移行・ログイン・管理権限検証は完了。追加依頼待ち",
+      "evidence": [
+        "docs/production-migration-20261031.md"
+      ],
+      "last_verified_at": "2026-10-31T18:41:29.949Z",
+      "verification_scope": "本番210問/560肢/7セット公開・ID内容日時保持、別接続再比較、管理者login/me/admin200・匿名401、実Chrome一覧/同一保存・SP模試6表示。一般会員403は自動承認拒否により未実施。 2026-11-01追加明示許可後、一時会員signup201/login200・管理2API403・退会204・再login401を確認し片付け完了。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "ID・内容保持、210問公開、本番API認証確認",
+          "verification": "rollback、本移行後全行比較、API検証",
+          "status": "passed",
+          "evidence": [
+            "docs/production-migration-20261031.md"
+          ],
+          "checked_at": "2026-10-31T14:12:35.627Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "移行の独立レビュー",
+          "verification": "migration_reviewによる差分検査",
+          "status": "passed",
+          "evidence": [
+            "docs/production-migration-20261031.md"
+          ],
+          "checked_at": "2026-10-31T14:12:35.627Z",
+          "reviewer": "migration_review"
+        }
+      ],
+      "execution": {
+        "worker": "production_migration_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "210問本番移行・全公開・別接続保持比較・管理者ログインと同一保存・匿名401・SP表示を確認。一般会員403は追加承認待ち",
+            "at": "2026-10-31T14:12:44.678Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "performance_audit_20261101",
+      "context": "service",
+      "title": "情報教認との応答比較と世界史本番遅延原因調査",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー「情報教認と比べて通信がとてつもなく遅いのですが、原因を調べてください」",
+      "next_action": "調査結果報告・修正依頼待ち",
+      "evidence": [
+        "docs/performance-audit-20261101.md"
+      ],
+      "last_verified_at": "2026-10-31T18:58:20.585Z",
+      "verification_scope": "公開API2回、SQL99回計測、Fly世界史IAD/情報教認NRT・NeonSingaporeを確認。設定/DB内容変更なし",
+      "acceptance": [
+        {
+          "id": "measurements",
+          "kind": "automated",
+          "description": "公開APIとSQL発行数を実測し比較",
+          "verification": "curl・読み取り専用probe・コード確認",
+          "status": "passed",
+          "evidence": [
+            "docs/performance-audit-20261101.md"
+          ],
+          "checked_at": "2026-10-31T18:58:20.585Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "因果の評価を独立レビュー",
+          "verification": "測定結果とコードの対応",
+          "status": "passed",
+          "evidence": [
+            "docs/performance-audit-20261101.md"
+          ],
+          "checked_at": "2026-10-31T18:58:40.195Z",
+          "reviewer": "migration_review"
+        }
+      ],
+      "execution": {
+        "worker": "performance_audit_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "API比較・99SQL計測・配置確認。原因推定の限界を明記し独立レビュー完了",
+            "at": "2026-10-31T18:58:41.487Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "performance_improvement_20261101",
+      "context": "service",
+      "title": "公開APIのSQL削減と配置改善・本番反映",
+      "status": "done",
+      "depends_on": [
+        "performance_audit_20261101"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー「では改善してください」",
+      "next_action": "追加依頼待ち。Git差分は未コミット",
+      "evidence": [
+        "docs/performance-improvement-20261101.md"
+      ],
+      "last_verified_at": "2026-11-01T00:07:15.680Z",
+      "verification_scope": "SQL99→1/問題2SQL、37統合+5大問/型/新旧一致/独立レビュー。Flyv8・NRT2台・一覧0.666/0.705s問題0.261s、認証管理200匿名401、実画面7回。",
+      "acceptance": [
+        {
+          "id": "regression",
+          "kind": "automated",
+          "description": "公開/権限/表示順/形式を保持しSQLを削減",
+          "verification": "隔離DB、新旧レスポンス比較、SQLbudget、型検査",
+          "status": "passed",
+          "evidence": [
+            "docs/performance-improvement-20261101.md"
+          ],
+          "checked_at": "2026-10-31T19:05:46.744Z"
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "本番反映後の応答改善と利用機能を確認",
+          "verification": "Fly release・配置・curl・認証と実画面",
+          "status": "passed",
+          "evidence": [
+            "docs/performance-improvement-20261101.md"
+          ],
+          "checked_at": "2026-11-01T00:07:15.680Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当がAPI互換性をレビュー",
+          "verification": "migration_reviewによる差分確認",
+          "status": "passed",
+          "evidence": [
+            "docs/performance-improvement-20261101.md"
+          ],
+          "checked_at": "2026-10-31T19:05:46.756Z",
+          "reviewer": "migration_review"
+        }
+      ],
+      "execution": {
+        "worker": "performance_improvement_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "SQL削減とNRT2台への本番反映・速度改善・認証と画面確認成功",
+            "at": "2026-11-01T00:07:23.856Z",
             "failed_criteria": []
           }
         ]

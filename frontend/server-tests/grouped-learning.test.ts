@@ -189,3 +189,20 @@ test('four-group mock requires 30 questions; draft siblings do not replace a pub
  assert.equal(switched.groups.length,1);assert.equal(switched.groups[0]!.id,sibling.id);assert.deepEqual(switched.question_numbers,[8,9,10,11,12,13,14,15])
 
 }))
+
+test('public catalog and question reads have a fixed SQL budget without loading management details',integration,async()=>isolated(async(db,exam)=>{
+ await saveExamSet({exam_number:exam,title:'Catalog projection',format_code:'group_practice',publication_status:'draft'},{db})
+ const {ids,passage}=await groupWithQuestions(db,exam,1,7,1)
+ const set=await loadExamSet(exam,db);await publishExamSet(exam,set.lock_version,{db})
+ let count=0
+ const measured={query:async(...args:any[])=>{count++;return (db.query as any).apply(db,args)}} as Database
+ const catalog=(await listExams(null,measured)).data.find(e=>e.exam_number===exam)!
+ assert.equal(count,1);assert.equal(catalog.question_count,7)
+ assert.deepEqual(catalog.groups[0]!.question_numbers,[1,2,3,4,5,6,7])
+ count=0
+ const question=(await getQuestion(ids[0]!,null,measured)).data
+ assert.equal(count,2);assert.equal(question.shared_passages[0].id,passage.id)
+ assert.deepEqual(question.group.question_numbers,[1,2,3,4,5,6,7])
+ for(const key of ['accepted_answers','essay_config','explanation_blocks','source_text','source_references','answer_history_count'])assert.equal(Object.hasOwn(question,key),false)
+ assert.ok(question.choices.every((c:any)=>!Object.hasOwn(c,'is_correct')))
+}))

@@ -54,16 +54,24 @@ async function serializePublicQuestion(q:QuestionRecord,user:User|null,db:Databa
   payload.essay_constraints={max_characters:profile.max_characters,required_terms:profile.required_terms}
  }
  if(q.group_id!==null){
-  const group=await loadQuestionGroup(q.group_id,db);const qs=(group.questions??[]).filter(v=>v.publication_status==='published')
-  payload.group={id:group.id,group_number:group.group_number,title:group.title,question_numbers:qs.map(v=>v.question_number)}
-  const required=new Set(q.passage_references.map(r=>r.passage_id))
-  payload.shared_passages=group.passages.filter(p=>required.has(p.id)).map(p=>({id:p.id,label:p.label,display_order:p.display_order,content_blocks:p.content_blocks}))
+  const [group]=await query<any>(`SELECT g.id,g.group_number,g.title,
+   COALESCE((SELECT jsonb_agg(v.question_number ORDER BY v.group_question_number,v.id) FROM questions v WHERE v.group_id=g.id AND v.publication_status='published'),'[]'::jsonb) AS question_numbers,
+   COALESCE((SELECT jsonb_agg(jsonb_build_object('id',p.id,'label',p.label,'display_order',p.display_order,'content_blocks',p.content_blocks) ORDER BY p.display_order,p.id) FROM group_passages p WHERE p.group_id=g.id AND p.id=ANY($2::bigint[])),'[]'::jsonb) AS passages
+   FROM question_groups g WHERE g.id=$1`,[q.group_id,q.passage_references.map(r=>r.passage_id)],db)
+  if(!group)return notFound()
+  payload.group={id:group.id,group_number:group.group_number,title:group.title,question_numbers:group.question_numbers}
+  payload.shared_passages=group.passages
  }
  if(user){const allowed=await hasPaidAccess(user,db);const rows=allowed?await query('SELECT 1 FROM favorites WHERE user_id=$1 AND question_id=$2',[user.id,q.id],db):[];payload.is_favorite=allowed&&rows.length>0}
  return payload
 }
 export async function getQuestion(id:number,user:User|null,db:Database=getDatabase()){
- const q=await loadQuestion(id,db,{published:true});await visible(id,db);await authorizeExam(q.exam_number,user,db);return {data:await serializePublicQuestion(q,user,db)}
+ const [q]=await query<QuestionRecord>(`SELECT questions.*,
+ COALESCE((SELECT jsonb_agg(c ORDER BY c.display_order) FROM question_choices c WHERE c.question_id=questions.id),'[]'::jsonb) AS choices,
+ COALESCE((SELECT jsonb_agg(jsonb_build_object('passage_id',r.passage_id,'anchor_id',r.anchor_id) ORDER BY r.id) FROM question_passage_references r WHERE r.question_id=questions.id),'[]'::jsonb) AS passage_references
+ FROM questions WHERE id=$1 AND ${questionVisibility()}`,[id],db)
+ if(!q)return notFound()
+ await authorizeExam(q.exam_number,user,db);return {data:await serializePublicQuestion(q,user,db)}
 }
 const questionDisplayOrder=(alias='questions')=>`COALESCE((SELECT g.group_number FROM question_groups g WHERE g.id=${alias}.group_id),0),COALESCE(${alias}.group_question_number,${alias}.question_number),${alias}.question_number`
 const displayOrder=`exam_number,${questionDisplayOrder()}`
@@ -131,11 +139,15 @@ export async function answerQuestion(id:number,answer:unknown,user:User|null,db?
 }
 export async function listExams(user:User|null,db:Database=getDatabase(),params:Record<string,unknown>={}){
  const values:unknown[]=[];const conditions=[questionVisibility()];questionFilters(params,conditions,values)
- const rows=await query<any>(`SELECT id,exam_number,question_number,group_id,group_question_number FROM questions WHERE ${conditions.join(' AND ')} ORDER BY ${displayOrder}`,values,db)
+ const rows=await query<any>(`SELECT questions.id,questions.exam_number,questions.question_number,questions.group_id,questions.group_question_number,
+ es.title AS exam_title,es.format_code,g.group_number,g.title AS group_title,g.publication_status AS group_status
+ FROM questions LEFT JOIN exam_sets es ON es.exam_number=questions.exam_number LEFT JOIN question_groups g ON g.id=questions.group_id
+ WHERE ${conditions.join(' AND ')} ORDER BY ${displayOrder}`,values,db)
  const full=await hasPaidAccess(user,db);const result:any[]=[]
  for(const n of [...new Set(rows.map(q=>Number(q.exam_number)))]){
-  const qs=rows.filter(q=>q.exam_number===n),set=await loadExamSet(n,db)
-  result.push({exam_number:n,title:set.title,format_code:set.format_code,question_numbers:qs.map(q=>q.question_number),question_count:qs.length,published_question_count:qs.length,groups:set.groups.filter(g=>g.publication_status==='published'&&qs.some(q=>q.group_id===g.id)).map(g=>({id:g.id,group_number:g.group_number,title:g.title,question_numbers:qs.filter(q=>q.group_id===g.id).map(q=>q.question_number)})),access:!paymentsEnabled||n<=freeExamMax||full?'available':'paid_membership_required'})
+  const qs=rows.filter(q=>q.exam_number===n),first=qs[0]
+  const groups=[...new Set(qs.filter(q=>q.group_status==='published').map(q=>q.group_id))].map(id=>{const own=qs.filter(q=>q.group_id===id);return {id,group_number:own[0].group_number,title:own[0].group_title,question_numbers:own.map(q=>q.question_number)}}).sort((a,b)=>a.group_number-b.group_number||a.id-b.id)
+  result.push({exam_number:n,title:first.exam_title??`教材 ${n}`,format_code:first.format_code??'legacy_practice',question_numbers:qs.map(q=>q.question_number),question_count:qs.length,published_question_count:qs.length,groups,access:!paymentsEnabled||n<=freeExamMax||full?'available':'paid_membership_required'})
  }
  return {data:result}
 }
