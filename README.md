@@ -108,7 +108,7 @@ Fly用Dockerfileのビルドコンテキストはこのリポジトリのルー�
 docker build --target production -f frontend/Dockerfile -t world-history-production-check .
 ```
 
-本番への反映を別途承認された場合だけ、同じルートから `fly deploy . --config frontend/fly.toml` を実行します。`cd frontend` してのビルドは、兄弟のconfig等が不足するため使用しません。Netlifyのビルド停止は維持します。
+本番への反映を別途承認された場合だけ、同じルートから `fly deploy . --config frontend/fly.toml` を実行します。`cd frontend` してのビルドは、兄弟のconfig等が不足するため使用しません。2026年11月1日より、ユーザー承認済みのGit送信に伴うNetlify自動デプロイは許可されています。Fly.ioへの手動デプロイは別途承認が必要です。
 
 本番イメージは非rootで動作し、DB移行はFlyのrelease_commandで実行します。汎用のdocker runでは自動移行・seedを行いません。現在は通常のNitroサーバーを使用し、未実装のAPI専用フラグは設定しません。[修正・検証記録](docs/deployment-settings-fix-20261101.md)を参照してください。
 

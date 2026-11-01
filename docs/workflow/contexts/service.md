@@ -158,3 +158,7 @@ Netlify一般公開、Fly共有IPv4、Neonへの問題7表スナップショッ�
 ## 2026-11-01：結果保存DB・Git送信・本番配信
 
 ユーザーの明示依頼によりNeonへ008のみ適用・既存15表の内容保持。機能abd3156とテスト修正c4a7730をmain送信、Netlify手動deploy6ae6a59e…ready・Fly v9へ機能反映。Netlify自動停止は公開前後とも維持。既存管理者の1問結果を保存し再ログインGET一致。PC1440/SP390で保存結果表示・再読込・はみ出しなし、修正CI41266125661のharness/verify成功。[反映記録](../../mock-results-release-20261101.md)。
+
+## Netlify自動デプロイの許可（2026-11-01）
+
+ユーザーがPersonalへ加入し世界史ラボの自動デプロイ再開を許可。旧「停止維持・skip netlify必須」をAGENTS/READMEで更新。Git送信自体の明示許可、Fly手動配信・DB変更等の範囲確認は維持。約1ヶ月後（12月1日頃）にFreeへ戻す予定だが請求周期未確認・変更予約は行っていない。Netlify世界史overviewで従来のBuilds are stopped/Activate buildsがなく、Deploys from GitHubの通常表示を確認。既に再開された状態のため、こちらで設定変更や手動ビルド起動は行っていない。今回commit/pushなし。
