@@ -3,7 +3,8 @@ primary_region = "nrt"
 
 [build]
 build-target = "production"
-dockerfile = "Dockerfile"
+# Deploy from the repository root: fly deploy . --config frontend/fly.toml
+dockerfile = "frontend/Dockerfile"
 
 [deploy]
 release_command = "npm run db:migrate"
@@ -11,14 +12,12 @@ release_command_timeout = "15m0s"
 
 [env]
 APP_ENV = "production"
-BETTER_AUTH_URL = "https://world-history-practice.netlify.app"
 CORS_ORIGINS = "https://world-history-practice.netlify.app"
 FRONTEND_URL = "https://world-history-practice.netlify.app"
 NITRO_HOST = "0.0.0.0"
 NITRO_PORT = "3000"
 NODE_ENV = "production"
 NODE_OPTIONS = "--max-old-space-size=512"
-NUXT_API_ONLY = "true"
 
 [http_service]
 auto_start_machines = true
@@ -39,4 +38,3 @@ processes = [ "app" ]
 cpu_kind = "shared"
 cpus = 1
 memory = "1gb"
-memory_mb = 1_024

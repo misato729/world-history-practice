@@ -137,3 +137,11 @@ Netlify一般公開、Fly共有IPv4、Neonへの問題7表スナップショッ�
 - 2026-11-01：利用規約・プライバシーポリシーを情報教認ラボのローカル原稿に合わせ、世界史の対象・記述/論述回答に調整。決済/有料会員条項と未使用のGitHubバックアップ/Sentry委託記述を除去。問い合わせメールは今回のユーザー指定をconfig/exam.jsonに設定。2ページのVue SFCコンパイル・課金/草案文言検査とgit diff --check成功。参照公開URLは取得できず公開版との同一性は未確認。PC/SP実画面確認・独立レビューは未実施。commit/push/deployなし。
 
 - 2026-11-01：0c7c296のCI 41256511209でverify失敗。legalPages.test.tsが草案文言とNetlify非掲載を要求する旧テンプレート仕様のままだった。公開規約2ページの草案/課金文言不在・無料案内/問い合わせ参照の検査へ更新し、匿名閲覧と特商法表示の既存検査を保持。ローカル全465件成功・skip0、git diff --check成功。初回は待受制限で既存HTTPSテスト1件失敗、権限を調整した全件再実行で成功。アプリ本文の再変更、commit/push/deployは行っておらず、リモートCI修正確認は未実施。
+
+## 2026-11-01：手動コミットの追補
+
+[手動変更・設定点検](../../manual-change-audit-20261101.md)に10月31日のFly/Docker変更8件と引き継ぎ保存を記録。過去の日本史Git ADD参照は現在除去済み。Flyビルドcontext/path、未使用env、本番イメージ権限/サイズ、古い起動説明を区別して報告。実設定/アプリ/DBは未変更。0c7c296とc2e2220は送信済み、後者のCI41257200723は前作業でharness/verify成功。今回の資料は未commit/push/deploy。
+
+## 2026-11-01：Fly/Docker設定を修正（ローカル検証済み）
+
+[設定修正と検証](../../deployment-settings-fix-20261101.md)：Flyのパスをルートcontext基準へ統一、未使用env/メモリ重複を削除、本番を非root独立イメージへ分離。Nuxt production依存・CLI/移行/安全パッチは保持し、開発専用依存2件とapp/tests/gitを除外。production/development build、CI追加stepのローカル実行、隔離_test DBの7 migration→0/HTTP200・匿名admin401・CORS204/運用audit/seed skipped・DB0件を確認。検証初稿のseed終了コード期待の誤りは記録して修正後再実行成功、専用2コンテナ/ネットワーク削除。独立レビュー成功。通常DB/本番と既存Composeは未変更、未commit/push/deploy。途中で出現したEssayScoringResult.vueの並行UI差分は本作業で編集していない。

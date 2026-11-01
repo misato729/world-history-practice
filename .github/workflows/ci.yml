@@ -41,6 +41,20 @@ jobs:
         run: docker compose run --rm -e APP_ENV=test -e DB_NAME=world_history_test frontend sh -c 'npm run db:migrate && npm run test:server'
       - name: Check frontend and production build
         run: docker compose run --rm frontend sh -c 'npm run security:check && npm test && npm run typecheck && npm run build'
+      - name: Build and check non-root production image
+        run: |
+          dockerfile="$(python3 -c 'import tomllib; print(tomllib.load(open("frontend/fly.toml", "rb"))["build"]["dockerfile"])')"
+          target="$(python3 -c 'import tomllib; print(tomllib.load(open("frontend/fly.toml", "rb"))["build"]["build-target"])')"
+          docker build --target "$target" -f "$dockerfile" -t world-history-production-check .
+          docker run --rm --network none world-history-production-check sh -ec '
+            test "$(id -u)" -ne 0
+            test ! -d app
+            test ! -d tests
+            test ! -d node_modules/@types/pg
+            test ! -d node_modules/@iconify-json/lucide
+            node --experimental-strip-types --input-type=module -e "await import(\"./server/operations/cli.ts\")"
+            npm run security:check
+          '
       - name: Stop isolated services
         if: always()
         run: docker compose down

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 197,
-  "updated_at": "2026-11-01T00:07:35.631Z",
+  "revision": 200,
+  "updated_at": "2026-11-01T01:03:59.945Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T00-07-35-631Z-r197.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T01-03-59-945Z-r200.json",
   "contexts": [
     {
       "id": "product",
@@ -111,7 +111,9 @@
     "local-only/textbook-six-revisions-20261029/verification.json",
     "local-only/textbook-six-revisions-20261029/final-results-review.json",
     "docs/hosting-costs.md",
-    "frontend/app/layouts/default.vue"
+    "frontend/app/layouts/default.vue",
+    "docs/deployment-settings-fix-20261101.md",
+    "docs/manual-change-audit-20261101.md"
   ],
   "tasks": [
     {
@@ -4994,6 +4996,112 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "deployment_settings_fix_20261101",
+      "context": "service",
+      "title": "Fly/Docker本番設定の整合・非root化と隔離検証",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー「では適切な設定に修正してください」",
+      "next_action": "追加依頼待ち。設定修正と資料は未commit/push/deploy、並行UI変更は別途確認",
+      "evidence": [
+        "docs/deployment-settings-fix-20261101.md"
+      ],
+      "last_verified_at": "2026-11-01T01:03:08.825Z",
+      "verification_scope": "本番/開発Docker build・本番非root/read-only・CI追加blockのローカル実行・CLIとpatch・新規_test DB移行7→0・HTTP200/admin401/CORS204・seed skipped/DB空維持・専用資源削除・静的/原資料保護検査・独立review。UI並行差分/本番/GitHub CIは範囲外。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "Flyのパス整合、本番非root起動、CLI/migrations、開発互換を確認",
+          "verification": "静的検査、Docker build、隔離_test DBのmigration反復とHTTP/運用CLI、開発target検査",
+          "status": "passed",
+          "evidence": [
+            "docs/deployment-settings-fix-20261101.md"
+          ],
+          "checked_at": "2026-11-01T01:03:08.825Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外による設定・互換性レビュー",
+          "verification": "settings_reviewによる差分確認",
+          "status": "passed",
+          "evidence": [
+            "docs/deployment-settings-fix-20261101.md"
+          ],
+          "checked_at": "2026-11-01T01:03:08.825Z",
+          "reviewer": "settings_review"
+        }
+      ],
+      "execution": {
+        "worker": "settings_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "本番起動・CLI等は成功。検証初稿のseed終了コード期待が誤りで失敗、仕様skippedへ検証だけ修正",
+            "at": "2026-11-01T00:56:35.366Z",
+            "failed_criteria": [
+              "checks",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "本番/開発イメージ・隔離DB・CLI/HTTP・CI追加手順と独立レビュー成功。seed検査の期待修正後再評価成功",
+            "at": "2026-11-01T01:03:50.385Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "deployment_settings_delivery_20261101",
+      "context": "service",
+      "title": "設定修正・手動履歴の資料を送信しCI完了を確認",
+      "status": "doing",
+      "depends_on": [
+        "deployment_settings_fix_20261101"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-01 ユーザー「設定修正とドキュメントをコミット・pushして、CIが通るところまで確認してください」",
+      "next_action": "対象差分を限定してcommit/pushしCIを確認。本番デプロイしない",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "Git納品とCI。既存704f5b7はリモート一致済みで、UI差分の追加編集なし",
+      "acceptance": [
+        {
+          "id": "delivery_ci",
+          "kind": "automated",
+          "description": "資料保護を通して設定と資料をpushし対象SHAのCI成功を確認",
+          "verification": "git diff/check-private-sources/実remote同期/GitHub Actions両jobの完了",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "送信対象の独立レビュー",
+          "verification": "settings_reviewによるstaged差分・送信範囲の確認",
+          "status": "passed",
+          "evidence": [
+            "docs/deployment-settings-fix-20261101.md"
+          ],
+          "checked_at": "2026-11-01T01:09:26.104Z",
+          "reviewer": "settings_review"
+        }
+      ],
+      "execution": {
+        "worker": "settings_delivery_owner",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

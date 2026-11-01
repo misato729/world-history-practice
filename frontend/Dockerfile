@@ -18,11 +18,31 @@ FROM base AS development
 CMD ["sh", "-c", "npm run db:migrate && npm run dev -- --host 0.0.0.0 --port 3000"]
 
 FROM base AS build
-ENV NITRO_PRESET=node-server NUXT_API_ONLY=true
+ENV NITRO_PRESET=node-server
 RUN npm run build
 
-FROM base AS production
+FROM base AS production-dependencies
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund \
+    && node scripts/ensure-dependencies.mjs --record \
+    && node scripts/patch-node-forge.mjs --check
+
+FROM node:24-alpine AS production
+RUN apk add --no-cache openssl postgresql16-client
+WORKDIR /workspace/frontend
+COPY --from=production-dependencies /workspace/frontend/package*.json ./
+COPY --from=production-dependencies /workspace/frontend/node_modules ./node_modules
+COPY --from=production-dependencies /workspace/frontend/server ./server
+COPY --from=production-dependencies /workspace/frontend/shared ./shared
+COPY --from=production-dependencies /workspace/config /workspace/config
+COPY --from=production-dependencies /workspace/content /workspace/content
+COPY --from=production-dependencies /workspace/frontend/scripts/container-entrypoint.sh ./scripts/
+COPY --from=production-dependencies /workspace/frontend/scripts/ensure-dependencies.mjs ./scripts/
+COPY --from=production-dependencies /workspace/frontend/scripts/patch-node-forge.mjs ./scripts/
+COPY --from=production-dependencies /workspace/frontend/patches ./patches
 COPY --from=build /workspace/frontend/.output ./.output
-ENV NODE_ENV=production APP_ENV=production NUXT_API_ONLY=true NITRO_HOST=0.0.0.0 NITRO_PORT=3000 NODE_OPTIONS=--max-old-space-size=512
+ENV NODE_ENV=production APP_ENV=production NITRO_HOST=0.0.0.0 NITRO_PORT=3000 NODE_OPTIONS=--max-old-space-size=512
+EXPOSE 3000
+USER node
+ENTRYPOINT ["sh", "scripts/container-entrypoint.sh"]
 # Fly's release command applies migrations before replacing the running machine.
 CMD ["node", ".output/server/index.mjs"]
