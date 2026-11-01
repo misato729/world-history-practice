@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 206,
-  "updated_at": "2026-11-01T02:32:36.340Z",
+  "revision": 209,
+  "updated_at": "2026-11-01T02:45:59.641Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T02-32-36-340Z-r206.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T02-45-59-641Z-r209.json",
   "contexts": [
     {
       "id": "product",
@@ -5206,61 +5206,88 @@
       "id": "mock_results_release_20261101",
       "context": "service",
       "title": "結果保存DB更新・承認済みGit送信と本番配信",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "mock_results_20261101"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-01 ユーザー: 結果保存用のDB更新およびコミット・push・デプロイまで行なってください",
-      "next_action": "Git送信、Fly API/Netlify静的配信、本番保存結果の再表示確認",
+      "next_action": "追加依頼を待つ。Netlify自動ビルド停止を維持",
       "evidence": [
         "docs/mock-results-release-20261101.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "作業中",
+      "last_verified_at": "2026-11-01T02:45:18.005Z",
+      "verification_scope": "既存Neon008のみ適用・既存15表内容同一。機能abd3156とtest修正c4a7730をmain送信。Netlify手動deploy6ae6a59e…ready/自動停止維持、Fly v9 NRT既存2台image abd3156/release成功/health200。既存管理者1問の結果保存・再ログインGET完全一致、PC1440幅260/見出し前面・SP390/再読込/はみ出しなし。修正CI41266125661両job成功。隔離operations21件成功、作成_test DB削除。独立レビュー合格、問題等の教材5表も最終内容一致。",
       "acceptance": [
         {
           "id": "db",
           "kind": "automated",
           "description": "結果保存用008と既存データ保持",
           "verification": "既存全表の件数/内容ダイジェスト比較",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-release-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:45:18.005Z"
         },
         {
           "id": "release",
           "kind": "automated",
           "description": "対象ソース送信と既存配信先への反映",
           "verification": "保護検査・build・Git同期・CI・Fly/Netlify反映",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-release-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:45:18.005Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "公開環境の保存結果再表示",
           "verification": "既存管理者の限定的な演習終了/保存/再読込確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-release-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:45:18.005Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "別担当のリリース根拠確認",
           "verification": "実装担当以外の根拠レビュー",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/mock-results-release-20261101.md"
+          ],
+          "checked_at": "2026-11-01T02:45:45.428Z",
+          "reviewer": "mock_results_review"
         }
       ],
       "execution": {
         "worker": "mock_results_release_owner",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回CIは007専用テストに008が混入しverify失敗。007範囲を固定、隔離operations21件成功。公開済み機能の結果保存GETも確認、修正CI/最終UI/独立確認を揃える",
+            "at": "2026-11-01T02:44:06.344Z",
+            "failed_criteria": [
+              "release",
+              "production",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "008適用・既存データ保持、承認済み送信、Netlify/Fly公開、本番保存/再ログイン/PC/SP、修正CIと独立レビュー合格",
+            "at": "2026-11-01T02:45:52.460Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
