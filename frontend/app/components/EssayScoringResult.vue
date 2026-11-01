@@ -7,7 +7,9 @@ const statusLabel = { matched: '確認できた', contradicted: '誤りの条件
 </script>
 
 <template>
+  <section v-if="modelAnswer" class="essay-model"><h2>模範解答</h2><p>{{ modelAnswer }}</p></section>
   <div class="essay-score">
+    <h2>採点基準</h2>
     <p class="essay-score-summary">{{ essayElementCountLabel(result) }}・<template v-if="result.grading_status === 'invalid'">参考点未確定<span>字数・指定語の条件を確認してください。</span></template><template v-else><strong>参考{{ result.confirmed_points }} / {{ result.max_points }}点</strong><span v-if="result.pending_points > 0">残り{{ result.pending_points }}点分は判定保留です。</span></template></p>
     <p class="essay-score-note">登録した表現と誤りの条件による学習用の参考採点です。判定保留は不正解を意味しません。模範解答と各要素を照らして確認してください。</p>
     <div class="essay-conditions">
@@ -22,13 +24,14 @@ const statusLabel = { matched: '確認できた', contradicted: '誤りの条件
         <div v-if="element.evidence.length" class="essay-evidence"><span>判定に使った箇所</span><blockquote v-for="(text, index) in element.evidence" :key="index">{{ text }}</blockquote></div>
       </li>
     </ol>
-    <section v-if="modelAnswer" class="essay-model"><h2>模範解答</h2><p>{{ modelAnswer }}</p></section>
     <section v-if="submittedText" class="essay-submitted"><h2>入力した解答</h2><p>{{ submittedText }}</p></section>
   </div>
 </template>
 
 <style scoped>
-.essay-score { min-width: 0; margin-top: 20px; overflow-wrap: anywhere; }
+.essay-score { min-width: 0; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.essay-score > h2 { margin: 0 0 10px; font-size: 1rem; }
+.essay-model { min-width: 0; overflow-wrap: anywhere; }
 .essay-score-summary { margin: 0 0 10px; font-size: 1.0625rem; line-height: 1.7; }
 .essay-score-summary strong { font-size: 1.25rem; }.essay-score-summary > span { display: block; }
 .essay-score-note,.essay-conditions { color: var(--muted); font-size: .875rem; line-height: 1.7; }
