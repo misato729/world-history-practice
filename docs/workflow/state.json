@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 217,
-  "updated_at": "2026-11-02T02:15:38.653Z",
+  "revision": 218,
+  "updated_at": "2026-11-02T02:19:22.980Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T02-15-38-653Z-r217.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T02-19-22-980Z-r218.json",
   "contexts": [
     {
       "id": "product",
@@ -5431,17 +5431,17 @@
       "id": "password_change_release_20261102",
       "context": "service",
       "title": "パスワード変更のコミット・push・本番反映",
-      "status": "done",
+      "status": "doing",
       "depends_on": [
         "account_password_change_20261102"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-02 ユーザー: OKです。コミット・push・デプロイして本番反映してください",
-      "next_action": "追加依頼待ち。文書のみ追送して同期/CIを確認",
+      "next_action": "隔離API再検証・独立レビュー後に修正送信しCIを確認する",
       "evidence": [
         "docs/password-change-release-20261102.md"
       ],
-      "last_verified_at": "2026-11-02T02:14:56.274Z",
+      "last_verified_at": "2026-11-02T02:19:21.866Z",
       "verification_scope": "7dce98bをmain送信、保護hook成功/同期0:0。Neon009のみ適用し既存16表不変/default0/冪等、Flyv10既存NRT2台同image、Netlify自動ready同SHA。CI41376102214全工程成功。本番合成会員で変更/旧失効/新login/削除、既存15表保持(回数制限以外)/210問/2会員。実ブラウザPC1440/SP390/320・1024トップ・既存session/再読込、独立最終レビュー合格。",
       "acceptance": [
         {
@@ -5449,11 +5449,11 @@
           "kind": "automated",
           "description": "承認された差分のみ送信しCI成功",
           "verification": "資料保護・全フロント検査・Git同期・CI",
-          "status": "passed",
+          "status": "failed",
           "evidence": [
             "docs/password-change-release-20261102.md"
           ],
-          "checked_at": "2026-11-02T02:14:56.274Z"
+          "checked_at": "2026-11-02T02:19:21.866Z"
         },
         {
           "id": "db",
@@ -5500,6 +5500,15 @@
             "summary": "009保全・Git送信・Netlify/Fly更新・CI全成功。本番変更/旧失効/再ログインと合成会員削除、PC/SP表示・独立レビュー合格",
             "at": "2026-11-02T02:15:35.638Z",
             "failed_criteria": []
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "文書追送CI41376800764で回数制限テストの固定残回数が競合要求の認証タイミングに依存して失敗。既存の成功記録を保持しテストだけ修正",
+            "at": "2026-11-02T02:19:22.980Z",
+            "failed_criteria": [
+              "delivery"
+            ]
           }
         ]
       }

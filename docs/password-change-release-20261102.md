@@ -80,3 +80,11 @@ password_change_reviewが指定のDB/配信/保全/本番API/UI記録と2画像�
 - [r216](workflow/handoffs/2026-11-02T02-15-35-638Z-r216.json)：独立レビュー後の合格評価。
 - [r217](workflow/handoffs/2026-11-02T02-15-38-653Z-r217.json)：本番反映の完了。
 - [release-context-final.log](../local-only/password-change-20261102/release-context-final.log)：最終workflow検査（送信対象外）。
+
+## 完了記録コミットのCIで検出したテストのタイミング依存
+
+文書追送 `06d54ad494dc88fb1a3a6c988f869a9b4062b831` のCI `41376800764` は、APIの回数制限期待値で200と429が不一致になり失敗した。競合するパスワード変更の敗者が認証段階で401となると、その要求は回数制限を消費しないため、残り回数を固定2回としたテストの前提が変わる。全データ保全や本番確認は既に成功した状態を保持している。
+
+`frontend/server-tests/api.test.ts` の制限準備を、既定上限+1以内に実際に上限到達を確認してからHTTP429を検査する形へ修正する。認証で早期拒否される順序と行ロックで拒否される順序のどちらでも同じ検査になる。API実行コード・本番イメージ・DB・画面は変更しない。隔離DBで再検証し、独立レビューと修正コミットCIを確認する。
+
+修正後の隔離API12件は失敗・スキップ0で成功（release-api-stability.log）。password_change_reviewの独立レビューも合格。検査コードと失敗記録だけをskip netlify付きで送信し、修正コミットのCI結果を確認する。

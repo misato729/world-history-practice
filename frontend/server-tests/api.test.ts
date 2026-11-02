@@ -10,7 +10,7 @@ import { configuration, setConfigurationForTesting } from '../server/core/config
 import { query, closeDatabase } from '../server/core/db.ts'
 import { allowedOrigins } from '../server/core/http.ts'
 import { notifyFailure } from '../server/core/notifications.ts'
-import { consumeRateLimit } from '../server/core/rate-limit.ts'
+import { consumeRateLimit, rules } from '../server/core/rate-limit.ts'
 import { migrate } from '../server/database/migrate.ts'
 import { saveQuestion } from '../server/services/learning-writer.ts'
 
@@ -231,7 +231,16 @@ test('password changes validate input, preserve records and revoke old sessions 
   const login = await request('/auth/login', { method: 'POST', body: { email: session.email, password: body.password } })
   assert.equal(login.status, 200)
   assert.equal((await request('/me', { token: login.body.data.access_token })).status, 200)
-  for (let count = 0; count < 2; count++) assert.equal((await consumeRateLimit('password_change', String(session.user.id))).allowed, true)
+  // The losing change can be rejected by authentication before it consumes a
+  // bucket. Exhaust the limit independently of that concurrent request's timing.
+  let limitReached = false
+  for (let count = 0; count <= rules.password_change.limit; count++) {
+    if (!(await consumeRateLimit('password_change', String(session.user.id))).allowed) {
+      limitReached = true
+      break
+    }
+  }
+  assert.equal(limitReached, true)
   assert.equal((await change({ ...body, current_password: body.password, password: 'Another-password-789', password_confirmation: 'Another-password-789' }, changed.access_token)).status, 429)
 })
 
