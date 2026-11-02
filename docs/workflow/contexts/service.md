@@ -200,3 +200,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-02 AdSenseの自動配信と本番head確認
 
 追加承認で83cd472を送信しCI/Netlify自動公開成功。実DOMで重複を検出し初回評価はfailedで保存。安定したkeyを加えた9015f70を再送信しCI41423971355全工程成功・Netlify6ae85cfceaba11e4b07496b7 Published同SHAを確認。本番HTML7URLのheadに指定src/async/crossorigin/data-hidが1件、実Chromeの演習フォーム描画後/内部遷移後も1件。独立最終PASS。演習直URLはHTTP404応答ながら画面描画し、発生時期未確認。広告表示/Google審査と広告Cookieに関するポリシー本文改定は対象外。完了文書だけskip netlifyで追送。[配信・変更ファイルと確認範囲](../../adsense-release-20261102.md)。
+
+## 2026-11-02 広告用プライバシーポリシー（ローカル）
+
+追加依頼で広告未使用の記述をAdSense利用/Cookie/外部送信情報と目的/広告設定とWebChoices/Google公式情報リンクへ更新。14条・制定日保持、改定日11月2日追加。両版の既存法務テスト計5件、実Vue/CSSコンパイル、部品previewのPC1440/SP390・折返し/キーボード確認、独立レビューPASS。共通レイアウト/DB/API/広告通信を含まない確認で、初回previewのSITE不足は修正後成功として区別。commit/push/本番反映なし。[詳細と公式資料](../../adsense-release-20261102.md)。

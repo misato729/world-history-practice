@@ -36,16 +36,20 @@ useSeoMeta({
           <li>不正アクセス、規約違反その他の不正利用の調査および防止</li>
           <li>障害の調査、セキュリティの確保および利用状況の把握</li>
           <li>個人を識別できない形式に加工した統計情報の作成</li>
+          <li>広告の配信、効果測定および広告に関する不正行為の防止</li>
           <li>法令上の義務への対応および権利の行使・保護</li>
         </ol>
         <p>利用目的を変更する場合は、変更前の目的と合理的な関連性を有する範囲で行い、本サービス上で公表します。</p>
       </section>
 
       <section>
-        <h2>第3条（Cookieの使用）</h2>
+        <h2>第3条（Cookieおよび広告配信）</h2>
         <p>本サービスでは、ログイン状態の維持、基本機能の提供、セキュリティ確保および障害調査のためにCookieを使用します。</p>
         <p>ブラウザの設定によりCookieを無効にできますが、ログイン、お気に入りその他の機能を利用できなくなる場合があります。</p>
-        <p>制定日現在、第三者広告配信または利用者を横断的に追跡する行動ターゲティング広告を目的としたCookieは使用していません。今後導入する場合は、本ポリシーを改定し、必要に応じて利用者の同意を取得します。</p>
+        <p>本サービスでは、Googleが提供する広告サービス「Google AdSense」を利用し、広告を掲載することがあります。Googleなどの第三者配信事業者や広告ネットワークは、Cookie等を使用し、本サービスや他のウェブサイトでの過去の閲覧情報をもとに、利用者に応じた広告を表示する場合があります。</p>
+        <p>広告サービスの利用に伴い、閲覧ページのURL、IPアドレス、ブラウザ・端末に関する情報、Cookie等の識別子が、利用者のブラウザからGoogle等へ送信されることがあります。これらの情報は、広告の配信、設定に応じた広告のパーソナライズ、効果測定、不正行為の防止等に利用されます。</p>
+        <p>Googleのパーソナライズ広告は、<a href="https://adssettings.google.com/partnerads?hl=ja" target="_blank" rel="noopener noreferrer">Googleの広告設定</a>で無効にできます。また、Google以外の参加事業者によるパーソナライズ広告は、<a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">WebChoices</a>で設定できます。パーソナライズ広告を無効にしても、広告の表示や効果測定、不正行為の防止に必要な情報の利用がすべて停止するわけではありません。</p>
+        <p>Googleによる情報の取扱いについては、<a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer">Googleのサービスを使用するサイトやアプリから収集した情報のGoogleによる使用</a>および<a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener noreferrer">Googleプライバシーポリシー</a>をご確認ください。</p>
       </section>
 
       <section>
@@ -131,6 +135,6 @@ useSeoMeta({
       </section>
     </article>
 
-    <p class="legal-revised">制定日：2026年11月1日</p>
+    <p class="legal-revised">制定日：2026年11月1日<br>最終改定日：2026年11月2日</p>
   </div>
 </template>
