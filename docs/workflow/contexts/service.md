@@ -196,3 +196,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-02 全ページ共通AdSenseスクリプト
 
 指定されたAdSenseのURL（client=ca-pub-2745326644447602）をfrontend/nuxt.config.tsのapp.head.scriptへ追加し、async/crossorigin=anonymousを指定。実Nuxt設定の読み込みと導入済みUnheadのhead生成で、head内に指定scriptが1件、body内に0件であることを確認。初回の確認用コマンドは未導入の@unhead/ssr参照で起動できず、導入済みunhead/serverへ修正して成功。差分検査・独立レビューPASS。ローカル3200は停止中で実ブラウザ確認なし。広告配信・Google審査・本番反映は未確認。コミット・push・デプロイなし。
+
+## 2026-11-02 AdSenseの自動配信と本番head確認
+
+追加承認で83cd472を送信しCI/Netlify自動公開成功。実DOMで重複を検出し初回評価はfailedで保存。安定したkeyを加えた9015f70を再送信しCI41423971355全工程成功・Netlify6ae85cfceaba11e4b07496b7 Published同SHAを確認。本番HTML7URLのheadに指定src/async/crossorigin/data-hidが1件、実Chromeの演習フォーム描画後/内部遷移後も1件。独立最終PASS。演習直URLはHTTP404応答ながら画面描画し、発生時期未確認。広告表示/Google審査と広告Cookieに関するポリシー本文改定は対象外。完了文書だけskip netlifyで追送。[配信・変更ファイルと確認範囲](../../adsense-release-20261102.md)。

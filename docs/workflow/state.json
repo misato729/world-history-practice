@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 232,
-  "updated_at": "2026-11-02T09:50:24.710Z",
+  "revision": 234,
+  "updated_at": "2026-11-02T09:54:44.140Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T09-50-24-710Z-r232.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T09-54-44-140Z-r234.json",
   "contexts": [
     {
       "id": "product",
@@ -5894,18 +5894,18 @@
       "id": "adsense_delivery_20261102",
       "context": "service",
       "title": "AdSense変更を送信しCI・Netlify自動配信・本番headを確認",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "adsense_head_20261102"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-02 ユーザー: コミットpush、CIとNetlify自動デプロイ成功、本番head反映まで確認",
-      "next_action": "修正版を送信してCI/Netlify/本番DOMを再検証",
+      "next_action": "完了文書追送のみ。機能配信SHA9015f70を維持",
       "evidence": [
         "docs/adsense-release-20261102.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "送信前。原資料保護・テンプレート・差分検査成功",
+      "last_verified_at": "2026-11-02T09:54:42.345Z",
+      "verification_scope": "9015f70送信・保護hook・remote同期、CI41423971355全工程success、Netlify自動Published同SHA、7HTML head一件/安定key、実Chrome読込後と内部遷移後一件、独立最終PASS。practice HTTP404の発生時期は未確認、広告表示/審査/ポリシー本文変更対象外",
       "acceptance": [
         {
           "id": "delivery",
@@ -5916,28 +5916,30 @@
           "evidence": [
             "docs/adsense-release-20261102.md"
           ],
-          "checked_at": "2026-11-02T09:50:23.472Z"
+          "checked_at": "2026-11-02T09:54:42.345Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "Netlify自動配信成功と本番head反映",
           "verification": "同SHAの自動Netlifyデプロイ成功、複数本番URLのHTML headで指定scriptを1件確認",
-          "status": "failed",
+          "status": "passed",
           "evidence": [
             "docs/adsense-release-20261102.md"
           ],
-          "checked_at": "2026-11-02T09:50:23.472Z"
+          "checked_at": "2026-11-02T09:54:42.345Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "独立した配信確認",
           "verification": "差分範囲と送信/CI/本番証拠のレビュー",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/adsense-release-20261102.md"
+          ],
+          "checked_at": "2026-11-02T09:54:42.345Z",
+          "reviewer": "adsense_review"
         }
       ],
       "execution": {
@@ -5953,6 +5955,13 @@
               "production",
               "review"
             ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "安定key修正後のCI全工程/Netlify同SHA公開/本番HTMLと実DOM一件を独立再評価PASS",
+            "at": "2026-11-02T09:54:43.242Z",
+            "failed_criteria": []
           }
         ]
       }
