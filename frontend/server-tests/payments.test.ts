@@ -164,6 +164,8 @@ dbTest('Checkout creates a fixed one-time Price with consent, origin, metadata a
   assert.deepEqual(params.allowed_payment_method_types, ['card'])
   assert.deepEqual(params.line_items, [{ price: 'price_synthetic', quantity: 1 }])
   assert.equal(params.consent_collection.terms_of_service, 'required')
+  assert.deepEqual(params.branding_settings, { display_name: settings.siteName })
+  assert.equal(params.custom_text.terms_of_service_acceptance.message, `${settings.siteName}の[利用規約](https://example.invalid/terms)と[プライバシーポリシー](https://example.invalid/privacy-policy)に同意します。[特定商取引法に基づく表記](https://example.invalid/commercial-disclosure)もご確認ください。`)
   assert.match(params.custom_text.submit.message, /500円（税込）/)
   assert.ok(params.custom_text.submit.message.includes(`模擬試験${settings.freeExamMax + 1}以降の利用資格`))
   assert.equal(params.metadata.user_id, String(f.user.id))
