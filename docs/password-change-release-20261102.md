@@ -88,3 +88,13 @@ password_change_reviewが指定のDB/配信/保全/本番API/UI記録と2画像�
 `frontend/server-tests/api.test.ts` の制限準備を、既定上限+1以内に実際に上限到達を確認してからHTTP429を検査する形へ修正する。認証で早期拒否される順序と行ロックで拒否される順序のどちらでも同じ検査になる。API実行コード・本番イメージ・DB・画面は変更しない。隔離DBで再検証し、独立レビューと修正コミットCIを確認する。
 
 修正後の隔離API12件は失敗・スキップ0で成功（release-api-stability.log）。password_change_reviewの独立レビューも合格。検査コードと失敗記録だけをskip netlify付きで送信し、修正コミットのCI結果を確認する。
+
+修正コミット `c0020aaf0f1d017824116203747d85836f06f5c8` をmainへ送信し、[CI41377208799](https://github.com/misato729/world-history-practice/actions/runs/41377208799) はharness/verifyの全工程成功。password_change_reviewもGitHubから全工程成功を独立確認し、最終再評価合格。機能の配信SHAは7dce98bで維持し、テスト修正と完了記録は再デプロイしていない。
+
+追加のローカル専用根拠：`release-final-ci-failure.log`（固定残回数の失敗原因）、`release-api-stability.log`（隔離API12件）、`release-stability-ci.json`・`release-stability-ci-watch.log`（修正CI成功）、`release-stability-context.log`（workflow検査）。初回の完了記録CIと修正後の成功を混同せず保存する。
+
+最終再評価の引き継ぎ：
+
+- [r218](workflow/handoffs/2026-11-02T02-19-22-980Z-r218.json)：文書追送CIでのタイミング依存失敗。
+- [r219](workflow/handoffs/2026-11-02T02-24-04-277Z-r219.json)：修正CI全成功後の最終合格。
+- [r220](workflow/handoffs/2026-11-02T02-24-07-282Z-r220.json)：再評価後の完了記録。
