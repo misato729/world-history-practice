@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 260,
-  "updated_at": "2026-11-02T15:22:49.466Z",
+  "revision": 266,
+  "updated_at": "2026-11-02T21:41:43.757Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T15-22-49-466Z-r260.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T21-41-43-757Z-r266.json",
   "contexts": [
     {
       "id": "product",
@@ -6228,62 +6228,88 @@
       "id": "premium_release_20261103",
       "context": "service",
       "title": "プレミアム機能のGit送信・本番反映とStripe販売接続",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "premium_membership_20261102",
         "anonymous_static_home_20261102"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-03 ユーザー: 実決済・販売開始・コミット・push・本番反映もしたい。確認回答: 情報教認と同じStripeアカウント・運営者情報を使用",
-      "next_action": "既存dirtyを保持した範囲コミットを準備、CI確認とStripe接続/本番準備",
+      "next_action": "公開/販売設定と情報教認の通知接続は完了。実カード支払と購入後付与は未確認として本人/購入者の操作を待つ",
       "evidence": [
         "docs/premium-release-20261103.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "両ラボが対象。実カード支払は本人操作。秘密値を表示・Git送信しない。教材/会員/履歴を変更しない",
+      "last_verified_at": "2026-11-02T21:29:01.665Z",
+      "verification_scope": "最終CI/Netlify同SHA/Fly各2台・専用500JPY販売有効・実署名終了通知3件ずつ・PC1440/SP390・台帳/集計保持。実課金/会員付与は未確認。通信順は同実装の隔離検査を継承。情報教認専用接続/終了通知3件200/販売falseと既存件数保持も確認",
       "acceptance": [
         {
           "id": "delivery",
           "kind": "automated",
           "description": "今回の変更だけをcommit/pushしてCIが成功",
           "verification": "原資料保護・staged差分・CI全工程・remote差分0",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/premium-release-20261103.md"
+          ],
+          "checked_at": "2026-11-02T21:33:26.222Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "同じ公開先へ反映し本番画面/通信条件を確認",
           "verification": "Fly/Netlifyの配信SHA・health・PC/SPと匿名/無料通信",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/premium-release-20261103.md"
+          ],
+          "checked_at": "2026-11-02T21:33:26.222Z"
         },
         {
           "id": "sales",
           "kind": "automated",
           "description": "正しいPrice/署名通知/販売者設定で販売できる",
           "verification": "実接続の照合と販売準備検査。実カードの最終操作は本人",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/premium-release-20261103.md"
+          ],
+          "checked_at": "2026-11-02T21:33:26.222Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "独立リリースレビュー",
           "verification": "差分・CI・配信・販売準備の根拠を実装担当以外が確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/premium-release-20261103.md"
+          ],
+          "checked_at": "2026-11-02T21:33:26.222Z",
+          "reviewer": "premium_review"
         }
       ],
       "execution": {
         "worker": "premium_release_implementer",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回の日本史releaseで採点ファイル転記方法を検出して停止。実Checkoutの共通既定名/規約リンクと販売切替の一時ファイル参照も修正し、最終配信/CI/設定を再評価する",
+            "at": "2026-11-02T21:30:39.637Z",
+            "failed_criteria": [
+              "production",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "最終CI・Netlify同SHA・Fly全台/採点保持・販売/専用Price・実終了通知・本番PCSPと独立最終PASS。実課金は未実施",
+            "at": "2026-11-02T21:33:27.135Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
