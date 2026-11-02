@@ -41,3 +41,8 @@
 - [frontend/tests/practiceStart.test.ts](../frontend/tests/practiceStart.test.ts)：プレミアム資格・無料範囲・通信順の回帰検査。
 - [frontend/tests/premiumCompletionAccess.test.ts](../frontend/tests/premiumCompletionAccess.test.ts)：プレミアム資格・無料範囲・通信順の回帰検査。
 - [frontend/tests/qualifiedExamAccess.test.ts](../frontend/tests/qualifiedExamAccess.test.ts)：プレミアム資格・無料範囲・通信順の回帰検査。
+
+追加の途中経過（既存の記録を改変せず保存）：
+
+- [docs/workflow/handoffs/2026-11-02T16-43-01-991Z-r261.json](workflow/handoffs/2026-11-02T16-43-01-991Z-r261.json)：署名設定待ち又は初回配信評価の不変記録。
+- [docs/workflow/handoffs/2026-11-02T21-30-39-637Z-r262.json](workflow/handoffs/2026-11-02T21-30-39-637Z-r262.json)：署名設定待ち又は初回配信評価の不変記録。
