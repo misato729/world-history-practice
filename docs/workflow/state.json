@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 266,
-  "updated_at": "2026-11-02T21:41:43.757Z",
+  "revision": 269,
+  "updated_at": "2026-11-02T22:18:15.836Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T21-41-43-757Z-r266.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T22-18-15-836Z-r269.json",
   "contexts": [
     {
       "id": "product",
@@ -6310,6 +6310,131 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "static_pages_catalog_20261103",
+      "context": "service",
+      "title": "全静的ページの不要な問題API取得を停止",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: プライバシーポリシーなど全ての静的ページで問題APIの件を対応",
+      "next_action": "ローカル実装完了。コミット・push・配信は今回未実施、別途の明示依頼を待つ",
+      "evidence": [
+        "docs/static-pages-catalog-20261103.md"
+      ],
+      "last_verified_at": "2026-11-02T22:11:26Z",
+      "verification_scope": "共有サイドバーの実SFC/実composableと関連46件、型検査、独立レビュー、実Nuxt+合成APIのPC1440/SP390。静的巡回の問題API0件とトップ復帰時の資格後取得を確認。DB/本番/決済/Git送信なし",
+      "acceptance": [
+        {
+          "id": "requests",
+          "kind": "automated",
+          "description": "静的ページで問題一覧を取得せずホーム/演習の取得条件を維持",
+          "verification": "実サイドバーsetupと共通composableの回帰、静的全ルート×資格、直アクセス/内部遷移/遅延応答と取消",
+          "status": "passed",
+          "evidence": [
+            "docs/static-pages-catalog-20261103.md"
+          ],
+          "checked_at": "2026-11-02T22:11:26Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPで静的模試一覧と演習リンク/ロックが成立",
+          "verification": "ローカル実部品と合成APIのブラウザー操作、通信件数とPC1440/SP390",
+          "status": "passed",
+          "evidence": [
+            "docs/static-pages-catalog-20261103.md"
+          ],
+          "checked_at": "2026-11-02T22:11:26Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立最終レビュー",
+          "verification": "依頼/差分/回帰/静的範囲を別担当が確認",
+          "status": "passed",
+          "evidence": [
+            "docs/static-pages-catalog-20261103.md"
+          ],
+          "checked_at": "2026-11-02T22:11:26Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "static_pages_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "静的全ルート×5資格と遷移回帰を含む関連46件・型検査・独立レビュー・合成API実画面PC/SPが成功",
+            "at": "2026-11-02T22:11:50.635Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "static_pages_release_20261103",
+      "context": "service",
+      "title": "静的ページAPI修正をコミットpushし本番反映を確認",
+      "status": "doing",
+      "depends_on": [
+        "static_pages_catalog_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: コミット・push・本番反映してください（両ラボの静的ページ修正）",
+      "next_action": "今回の差分だけ送信しCI・Netlify同SHA公開・本番静的表示を確認",
+      "evidence": [
+        "docs/static-pages-release-20261103.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "今回のフロント/回帰/ルール/文書のみ。既存dirtyを保全。DB/Stripe/Flyは変更しない",
+      "acceptance": [
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "今回だけの差分を安全に送信",
+          "verification": "staged diff、原資料保護、公開用state検査、既存dirty保全",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "ci",
+          "kind": "automated",
+          "description": "送信SHAのCIが成功",
+          "verification": "GitHub Actionsの全必須ジョブを確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "Netlify同SHA公開と本番修正版を確認",
+          "verification": "Published SHA、公開バンドルの取得条件とPC/SP表示を確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "配信範囲と証拠の独立レビュー",
+          "verification": "実装担当以外がstaged範囲とCI/配信/本番の証拠を照合",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "static_pages_release_implementer",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

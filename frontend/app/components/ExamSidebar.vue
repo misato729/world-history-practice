@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { EXAM_SET_COUNT, FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup } from '~/utils/examCatalog'
+import { hasFullExamAccess } from '~/utils/examConfig'
 
 const props = withDefaults(defineProps<{ desktopOpen?: boolean }>(), { desktopOpen: true })
 const emit = defineEmits<{ 'toggle-desktop': [] }>()
@@ -8,9 +9,11 @@ const openExam = ref<number | null>(null)
 const mobileOpen = ref(false)
 const mobileToggle = ref<HTMLButtonElement | null>(null)
 const desktopToggle = ref<HTMLButtonElement | null>(null)
+const { user } = useAuth()
+const onPractice = computed(() => /^\/practice(?:\/|$)/.test(route.path))
 const onHome = computed(() => route.path === '/')
 const qualification = useQualifiedExamAccess(onHome)
-const catalogEnabled = computed(() => !onHome.value || qualification.allowed.value)
+const catalogEnabled = computed(() => onPractice.value || (onHome.value && qualification.allowed.value))
 const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = usePracticeFilterCatalog(computed(() => ({})), catalogEnabled)
 const staticExams: ExamCatalogEntry[] = Array.from({ length: EXAM_SET_COUNT }, (_, index) => ({ exam_number: index + 1, question_numbers: [] }))
 const exams = computed(() => (
@@ -45,9 +48,13 @@ watch(() => route.fullPath, closeMobileList)
 
 const isCurrentGroup = (exam: ExamCatalogEntry, group: ExamCatalogGroup) => route.path.startsWith('/practice/') && isCatalogGroupActive(exam, group, Number(route.params.examNumber), Number(route.params.questionNumber))
 
+// Static navigation can use known access for links, without loading question data.
+const isStaticExamLocked = (exam: ExamCatalogEntry) => !catalogEnabled.value && exam.exam_number > FREE_EXAM_MAX
+  && (onHome.value || !hasFullExamAccess(user.value))
+
 const examTarget = (exam: ExamCatalogEntry) => (
   catalogEnabled.value ? `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)}`
-    : exam.exam_number > FREE_EXAM_MAX ? '/premium'
+    : isStaticExamLocked(exam) ? '/premium'
     : { path: '/practice/start', query: { exams: String(exam.exam_number) } }
 )
 </script>
@@ -118,7 +125,7 @@ const examTarget = (exam: ExamCatalogEntry) => (
           >
             <NuxtLink class="exam-link" :to="examTarget(exam)" @click="closeMobileList">
               {{ catalogExamLabel(exam.exam_number) }}
-              <UIcon v-if="!catalogEnabled && exam.exam_number > FREE_EXAM_MAX" name="i-lucide-lock-keyhole" aria-label="プレミアム会員向け" />
+              <UIcon v-if="isStaticExamLocked(exam)" name="i-lucide-lock-keyhole" aria-label="プレミアム会員向け" />
             </NuxtLink>
             <button
               v-if="exam.groupLinks.length"
