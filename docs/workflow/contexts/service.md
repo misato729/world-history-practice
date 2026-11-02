@@ -248,3 +248,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-03 Wallet/PayPayの送信・本番反映
 
 `stripe_wallets_release_20261103`。4 Git/既存3サービスの配信が承認され、templateは追加回答で送信のみ。既存dirty・採点注入・販売状態を保持し、CIとNetlify/Fly/本番ソース・表示を確認する。[配信記録](../../stripe-wallets-release.md)。
+
+### Wallet/PayPayの反映完了
+
+4実装SHAのCI成功、既存3サービスのNetlify/Fly反映・本番PC/SPを確認。世界史/日本史の販売有効、情報教認の販売無効を保持。テンプレートは送信のみ。実決済/審査の完了は未確認。[結果と変更一覧](../../stripe-wallets-release.md)。文書記録はCI/配信をskipして送信する。
