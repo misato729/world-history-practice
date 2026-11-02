@@ -56,3 +56,5 @@
 - [初回評価・r212](workflow/handoffs/2026-11-02T01-59-22-529Z-r212.json)
 - [再評価・r213](workflow/handoffs/2026-11-02T01-59-57-503Z-r213.json)
 - [完了引き継ぎ・r214](workflow/handoffs/2026-11-02T02-00-21-268Z-r214.json)
+
+2026-11-02の追加依頼に基づく本番反映は[リリース記録](password-change-release-20261102.md)を参照。上記未公開の記述は実装完了時点の状態。
