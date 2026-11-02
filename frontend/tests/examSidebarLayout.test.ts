@@ -29,7 +29,7 @@ test('navigation closes the mobile list and shares the published catalog', () =>
   assert.equal(sidebar.match(/@click="closeMobileList"/g)?.length, 2)
   assert.match(sidebar, /@keydown.esc="closeSidebarOnEscape"/)
   assert.match(sidebar, /mobileToggle.value\?\.focus\(\)/)
-  assert.match(sidebar, /usePublicExamCatalog\(\)/)
+  assert.match(sidebar, /usePracticeFilterCatalog\(/)
   assert.doesNotMatch(sidebar, /\b(?:useFetch|useApi|\$fetch)\s*\(/)
 })
 

@@ -53,7 +53,7 @@ after(async () => { setConfigurationForTesting(originalConfiguration); await clo
 
 test('configuration-derived question and choice limits support three/five choices and 25 questions', () => {
   for (const labels of [['A', 'B', 'C'], ['A', 'B', 'C', 'D', 'E']]) {
-    const config = configFor({ exam: { set_count: 2, questions_per_exam: 25, choice_labels: labels } })
+    const config = configFor({ exam: { set_count: 2, questions_per_exam: 25, choice_labels: labels }, payments: { ...originalConfiguration.payments, free_exam_count: 1 } })
     const attributes = input({ question_number: 25 }, config)
     assert.equal(validateQuestionInput(attributes, config).choices.length, labels.length)
     assert.throws(() => validateQuestionInput({ ...attributes, question_number: 26 }, config), apiError(422))

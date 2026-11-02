@@ -139,6 +139,8 @@ test('signup, normalized login, role filtering, duplicate email and public user 
 
 test('HTTP exercises hide answers, save authenticated history and preserve favorite ownership', integration, async () => {
   const session = await account()
+  // This fixture tests saved-data behavior with an entitled ordinary account.
+  await query(`INSERT INTO verification_access_grants(user_id,reason,granted_by,expires_at,created_at,updated_at) VALUES($1,'Synthetic API fixture','Synthetic test',CURRENT_TIMESTAMP+INTERVAL '1 hour',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, [session.user.id])
   const question = await request('/questions/next?exam_number=1&after_question_number=0')
   assert.equal(question.status, 200)
   const item = question.body.data
@@ -191,6 +193,8 @@ test('HTTP paid mode, expiry, malformed token and sales-off preserve server auth
 
 test('password changes validate input, preserve records and revoke old sessions including legacy tokens', integration, async () => {
   const session = await account()
+  // This fixture tests saved-data behavior with an entitled ordinary account.
+  await query(`INSERT INTO verification_access_grants(user_id,reason,granted_by,expires_at,created_at,updated_at) VALUES($1,'Synthetic API fixture','Synthetic test',CURRENT_TIMESTAMP+INTERVAL '1 hour',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, [session.user.id])
   const other = await account()
   const body = { current_password: 'Synthetic-password-123', password: 'Changed-password-456', password_confirmation: 'Changed-password-456' }
   const item = (await request('/questions/next?exam_number=1&after_question_number=0')).body.data

@@ -15,6 +15,7 @@ import { verifyStripeWebhook, type PaymentStripeClient, type StripeObject } from
 import { paymentSettings, publicPaymentConfiguration, validFrontendOrigin } from '../server/services/payment-settings.ts'
 import { PaymentEventMismatchError, PaymentNotReadyError, processStripeEvent } from '../server/services/payment-webhooks.ts'
 import { handlePayments } from '../server/services/payments.ts'
+import { authorizeExam } from '../server/services/learning.ts'
 
 const config = structuredClone(EXAM_CONFIG)
 config.payments.enabled = true
@@ -30,7 +31,9 @@ const settings = paymentSettings(env, config, 'test')
 test('sales require feature flag, launch flag, seller identity, disclosure readiness and matching execution mode', () => {
   assert.equal(settings.enabled, true)
   assert.equal(paymentSettings({ ...env, PAID_MEMBERSHIP_ENABLED: 'false' }, config, 'test').enabled, false)
-  assert.equal(paymentSettings(env, EXAM_CONFIG, 'test').enabled, false)
+  const freeConfig = structuredClone(EXAM_CONFIG)
+  freeConfig.payments.enabled = false
+  assert.equal(paymentSettings(env, freeConfig, 'test').enabled, false)
   for (const key of ['NUXT_PUBLIC_SELLER_NAME', 'NUXT_PUBLIC_SELLER_REPRESENTATIVE', 'NUXT_PUBLIC_SELLER_EMAIL', 'NUXT_PUBLIC_SELLER_ADDRESS', 'NUXT_PUBLIC_SELLER_PHONE']) {
     assert.equal(paymentSettings({ ...env, [key]: '' }, config, 'test').enabled, false)
   }
@@ -150,9 +153,19 @@ dbTest('Checkout creates a fixed one-time Price with consent, origin, metadata a
   const result = await createCheckoutSession(f.user, { db: f.db, settings, client: f.stripe.client })
   const { params, options } = f.stripe.state.requests[0]!
   assert.equal(params.mode, 'payment'); assert.equal(params.ui_mode, 'hosted_page')
+  assert.equal(params.billing_address_collection, 'auto')
+  assert.deepEqual(params.phone_number_collection, { enabled: false })
+  assert.deepEqual(params.automatic_tax, { enabled: false })
+  assert.equal(params.allow_promotion_codes, false)
+  assert.equal(params.submit_type, 'auto')
+  assert.equal(params.integration_identifier, 'hosted_web_0001')
+  assert.equal(params.origin_context, 'web')
+  assert.equal('payment_method_collection' in params, false)
   assert.deepEqual(params.allowed_payment_method_types, ['card'])
   assert.deepEqual(params.line_items, [{ price: 'price_synthetic', quantity: 1 }])
   assert.equal(params.consent_collection.terms_of_service, 'required')
+  assert.match(params.custom_text.submit.message, /500円（税込）/)
+  assert.ok(params.custom_text.submit.message.includes(`模擬試験${settings.freeExamMax + 1}以降の利用資格`))
   assert.equal(params.metadata.user_id, String(f.user.id))
   assert.deepEqual(params.metadata, params.payment_intent_data.metadata)
   assert.equal(params.success_url, 'https://example.invalid/premium/complete')
@@ -180,6 +193,22 @@ dbTest('expired pending Checkout permits a new purchase; wrong Price and session
   await createCheckoutSession(f.user, { db: f.db, settings, client: f.stripe.client })
   assert.equal((await records(f)).payment.status, 'expired')
   assert.equal(f.stripe.state.requests.length, 1)
+})
+
+dbTest('the default five free mocks and premium sixth mock follow purchase and verification entitlement', async f => {
+  assert.equal(EXAM_CONFIG.payments.enabled, true)
+  assert.equal(EXAM_CONFIG.payments.free_exam_count, 5)
+  assert.equal(EXAM_CONFIG.payments.amount, 500)
+  await authorizeExam(5, null, f.db)
+  await assert.rejects(authorizeExam(6, null, f.db), (e: unknown) => e instanceof ApiError && e.status === 401)
+  await assert.rejects(authorizeExam(6, f.user, f.db), (e: unknown) => e instanceof ApiError && e.status === 403)
+  await authorizeExam(6, { ...f.user, role: 'admin' }, f.db)
+  await query(`INSERT INTO verification_access_grants(user_id,reason,granted_by,expires_at,created_at,updated_at) VALUES($1,'Synthetic verification','Synthetic test',CURRENT_TIMESTAMP+INTERVAL '1 hour',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, [f.user.id], f.db)
+  await authorizeExam(6, f.user, f.db)
+  await query(`UPDATE verification_access_grants SET created_at=CURRENT_TIMESTAMP-INTERVAL '2 hours',expires_at=CURRENT_TIMESTAMP-INTERVAL '1 second' WHERE user_id=$1`, [f.user.id], f.db)
+  await assert.rejects(authorizeExam(6, f.user, f.db), (e: unknown) => e instanceof ApiError && e.status === 403)
+  await processEvent(f, checkout(f))
+  await authorizeExam(6, f.user, f.db)
 })
 
 dbTest('active membership prevents duplicate purchases before contacting Stripe', async f => {
@@ -213,9 +242,12 @@ dbTest('partial refunds keep access and full refunds revoke only their source me
   f.stripe.state.charge.amount_refunded = 100
   await processEvent(f, event('refund.updated', { status: 'succeeded', payment_intent: 'pi_synthetic', charge: 'ch_synthetic' }))
   assert.equal((await records(f)).payment.status, 'partially_refunded'); assert.equal((await records(f)).membership!.status, 'active')
+  await authorizeExam(6, f.user, f.db)
   f.stripe.state.charge.amount_refunded = 500
   await processEvent(f, event('refund.created', { status: 'succeeded', payment_intent: 'pi_synthetic', charge: 'ch_synthetic' }))
   assert.equal((await records(f)).payment.status, 'refunded'); assert.equal((await records(f)).membership!.revocation_reason, 'refund')
+  await assert.rejects(authorizeExam(6, f.user, f.db), (e: unknown) => e instanceof ApiError && e.status === 403)
+  await authorizeExam(5, null, f.db)
 })
 
 dbTest('failed refund reconciles current charge amount and restores only refund-revoked access', async f => {
@@ -330,4 +362,51 @@ test('concurrent signed raw-body HTTP webhooks commit exactly one receipt and en
     await query('DELETE FROM users WHERE id=$1', [user!.id])
     await query('DELETE FROM stripe_webhook_events WHERE stripe_event_id=$1', [e.id])
   }
+})
+
+
+dbTest('shared-account Checkout for a foreign Price is acknowledged without changing own payment or entitlement', async f => {
+  const e = checkout(f, { id: 'cs_foreign_service', metadata: { purchase_type: 'paid_membership', user_id: String(f.user.id), stripe_price_id: 'price_foreign_service' } })
+  assert.equal(await processEvent(f, e), 'processed')
+  assert.equal(await processEvent(f, e), 'duplicate')
+  const rows = await records(f)
+  assert.equal(rows.payment.status, 'pending'); assert.equal(rows.membership, undefined)
+})
+
+dbTest('own Checkout arriving before its payment row remains retryable, including missing Price metadata', async f => {
+  for (const metadata of [{ purchase_type: 'paid_membership', stripe_price_id: 'price_synthetic' }, { purchase_type: 'paid_membership' }]) {
+    const e = checkout(f, { id: 'cs_own_not_ready', metadata })
+    await assert.rejects(processEvent(f, e), PaymentNotReadyError)
+    assert.equal((await query('SELECT 1 FROM stripe_webhook_events WHERE stripe_event_id=$1', [e.id], f.db)).length, 0)
+  }
+})
+
+dbTest('shared-account foreign refunds and disputes do not retry or modify own payment', async f => {
+  f.stripe.state.intent.metadata.stripe_price_id = 'price_foreign_service'
+  for (const type of ['refund.created', 'refund.updated', 'refund.failed', 'charge.dispute.created', 'charge.dispute.closed']) {
+    const e = event(type, { id: 'foreign_object', payment_intent: 'pi_foreign_service', charge: 'ch_foreign_service', status: type === 'refund.failed' ? 'failed' : 'succeeded', currency: 'jpy', amount: 500 })
+    assert.equal(await processEvent(f, e), 'processed')
+    assert.equal(await processEvent(f, e), 'duplicate')
+  }
+  const rows = await records(f)
+  assert.equal(rows.payment.status, 'pending'); assert.equal(rows.membership, undefined)
+})
+
+dbTest('a pending purchase for a previous own Price is never mistaken for a foreign service', async f => {
+  await query("UPDATE payments SET stripe_price_id='price_previous_own' WHERE id=$1", [f.payment.id], f.db)
+  f.stripe.state.intent.metadata.stripe_price_id = 'price_previous_own'
+  const e = event('refund.updated', { status: 'succeeded', payment_intent: 'pi_synthetic', charge: 'ch_synthetic' })
+  await assert.rejects(processEvent(f, e), PaymentNotReadyError)
+  assert.equal((await query('SELECT 1 FROM stripe_webhook_events WHERE stripe_event_id=$1', [e.id], f.db)).length, 0)
+})
+
+dbTest('a foreign Price on a known own Checkout remains a verification error', async f => {
+  const e = checkout(f, { metadata: { user_id: String(f.user.id), purchase_type: 'paid_membership', stripe_price_id: 'price_foreign_service' } })
+  await assert.rejects(processEvent(f, e), PaymentEventMismatchError)
+  assert.equal((await records(f)).payment.status, 'pending')
+})
+
+dbTest('an unconfigured current Price cannot acknowledge an unknown Checkout as foreign', async f => {
+  const e = checkout(f, { id: 'cs_unknown', metadata: { purchase_type: 'paid_membership', stripe_price_id: 'price_other' } })
+  await assert.rejects(processStripeEvent(e, { db: f.db, settings: { ...settings, priceId: '' }, client: f.stripe.client }), PaymentNotReadyError)
 })

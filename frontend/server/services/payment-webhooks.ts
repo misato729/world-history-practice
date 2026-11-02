@@ -30,9 +30,21 @@ class EventProcessor {
     }
   }
 
+  /** A shared Stripe account sends each subscribed event to every service endpoint. */
+  private async isForeignPrice(metadata: StripeObject): Promise<boolean> {
+    const priceId = metadata.stripe_price_id
+    if (!this.settings.priceId || typeof priceId !== 'string' || !priceId || priceId === this.settings.priceId) return false
+    // Preserve notifications for an older own Price while a pending purchase is settling.
+    const [known] = await query('SELECT 1 AS found FROM payments WHERE stripe_price_id=$1 LIMIT 1', [priceId], this.db)
+    return !known
+  }
+
   private async complete(session: StripeObject, completedAt: Date) {
     const [payment] = await query<Payment>('SELECT * FROM payments WHERE stripe_checkout_session_id=$1 FOR UPDATE', [session.id], this.db)
-    if (!payment) throw new PaymentNotReadyError('Checkout payment record is unavailable')
+    if (!payment) {
+      if (await this.isForeignPrice(session.metadata || {})) return
+      throw new PaymentNotReadyError('Checkout payment record is unavailable')
+    }
     if (payment.status !== 'pending') return
     const intent = stripeId(session.payment_intent)
     const metadata = session.metadata || {}
@@ -60,7 +72,7 @@ class EventProcessor {
     if (!intentId) return null
     const intent = await this.client.paymentIntents.retrieve(intentId)
     const metadata = intent.metadata || {}
-    if (metadata.purchase_type !== 'paid_membership') return null
+    if (metadata.purchase_type !== 'paid_membership' || await this.isForeignPrice(metadata)) return null
     if (!(intent.currency === this.settings.currency && intent.amount === this.settings.amount && metadata.user_id && metadata.stripe_price_id)) mismatch()
     // Do not acknowledge a refund/dispute that arrived before the completion event.
     throw new PaymentNotReadyError('Awaiting Checkout completion notification')

@@ -14,14 +14,22 @@ test('legal pages are accessible without application login', () => {
   }
 })
 
-test('published free-service policies omit draft and payment terms', () => {
-  for (const name of ['terms', 'privacy-policy']) {
-    const page = source(name)
-    assert.doesNotMatch(page, /テンプレートの草案|公開前に完成|Stripe|プレミアム|返金|買い切り|PRICE_LABEL/)
+test('premium policies disclose one-time purchase and preserve advertising privacy', () => {
+  for (const name of ['terms', 'privacy-policy', 'commercial-disclosure']) {
+    assert.doesNotMatch(source(name), /テンプレートの草案|公開前に完成/)
   }
-  assert.match(source('terms'), /公開中の問題は無料で演習できます/)
-  assert.match(source('privacy-policy'), /SITE.contact_email/)
-  assert.match(source('privacy-policy'), /mailto:/)
+  const terms = source('terms')
+  assert.match(terms, /PRICE_LABEL/)
+  assert.match(terms, /月額料金および自動更新はありません/)
+  assert.match(terms, /全額返金、支払取消し、異議申立て/)
+  assert.match(terms, /お気に入り機能は、有効なプレミアム会員資格/)
+  const privacy = source('privacy-policy')
+  assert.match(privacy, /StripeのCheckout Session ID、PaymentIntent ID、Charge ID/)
+  assert.match(privacy, /https:\/\/stripe\.com\/jp\/privacy/)
+  assert.match(privacy, /Google AdSense/)
+  assert.match(privacy, /adssettings\.google\.com\/partnerads/)
+  assert.match(privacy, /SITE.contact_email/)
+  assert.match(privacy, /mailto:/)
 })
 
 test('commercial disclosure retains seller readiness checks and request-based contact disclosure', () => {

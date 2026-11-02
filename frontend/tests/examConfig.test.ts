@@ -21,6 +21,7 @@ test('grouped formats coexist with the five-question legacy material', () => {
 test('a different exam configuration drives catalog dimensions, category defaults and five-choice authoring', () => {
   const input = variant()
   input.exam = { set_count: 3, questions_per_exam: 7, choice_labels: ['A', 'B', 'C', 'D', 'E'] }
+  input.payments.free_exam_count = 1
   input.categories = { major: [{ value: 'other', label: '別の分野' }], minor: [{ value: 'topic', label: '単元', major_category_value: 'other' }] }
   input.site.name = '別の資格サービス'
   const config = parseExamConfig(input)

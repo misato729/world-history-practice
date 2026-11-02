@@ -16,13 +16,14 @@ const inProgress = (): never => fail(409, 'checkout_session_in_progress', '未�
 
 function checkoutParameters(user: User, settings: PaymentSettings): Stripe.Checkout.SessionCreateParams {
   const metadata = { user_id: String(user.id), purchase_type: 'paid_membership', stripe_price_id: settings.priceId }
+  const priceLabel = settings.currency === 'jpy' ? `${settings.amount}円（税込）` : `${settings.amount} ${settings.currency.toUpperCase()}`
   return {
     ui_mode: 'hosted_page', mode: 'payment', locale: 'ja', billing_address_collection: 'auto',
     phone_number_collection: { enabled: false }, automatic_tax: { enabled: false }, allow_promotion_codes: false,
     allowed_payment_method_types: ['card'], submit_type: 'auto', integration_identifier: 'hosted_web_0001', origin_context: 'web',
     line_items: [{ price: settings.priceId, quantity: 1 }], client_reference_id: String(user.id), customer_email: user.email,
     consent_collection: { terms_of_service: 'required' },
-    custom_text: { submit: { message: `「${settings.siteName}の有料コンテンツ利用資格」を${settings.amount} ${settings.currency.toUpperCase()}で買い切る契約です。月額課金や自動更新はありません。決済完了後に利用資格を提供し、提供開始後の利用者都合による返金は原則として受け付けません。` } },
+    custom_text: { submit: { message: `「模擬試験${settings.freeExamMax + 1}以降の利用資格」を${priceLabel}で買い切る契約です。月額課金や自動更新はありません。決済完了後に利用資格を提供し、提供開始後の利用者都合による返金は原則として受け付けません。` } },
     metadata, payment_intent_data: { metadata }, success_url: `${settings.frontendUrl}/premium/complete`, cancel_url: `${settings.frontendUrl}/premium?canceled=1`,
   }
 }

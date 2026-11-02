@@ -120,6 +120,7 @@ test('reset requests hide account existence, store only hashes, and return befor
 
 test('reset validation preserves tokens; concurrent use succeeds once and revokes all previous sessions', integration, async () => {
   const { user, token, email } = await account()
+  await query(`INSERT INTO verification_access_grants(user_id,reason,granted_by,expires_at,created_at,updated_at) VALUES($1,'Synthetic reset fixture','Synthetic test',CURRENT_TIMESTAMP+INTERVAL '1 hour',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, [user.id])
   const item = (await call(`/questions/${questionId}`)).body.data
   assert.equal((await call(`/questions/${questionId}/favorite`, undefined, token, 'PUT')).status, 201)
   assert.equal((await call(`/questions/${questionId}/answer`, { answer_type: 'single_choice', selected_choice_id: item.choices[0].id, question_version: item.question_version, submission_key: randomUUID() }, token)).status, 200)
