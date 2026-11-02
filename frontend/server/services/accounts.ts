@@ -7,6 +7,7 @@ import { fail } from '../core/errors.ts'
 import { throttle } from '../core/rate-limit.ts'
 import { expirePendingCheckouts } from './payments.ts'
 import type { AuthSession } from '../../shared/types/auth.ts'
+import { newPasswordSchema } from './password-validation.ts'
 
 const signupSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -17,7 +18,7 @@ const signupSchema = z.object({
 
 const passwordChangeSchema = z.object({
   current_password: z.string().min(1),
-  password: z.string().min(8, '新しいパスワードは8文字以上で入力してください').refine(value => Buffer.byteLength(value) <= 72, '新しいパスワードは72バイト以内で入力してください'),
+  password: newPasswordSchema,
   password_confirmation: z.string(),
 }).refine(value => value.password_confirmation === value.password, { path: ['password_confirmation'], message: '確認用パスワードが一致していません' })
 

@@ -8,6 +8,8 @@ import { fail } from './errors.ts'
 export const rules = {
   signup: { limit: 10, period: 900 }, login: { limit: 30, period: 300 },
   password_change: { limit: 10, period: 900 },
+  password_reset_request_ip: { limit: 30, period: 900 }, password_reset_request_email: { limit: 3, period: 3600 },
+  password_reset_submit: { limit: 30, period: 900 }, password_reset_delivery: { limit: 20, period: 86400 },
   checkout_ip: { limit: 20, period: 300 }, checkout_user: { limit: 10, period: 300 },
   answer: { limit: 120, period: 60 },
 } as const

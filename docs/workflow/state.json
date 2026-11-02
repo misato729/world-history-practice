@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 220,
-  "updated_at": "2026-11-02T02:24:07.282Z",
+  "revision": 227,
+  "updated_at": "2026-11-02T04:08:42.206Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T02-24-07-282Z-r220.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T04-08-42-206Z-r227.json",
   "contexts": [
     {
       "id": "product",
@@ -5518,6 +5518,304 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "email_password_reset_20261102",
+      "context": "service",
+      "title": "SMTPメールによるパスワード再設定",
+      "status": "done",
+      "depends_on": [
+        "password_change_release_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: パスワードを忘れた場合にメールから再設定できる機能を追加。送信サービス未設定、SMTP対応で実装を進める選択",
+      "next_action": "2026-11-02の方針変更でメール自動送信は不採用。実装をローカル専用へ退避し管理者による手動再設定へ置換",
+      "evidence": [
+        "docs/email-password-reset-20261102.md"
+      ],
+      "last_verified_at": "2026-11-02T02:57:45.482Z",
+      "verification_scope": "ローカル実装。全サーバー101/全フロント475が失敗/skip0、最終typecheck/build成功。隔離_testDB+ループバックSMTPで一度限り/期限/ロック待機/競合/旧login失効/履歴お気に入り保持/遅延送信/旧送信失敗の新token保持を検証。実Vue部品+合成APIのPC1440/SP390/320で依頼/不一致/期限/成功/リンク切替/古い応答拒否/URL断片除去/はみ出しを確認。独立再レビュー合格。SMTP実設定・実メール・通常/本番DB・Git送信/配信なし。",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "再設定・失効・期限・原子性・情報非公開",
+          "verification": "独立_test DBのAPI/SMTPテスト",
+          "status": "passed",
+          "evidence": [
+            "docs/email-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T02:57:45.482Z"
+        },
+        {
+          "id": "mail",
+          "kind": "automated",
+          "description": "SMTP接続と安全な設定・エラー処理",
+          "verification": "ローカルSMTP捕捉とTLS/設定の単体検証",
+          "status": "passed",
+          "evidence": [
+            "docs/email-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T02:57:45.482Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "依頼・再設定フォームのPC/SP実操作",
+          "verification": "型検査/buildと実部品による画面確認",
+          "status": "passed",
+          "evidence": [
+            "docs/email-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T02:57:45.482Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外のレビュー",
+          "verification": "別担当の差分・検証根拠確認",
+          "status": "passed",
+          "evidence": [
+            "docs/email-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T02:57:45.482Z",
+          "reviewer": "email_reset_review"
+        }
+      ],
+      "execution": {
+        "worker": "email_reset_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回レビューでロック待機中の期限切れを取りこぼすCURRENT_TIMESTAMP判定を指摘。clock_timestampへ修正し回帰テスト成功。残り検証を継続",
+            "at": "2026-11-02T02:49:22.314Z",
+            "failed_criteria": [
+              "api",
+              "mail",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "SMTP再設定を実装。サーバー101/フロント475、最終型/build、PC/SPと同一タブ/旧応答の実操作、独立再レビュー合格。実SMTP設定・本番反映は未実施",
+            "at": "2026-11-02T02:57:46.238Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "manual_password_reset_20261102",
+      "context": "service",
+      "title": "問い合わせ受付・管理者による仮パスワード発行と手動送付",
+      "status": "done",
+      "depends_on": [
+        "password_change_release_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: 固定費を避けて運用でカバー。問い合わせを受け管理者がランダムな値を発行し登録メアド宛へ手動で送る",
+      "next_action": "Git送信と本番反映は明示依頼時に行う。実際の再設定・送信は管理者の運用",
+      "evidence": [
+        "docs/manual-password-reset-20261102.md"
+      ],
+      "last_verified_at": "2026-11-02T03:48:39.334Z",
+      "verification_scope": "独立_test DB: API6件/全体server99件、frontend472件、型/build/template/diff、PC1440/SP390/320実部品+合成API UI、独立再レビューPASS。SMTP退役。通常/本番DB・実送信・commit/push/deploy未実施",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "権限・管理者再認証・対象確認・再発行競合と既存データ保持",
+          "verification": "隔離_test DBのAPI検証",
+          "status": "passed",
+          "evidence": [
+            "docs/manual-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T03:48:39.334Z"
+        },
+        {
+          "id": "cleanup",
+          "kind": "automated",
+          "description": "自動メール機能とSMTP依存を退役し問い合わせ案内へ切替",
+          "verification": "差分・依存・不要ルート不在の検証",
+          "status": "passed",
+          "evidence": [
+            "docs/manual-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T03:48:39.334Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "管理者発行と一般向け案内のPC/SP操作",
+          "verification": "型検査/buildと実部品のPC/SP検証",
+          "status": "passed",
+          "evidence": [
+            "docs/manual-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T03:48:39.334Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "実装担当以外がコード/根拠を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/manual-password-reset-20261102.md"
+          ],
+          "checked_at": "2026-11-02T03:48:39.334Z",
+          "reviewer": "email_reset_review"
+        }
+      ],
+      "execution": {
+        "worker": "manual_reset_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "手動再設定API6件/全体99件・フロント472件・型/build/template/diff・PC/SP合成API UI・独立再レビュー合格。SMTP退役",
+            "at": "2026-11-02T03:48:55.317Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "gas_password_reset_20261102",
+      "context": "service",
+      "title": "GAS送信による期限付きリンクの自動パスワード再設定",
+      "status": "done",
+      "depends_on": [
+        "password_change_release_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: GASで期限付きの再設定リンクを送る完全自動化を実装しGAS設定手順も説明",
+      "next_action": "GASはユーザーが設定・承認。Git送信/DB適用/本番反映は明示依頼時に実施",
+      "evidence": [
+        "docs/gas-password-reset-20261102.md",
+        "docs/gas-password-reset-setup.md"
+      ],
+      "last_verified_at": "2026-11-02T04:08:30.720Z",
+      "verification_scope": "ローカル隔離_test DB API9/全体server102件、frontend481件、型/build/template/diff、実部品+合成API PC1440/SP390/320、GAS模擬サービス・署名/リダイレクト/時刻/配送枠、独立最終レビューPASS。実GAS/メール/通常・本番DB/commit/push/deploy未実施",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "期限/一度限り/hash/版/競合と既存データ保持",
+          "verification": "隔離_test DBの実API検査",
+          "status": "passed",
+          "evidence": [
+            "docs/gas-password-reset-20261102.md",
+            "docs/gas-password-reset-setup.md"
+          ],
+          "checked_at": "2026-11-02T04:08:30.720Z"
+        },
+        {
+          "id": "gas",
+          "kind": "automated",
+          "description": "署名・リプレイ・宛先/URL制約・送信上限と安全なエラー",
+          "verification": "GAS実コードの模擬GoogleサービスとHTTP送信テスト",
+          "status": "passed",
+          "evidence": [
+            "docs/gas-password-reset-20261102.md",
+            "docs/gas-password-reset-setup.md"
+          ],
+          "checked_at": "2026-11-02T04:08:30.720Z"
+        },
+        {
+          "id": "ui_docs",
+          "kind": "automated",
+          "description": "PC/SP申請/再設定画面とGAS設定手順",
+          "verification": "front/type/build・実部品ブラウザ操作・手順照合",
+          "status": "passed",
+          "evidence": [
+            "docs/gas-password-reset-20261102.md",
+            "docs/gas-password-reset-setup.md"
+          ],
+          "checked_at": "2026-11-02T04:08:30.720Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外の独立レビュー",
+          "verification": "コード/根拠/設定手順確認",
+          "status": "passed",
+          "evidence": [
+            "docs/gas-password-reset-20261102.md",
+            "docs/gas-password-reset-setup.md"
+          ],
+          "checked_at": "2026-11-02T04:08:30.720Z",
+          "reviewer": "email_reset_review"
+        }
+      ],
+      "execution": {
+        "worker": "gas_reset_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "GAS署名リレーと期限付きリンクを実装。隔離server102/front481・型/build・PC/SP・独立レビュー合格",
+            "at": "2026-11-02T04:08:37.828Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "gas_password_reset_release_20261102",
+      "context": "service",
+      "title": "GAS自動再設定機能のコミットpush・Fly/Netlify本番反映",
+      "status": "doing",
+      "depends_on": [
+        "gas_password_reset_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: 本番反映まで進める（今回機能のcommit/push、Fly/Netlify配信、SQL010適用）",
+      "next_action": "設定/DBと対象差分を確認し安全な送信・配信を行い両公開先とCIを検証",
+      "evidence": [],
+      "last_verified_at": null,
+      "verification_scope": "設定値非表示。既存利用者のパスワードは変更しない。実配送/本人再設定はユーザーの受信操作と区別",
+      "acceptance": [
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "対象限定Git送信・原資料保護・CI成功",
+          "verification": "pre-push/private検査/remote同期/CI全工程",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "Fly全台/Netlify公開と010・既存データ保持",
+          "verification": "release/image/schemaと件数/安全な指紋・公開GET/API",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立配信レビュー",
+          "verification": "対象差分と配信/CI/検証根拠",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "gas_release_owner",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

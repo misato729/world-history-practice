@@ -59,6 +59,7 @@ DB接続は`DATABASE_URL`が優先されます。未指定時は`PGHOST`・`PGPO
 | --- | --- |
 | 稼働確認 | `GET /health` |
 | 会員登録・ログイン | `POST /auth/signup`・`POST /auth/login` |
+| メールでのパスワード再設定 | `POST /auth/forgot-password`・`POST /auth/reset-password`（GAS署名送信・30分/1回限り） |
 | 自分の情報・退会 | `GET /me`・`DELETE /me` |
 | パスワード変更 | `PATCH /me/password`（現在のパスワード・新パスワード・確認入力） |
 | 利用可能な演習セット | `GET /exams` |

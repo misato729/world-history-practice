@@ -25,6 +25,8 @@ export default defineNuxtConfig({
     '/admin/**': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/login': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/signup': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/reset-password': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' } },
+    '/forgot-password': { headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' } },
   },
   runtimeConfig: {
     apiBaseInternal: '',
