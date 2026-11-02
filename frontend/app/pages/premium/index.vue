@@ -19,7 +19,7 @@ type ApiResponse<T> = { data: T }
 
 useSeoMeta({
   title: `プレミアム会員｜${SITE.name}`,
-  description: '公開問題を利用できる買い切りのプレミアム会員についてご案内します。',
+  description: `模擬試験${EXAM_CONFIG.payments.free_exam_count + 1}以降を利用できる買い切りのプレミアム会員についてご案内します。`,
 })
 
 const route = useRoute()
@@ -94,7 +94,7 @@ const startCheckout = async () => {
     <header class="page-intro premium-intro">
       <span class="premium-kicker">ONE-TIME PURCHASE</span>
       <h1>プレミアム会員</h1>
-      <p>{{ PRICE_LABEL }}（税込）の買い切りで、公開中の全演習セットを利用できます。月額料金や自動更新はありません。</p>
+      <p>{{ PRICE_LABEL }}（税込）の買い切りで、公開中および今後追加される模擬試験{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降を利用できます。月額料金や自動更新はありません。</p>
     </header>
 
     <div v-if="canceled" class="notice-panel" role="status">
@@ -110,8 +110,8 @@ const startCheckout = async () => {
       <div class="benefit-block">
         <h2>利用できる内容</h2>
         <ul>
-          <li><UIcon name="i-lucide-circle-check" />無料問題を含む、公開中の全演習セット</li>
-          <li><UIcon name="i-lucide-circle-check" />演習セット{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降の公開問題</li>
+          <li><UIcon name="i-lucide-circle-check" />模擬試験1〜{{ EXAM_CONFIG.payments.free_exam_count }}を含む、公開中の全模擬試験</li>
+          <li><UIcon name="i-lucide-circle-check" />今後追加される模擬試験{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降</li>
           <li><UIcon name="i-lucide-circle-check" />お気に入り登録とサイドバーでの目印表示</li>
         </ul>
         <p class="scope-note">資格はアカウント削除、全額返金、支払取消し、異議申立てによる取消し、またはサービス終了まで有効です。</p>
@@ -124,7 +124,7 @@ const startCheckout = async () => {
           <UIcon name="i-lucide-badge-check" />
           <div>
             <h2>{{ isAdmin ? '管理者権限で全問題を利用できます' : isVerificationAccount ? '検証用資格で全問題を利用できます' : 'プレミアム会員資格は有効です' }}</h2>
-            <p>公開中の全問題を利用できます。購入手続きは必要ありません。</p>
+            <p>模擬試験{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降を利用できます。購入手続きは必要ありません。</p>
           </div>
         </div>
         <NuxtLink class="primary-link" :to="`/practice/${Math.min(EXAM_CONFIG.payments.free_exam_count + 1, EXAM_CONFIG.exam.set_count)}/1`">問題演習へ</NuxtLink>
@@ -136,7 +136,7 @@ const startCheckout = async () => {
 
       <template v-else-if="!paymentEnabled">
         <h2>現在は販売準備中です</h2>
-        <p>決済設定と販売者情報の確認が完了するまで購入はできません。{{ EXAM_CONFIG.payments.free_exam_count > 0 ? '無料の公開問題は引き続き利用できます。' : '販売開始後に有料機能を利用できます。' }}</p>
+        <p>決済設定と販売者情報の確認が完了するまで購入はできません。模擬試験1〜{{ EXAM_CONFIG.payments.free_exam_count }}は引き続き無料で利用できます。</p>
         <NuxtLink v-if="EXAM_CONFIG.payments.free_exam_count > 0" class="secondary-link" to="/practice/1/1">無料問題を利用する</NuxtLink>
       </template>
 

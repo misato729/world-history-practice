@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 238,
-  "updated_at": "2026-11-02T11:13:49.672Z",
+  "revision": 260,
+  "updated_at": "2026-11-02T15:22:49.466Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T11-13-49-672Z-r238.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T15-22-49-466Z-r260.json",
   "contexts": [
     {
       "id": "product",
@@ -6083,6 +6083,207 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "premium_membership_20261102",
+      "context": "service",
+      "title": "情報教認と同仕様のプレミアム会員機能を実装",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: TQCE-info-practiceと全く同じ仕様でプレミアム会員機能。確認回答: 両方に実装",
+      "next_action": "無料/匿名の静的トップの最終確認を記録",
+      "evidence": [
+        "docs/premium-membership-20261102.md"
+      ],
+      "last_verified_at": "2026-11-02T15:22:39.323Z",
+      "verification_scope": "合成DB決済各22・関連API世界史103/日本史101、front全体624/215、型/build、PC/SP購入フロー・資格別表示・独立PASS。実Stripe/本番/Git送信なし",
+      "acceptance": [
+        {
+          "id": "behavior",
+          "kind": "automated",
+          "description": "参照と同じ支払・資格・アクセス仕様を実装",
+          "verification": "500JPY/無料5・有料6以降/お気に入り・署名Webhook/冪等/返金紛争・完了状態の回帰と隔離API検査",
+          "status": "passed",
+          "evidence": [
+            "docs/premium-membership-20261102.md"
+          ],
+          "checked_at": "2026-11-02T15:22:39.324Z"
+        },
+        {
+          "id": "quality",
+          "kind": "automated",
+          "description": "関連検査と型/ビルド・PCSP操作が成功",
+          "verification": "既存+不足回帰、型検査、ビルドを順番に実行、PC/SPの購入前/確認待ち/資格別状態と法務表示",
+          "status": "passed",
+          "evidence": [
+            "docs/premium-membership-20261102.md"
+          ],
+          "checked_at": "2026-11-02T15:22:39.324Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立仕様・実装レビュー",
+          "verification": "参照との差分と受入条件/検証範囲を別担当が確認",
+          "status": "passed",
+          "evidence": [
+            "docs/premium-membership-20261102.md"
+          ],
+          "checked_at": "2026-11-02T15:22:39.325Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "premium_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "隔離決済検査の新規期限切れfixtureが既存期間制約へ違反。fixtureを訂正、製品制約は維持",
+            "at": "2026-11-02T14:22:18.059Z",
+            "failed_criteria": [
+              "behavior",
+              "quality",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "同仕様の決済/資格/法務と完了画面を隔離検査・PCSP実操作・独立レビューで確認",
+            "at": "2026-11-02T15:22:41.387Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "anonymous_static_home_20261102",
+      "context": "service",
+      "title": "非ログイン/無料会員のトップをAPIなし静的表示、有資格者は資格確認後に取得",
+      "status": "done",
+      "depends_on": [
+        "premium_membership_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 追加依頼: プレミアム実装後、非ログインのトップでは問題APIを読まず模試6以降をロック付き静的表示。情報教認と同じ。追加: 無料会員も問題APIを呼ばず、資格情報→問題情報の順序を保証",
+      "next_action": "ローカル確認済み。実接続/販売開始/Git送信・配信は依頼待ち",
+      "evidence": [
+        "docs/premium-membership-20261102.md"
+      ],
+      "last_verified_at": "2026-11-02T15:22:46.380Z",
+      "verification_scope": "両版匿名API0/無料meのみ・有資格者me後exams、PC1440/SP390・無料演習遷移・18非同期/開始回帰・型/build・独立再評価PASS。本番変更なし",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "非ログイン/無料会員の問題APIが0、有資格者も資格確認完了後だけ取得",
+          "verification": "遅延me/無料/有料/管理者/検証資格/認証切替・条件タブを含む通信順とPCSP、関連回帰・型",
+          "status": "passed",
+          "evidence": [
+            "docs/premium-membership-20261102.md"
+          ],
+          "checked_at": "2026-11-02T15:22:46.380Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "静的表示/ロック/通信の条件と参照仕様を別担当が確認",
+          "status": "passed",
+          "evidence": [
+            "docs/premium-membership-20261102.md"
+          ],
+          "checked_at": "2026-11-02T15:22:46.380Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "premium_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回独立レビューで直接URLの乱数seed受理条件と演習ページの不一致を検出",
+            "at": "2026-11-02T15:22:45.986Z",
+            "failed_criteria": [
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "seed条件を修正し18回帰・実API通信順/無料演習・PCSPと独立最終PASS",
+            "at": "2026-11-02T15:22:47.315Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "premium_release_20261103",
+      "context": "service",
+      "title": "プレミアム機能のGit送信・本番反映とStripe販売接続",
+      "status": "doing",
+      "depends_on": [
+        "premium_membership_20261102",
+        "anonymous_static_home_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: 実決済・販売開始・コミット・push・本番反映もしたい。確認回答: 情報教認と同じStripeアカウント・運営者情報を使用",
+      "next_action": "既存dirtyを保持した範囲コミットを準備、CI確認とStripe接続/本番準備",
+      "evidence": [
+        "docs/premium-release-20261103.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "両ラボが対象。実カード支払は本人操作。秘密値を表示・Git送信しない。教材/会員/履歴を変更しない",
+      "acceptance": [
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "今回の変更だけをcommit/pushしてCIが成功",
+          "verification": "原資料保護・staged差分・CI全工程・remote差分0",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "同じ公開先へ反映し本番画面/通信条件を確認",
+          "verification": "Fly/Netlifyの配信SHA・health・PC/SPと匿名/無料通信",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "sales",
+          "kind": "automated",
+          "description": "正しいPrice/署名通知/販売者設定で販売できる",
+          "verification": "実接続の照合と販売準備検査。実カードの最終操作は本人",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立リリースレビュー",
+          "verification": "差分・CI・配信・販売準備の根拠を実装担当以外が確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "premium_release_implementer",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

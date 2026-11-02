@@ -447,8 +447,8 @@
     ]
   },
   "payments": {
-    "enabled": false,
-    "free_exam_count": 1,
+    "enabled": true,
+    "free_exam_count": 5,
     "amount": 500,
     "currency": "jpy"
   },

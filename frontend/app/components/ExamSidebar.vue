@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup } from '~/utils/examCatalog'
+import { EXAM_SET_COUNT, FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup } from '~/utils/examCatalog'
 
 const props = withDefaults(defineProps<{ desktopOpen?: boolean }>(), { desktopOpen: true })
 const emit = defineEmits<{ 'toggle-desktop': [] }>()
@@ -8,58 +8,21 @@ const openExam = ref<number | null>(null)
 const mobileOpen = ref(false)
 const mobileToggle = ref<HTMLButtonElement | null>(null)
 const desktopToggle = ref<HTMLButtonElement | null>(null)
-const { user, accessToken, ensureCurrentUser } = useAuth()
-const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = await usePublicExamCatalog()
-const accessStatus = ref<'ready' | 'pending' | 'error'>(
-  accessToken.value && !user.value ? 'pending' : 'ready',
-)
-let resolvingAccess = false
-
+const onHome = computed(() => route.path === '/')
+const qualification = useQualifiedExamAccess(onHome)
+const catalogEnabled = computed(() => !onHome.value || qualification.allowed.value)
+const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = usePracticeFilterCatalog(computed(() => ({})), catalogEnabled)
+const staticExams: ExamCatalogEntry[] = Array.from({ length: EXAM_SET_COUNT }, (_, index) => ({ exam_number: index + 1, question_numbers: [] }))
 const exams = computed(() => (
-  (publicCatalog.value?.data ?? [])
-    .filter(exam => catalogExamStartNumber(exam) !== undefined && exam.access !== 'paid_membership_required' && (hasFullExamAccess(user.value) || exam.exam_number <= FREE_EXAM_MAX))
+  (catalogEnabled.value ? (publicCatalog.value ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined && exam.access !== 'paid_membership_required') : staticExams)
     .map(exam => ({ ...exam, groupLinks: catalogGroupLinks(exam) }))
 ))
-const isLoading = computed(() => accessStatus.value === 'pending' || catalogStatus.value === 'pending' || catalogStatus.value === 'idle')
-const hasAccessError = computed(() => accessStatus.value === 'error' || Boolean(catalogError.value))
-
-const resolveAccess = async () => {
-  if (resolvingAccess) return
-
-  if (!accessToken.value) {
-    accessStatus.value = 'ready'
-    return
-  }
-
-  if (user.value) {
-    accessStatus.value = 'ready'
-    return
-  }
-
-  resolvingAccess = true
-  accessStatus.value = 'pending'
-
-  const currentUser = await ensureCurrentUser()
-  resolvingAccess = false
-
-  if (currentUser) {
-    accessStatus.value = 'ready'
-  }
-  else if (accessToken.value) {
-    accessStatus.value = 'error'
-  }
-  else {
-    accessStatus.value = 'ready'
-  }
+const isLoading = computed(() => catalogEnabled.value && (catalogStatus.value === 'pending' || catalogStatus.value === 'idle'))
+const hasAccessError = computed(() => Boolean(catalogError.value))
+const retryCatalog = async () => {
+  if (onHome.value) await qualification.refresh()
+  await refreshCatalog()
 }
-
-onMounted(() => { void resolveAccess() })
-
-watch(accessToken, () => { void resolveAccess() })
-watch(user, (currentUser) => {
-  if (!currentUser) return
-  accessStatus.value = 'ready'
-})
 
 const toggleExam = (exam: number) => {
   openExam.value = openExam.value === exam ? null : exam
@@ -83,7 +46,9 @@ watch(() => route.fullPath, closeMobileList)
 const isCurrentGroup = (exam: ExamCatalogEntry, group: ExamCatalogGroup) => route.path.startsWith('/practice/') && isCatalogGroupActive(exam, group, Number(route.params.examNumber), Number(route.params.questionNumber))
 
 const examTarget = (exam: ExamCatalogEntry) => (
-  `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)}`
+  catalogEnabled.value ? `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)}`
+    : exam.exam_number > FREE_EXAM_MAX ? '/premium'
+    : { path: '/practice/start', query: { exams: String(exam.exam_number) } }
 )
 </script>
 
@@ -136,7 +101,7 @@ const examTarget = (exam: ExamCatalogEntry) => (
       <div v-else-if="hasAccessError" class="sidebar-loading sidebar-error" role="alert">
         <UIcon name="i-lucide-circle-alert" />
         <span>利用資格を確認できません</span>
-        <button type="button" @click="() => { resolveAccess(); refreshCatalog() }">再確認</button>
+        <button type="button" @click="retryCatalog()">再確認</button>
       </div>
 
       <p v-else-if="!exams.length" class="sidebar-empty">利用できる模擬試験はありません</p>
@@ -153,6 +118,7 @@ const examTarget = (exam: ExamCatalogEntry) => (
           >
             <NuxtLink class="exam-link" :to="examTarget(exam)" @click="closeMobileList">
               {{ catalogExamLabel(exam.exam_number) }}
+              <UIcon v-if="!catalogEnabled && exam.exam_number > FREE_EXAM_MAX" name="i-lucide-lock-keyhole" aria-label="プレミアム会員向け" />
             </NuxtLink>
             <button
               v-if="exam.groupLinks.length"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, type ExamCatalogEntry } from '~/utils/examCatalog'
+import { EXAM_SET_COUNT, FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, type ExamCatalogEntry } from '~/utils/examCatalog'
 import { CULTURAL_HISTORY_CATEGORIES, HISTORY_TOPICS, serializeHistoryTopicSelection } from '~/utils/historyTopics'
 import type { CulturalHistoryCategoryCode } from '~/utils/examConfig'
 import {
@@ -21,10 +21,14 @@ useSeoMeta({
   ogDescription: description,
 })
 
-const { data: publicCatalog, status: publicCatalogStatus, error: publicCatalogError, refresh: refreshPublicCatalog } = await usePublicExamCatalog()
-const catalogExams = computed(() => (publicCatalog.value?.data ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined))
-
-const { user } = useAuth()
+const qualification = useQualifiedExamAccess()
+const hasFullAccess = qualification.allowed
+const { data: publicCatalog, status: publicCatalogStatus, error: publicCatalogError, refresh: refreshPublicCatalog } = usePracticeFilterCatalog(computed(() => ({})), hasFullAccess)
+// Static slots contain no invented question counts or positions. Resolve them only after starting.
+const staticExams: ExamCatalogEntry[] = Array.from({ length: EXAM_SET_COUNT }, (_, index) => ({ exam_number: index + 1, question_numbers: [] }))
+const catalogExams = computed(() => hasFullAccess.value
+  ? (publicCatalog.value ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined)
+  : staticExams)
 const launcherMode = ref<LauncherMode>('exam')
 const selectedMajorCategory = ref('')
 const selectedCategory = ref('')
@@ -53,9 +57,6 @@ watch([selectedMajorCategory, selectedCategory, selectedHistoryTopic], () => {
   practiceStartError.value = ''
 })
 
-const hasFullAccess = computed(() => (
-  hasFullExamAccess(user.value)
-))
 const freeExams = computed(() => catalogExams.value.filter(exam => exam.access !== 'paid_membership_required' && exam.exam_number <= FREE_EXAM_MAX))
 const availableExams = computed(() => (
   hasFullAccess.value ? catalogExams.value.filter(exam => exam.access !== 'paid_membership_required') : freeExams.value
@@ -88,14 +89,14 @@ const subjectQuery = computed<Record<string, string>>(() => ({
 const {
   data: conditionCatalog, error: conditionCatalogError,
   refresh: refreshConditionCatalog, scopeKey: conditionScopeKey,
-} = usePracticeFilterCatalog(subjectQuery, computed(() => launcherMode.value === 'conditions'))
+} = usePracticeFilterCatalog(subjectQuery, computed(() => hasFullAccess.value && launcherMode.value === 'conditions'))
 const countReady = computed(() => publicCatalogStatus.value === 'success' && conditionCatalog.value !== null)
 const conditionSequence = computed(() => selectPracticePositions(
   (conditionCatalog.value ?? []).filter(exam => exam.access !== 'paid_membership_required'), sortedSelectedExamNumbers.value,
 ))
 const selectedQuestionCount = computed(() => countReady.value ? conditionSequence.value.length : null)
 const hasConditionSelection = computed(() => sortedSelectedExamNumbers.value.length > 0)
-const canStartConditionalPractice = computed(() => hasConditionSelection.value && countReady.value && selectedQuestionCount.value! > 0)
+const canStartConditionalPractice = computed(() => hasConditionSelection.value && (!hasFullAccess.value || countReady.value && selectedQuestionCount.value! > 0))
 const currentStartContext = () => JSON.stringify([conditionScopeKey.value, sortedSelectedExamNumbers.value, launcherMode.value])
 const retryConditionCount = async () => {
   if (publicCatalogError.value) await refreshPublicCatalog()
@@ -104,7 +105,9 @@ const retryConditionCount = async () => {
 
 const examIsLocked = (examNumber: number) => examNumber > FREE_EXAM_MAX && !hasFullAccess.value
 const examTarget = (exam: ExamCatalogEntry) => (
-  examIsLocked(exam.exam_number) ? '/premium' : `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)!}`
+  examIsLocked(exam.exam_number) ? '/premium' : hasFullAccess.value
+    ? `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)!}`
+    : { path: '/practice/start', query: { exams: String(exam.exam_number) } }
 )
 const startConditionalPractice = async (order: PracticeOrder) => {
   if (!canStartConditionalPractice.value || startingPractice.value) return
@@ -119,6 +122,10 @@ const startConditionalPractice = async (order: PracticeOrder) => {
   }
 
   try {
+    if (!hasFullAccess.value) {
+      await navigateTo({ path: '/practice/start', query: { ...query, ...(order === 'random' ? { order, seed: String(createPracticeSeed()) } : {}) } })
+      return
+    }
     const catalog = await refreshConditionCatalog()
     if (!catalog || context !== currentStartContext() || launcherMode.value !== 'conditions') return
     let sequence = selectPracticePositions(catalog.filter(exam => exam.access !== 'paid_membership_required'), selectedExams)
@@ -219,14 +226,15 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
         role="tabpanel"
         aria-labelledby="exam-mode-tab"
       >
-        <p v-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" class="catalog-loading" role="status">
+        <p v-if="hasFullAccess && (publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle')" class="catalog-loading" role="status">
           <span class="catalog-spinner" aria-hidden="true"></span>
           <span>模擬試験を読み込んでいます</span>
         </p>
         <p v-else-if="publicCatalogError" class="practice-start-error" role="alert">模擬試験を読み込めませんでした。<button class="secondary-link" type="button" @click="refreshPublicCatalog()">再読み込み</button></p>
-        <p v-else-if="!availableExams.length" role="status">現在利用できる公開問題はありません。</p>
+        <p v-else-if="hasFullAccess && !availableExams.length" role="status">現在利用できる公開問題はありません。</p>
+        <p v-if="qualification.status.value === 'error'" class="practice-start-error" role="alert">利用資格を確認できません。<button type="button" @click="qualification.refresh()">再確認</button></p>
         <div class="exam-grid-heading">
-          <p><strong>公開中 {{ catalogExams.length }}回</strong><span>大問の順に演習</span></p>
+          <p><strong>{{ hasFullAccess ? `公開中 ${catalogExams.length}回` : `模擬試験 全${EXAM_SET_COUNT}回` }}</strong><span>大問の順に演習</span></p>
           <NuxtLink v-if="!hasFullAccess" class="premium-info-link" to="/premium">
             <UIcon name="i-lucide-lock-keyhole" />
             模擬試験{{ FREE_EXAM_MAX + 1 }}以降はプレミアム会員向けです
@@ -237,12 +245,14 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
             v-for="exam in catalogExams"
             :key="exam.exam_number"
             class="exam-card"
+            :class="{ 'exam-card-locked': examIsLocked(exam.exam_number) }"
             :to="examTarget(exam)"
             :aria-label="examIsLocked(exam.exam_number) ? `模擬試験${exam.exam_number}はプレミアム会員向けです` : `模擬試験${exam.exam_number}を始める`"
           >
             <span class="exam-card-copy">
               <strong>{{ catalogExamLabel(exam.exam_number) }}</strong>
-              <span>{{ exam.groups?.length ? `${exam.groups.length}大問・` : '' }}{{ exam.question_numbers.length }}問収録</span>
+              <span v-if="hasFullAccess">{{ exam.groups?.length ? `${exam.groups.length}大問・` : '' }}{{ exam.question_numbers.length }}問収録</span>
+              <span v-else>{{ examIsLocked(exam.exam_number) ? 'プレミアム会員向け' : '無料で演習' }}</span>
             </span>
             <UIcon :name="examIsLocked(exam.exam_number) ? 'i-lucide-lock-keyhole' : 'i-lucide-arrow-right'" aria-hidden="true" />
           </NuxtLink>
@@ -321,12 +331,12 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
               件数を確認できませんでした。
               <button type="button" class="secondary-link" @click="retryConditionCount()">件数を再読み込み</button>
             </p>
-            <p v-else-if="publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle'" role="status">公開問題の件数を確認中です。</p>
+            <p v-else-if="hasFullAccess && (publicCatalogStatus === 'pending' || publicCatalogStatus === 'idle')" role="status">公開問題の件数を確認中です。</p>
             <p v-else-if="hasConditionSelection" aria-live="polite">
               <span>選択中</span>
               {{ sortedSelectedExamNumbers.length }}回の模擬試験・{{ hasSubjectFilter ? '条件に合う公開問題' : '選択した公開問題' }}
               <strong v-if="countReady">全{{ selectedQuestionCount }}問</strong>
-              <strong v-else role="status">件数を確認中です。</strong>
+              <strong v-else-if="hasFullAccess" role="status">件数を確認中です。</strong><span v-else>開始時に件数を確認します。</span>
             </p>
             <p v-else class="selection-required">
               <span>選択内容を確認してください</span>
@@ -387,6 +397,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 </template>
 
 <style scoped>
+.exam-card-locked { background: var(--surface-soft); color: var(--muted); }
 .home-main { min-width: 0; background: var(--surface-soft); --home-gutter: clamp(24px, 4vw, 64px); }
 .practice-launcher {
   scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px);

@@ -39,7 +39,6 @@ useSeoMeta({
     </div>
 
     <article v-if="PAYMENTS_ENABLED" class="legal-document disclosure-table">
-      <p class="draft-notice">テンプレートの草案です。販売者情報と販売条件を実際のサービスに合わせて確認し、販売開始前に完成させてください。</p>
       <dl>
         <div><dt>販売事業者</dt><dd>{{ seller.name || '販売開始前に掲載' }}</dd></div>
         <div><dt>運営責任者</dt><dd>{{ seller.representative || '販売開始前に掲載' }}</dd></div>
@@ -51,7 +50,7 @@ useSeoMeta({
         <div><dt>販売価格以外の負担</dt><dd>インターネット接続に必要な通信料は利用者の負担となります。</dd></div>
         <div><dt>支払方法</dt><dd>クレジットカード（Stripe Checkout）</dd></div>
         <div><dt>支払時期</dt><dd>購入手続き時に決済されます。</dd></div>
-        <div><dt>提供内容</dt><dd>公開中の全演習セットの利用資格。月額課金や自動更新はありません。</dd></div>
+        <div><dt>提供内容</dt><dd>公開中および今後追加される模擬試験{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降の利用資格。月額課金や自動更新はありません。</dd></div>
         <div><dt>提供時期</dt><dd>決済完了をStripeの通知で確認後、直ちに利用できます。通知の遅延時は反映まで時間を要する場合があります。</dd></div>
         <div><dt>返品・返金</dt><dd>デジタルコンテンツの性質上、提供開始後の利用者都合による返品・返金は原則として受け付けません。重複決済、提供不能その他契約内容に適合しない場合は、上記問い合わせ先へご連絡ください。法令上認められる権利を制限するものではありません。</dd></div>
         <div><dt>利用環境</dt><dd>最新版の主要ブラウザとインターネット接続が必要です。CookieとJavaScriptを有効にしてください。</dd></div>
