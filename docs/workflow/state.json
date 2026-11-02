@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 231,
-  "updated_at": "2026-11-02T09:43:15.300Z",
+  "revision": 232,
+  "updated_at": "2026-11-02T09:50:24.710Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T09-43-15-300Z-r231.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T09-50-24-710Z-r232.json",
   "contexts": [
     {
       "id": "product",
@@ -5900,7 +5900,7 @@
       ],
       "authorization": "requested",
       "request_ref": "2026-11-02 ユーザー: コミットpush、CIとNetlify自動デプロイ成功、本番head反映まで確認",
-      "next_action": "対象変更のみ送信し同SHAのCI/Netlify・本番HTMLを確認",
+      "next_action": "修正版を送信してCI/Netlify/本番DOMを再検証",
       "evidence": [
         "docs/adsense-release-20261102.md"
       ],
@@ -5912,18 +5912,22 @@
           "kind": "automated",
           "description": "対象のみ送信しCI成功・リモート同期",
           "verification": "保護hook、対象SHA、Actions全工程とGit同期",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/adsense-release-20261102.md"
+          ],
+          "checked_at": "2026-11-02T09:50:23.472Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "Netlify自動配信成功と本番head反映",
           "verification": "同SHAの自動Netlifyデプロイ成功、複数本番URLのHTML headで指定scriptを1件確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "failed",
+          "evidence": [
+            "docs/adsense-release-20261102.md"
+          ],
+          "checked_at": "2026-11-02T09:50:23.472Z"
         },
         {
           "id": "review",
@@ -5939,7 +5943,18 @@
       "execution": {
         "worker": "adsense_delivery_owner",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回CIと自動配信成功、HTMLは一件だが読み込み後DOMで二重化を検出しkeyを追加",
+            "at": "2026-11-02T09:50:24.710Z",
+            "failed_criteria": [
+              "production",
+              "review"
+            ]
+          }
+        ]
       }
     }
   ],
