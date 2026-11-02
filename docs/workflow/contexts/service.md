@@ -192,3 +192,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-02 GAS再設定の本番反映
 
 ユーザーの追加明示承認でf89327aをmain送信、Fly全NRT2台を同imageへ更新、release_commandでSQL010適用。既存15表は内容指紋/件数一致、空token表とmigration1行だけ追加。Netlify6ae832e28aded88f3f06f3d2 ready、CI41402545321のharness/verify全工程success。実Chrome PC/SPと匿名申請/無効token拒否・GAS GET到達を確認。実受信・本人再設定もユーザーが成功と回答し、本人操作として記録。[配信記録](../../gas-password-reset-release-20261102.md)。独立最終レビューPASS。文書だけの記録追送はskip netlifyで重複配信を避け、機能配信SHAと区別する。
+
+## 2026-11-02 全ページ共通AdSenseスクリプト
+
+指定されたAdSenseのURL（client=ca-pub-2745326644447602）をfrontend/nuxt.config.tsのapp.head.scriptへ追加し、async/crossorigin=anonymousを指定。実Nuxt設定の読み込みと導入済みUnheadのhead生成で、head内に指定scriptが1件、body内に0件であることを確認。初回の確認用コマンドは未導入の@unhead/ssr参照で起動できず、導入済みunhead/serverへ修正して成功。差分検査・独立レビューPASS。ローカル3200は停止中で実ブラウザ確認なし。広告配信・Google審査・本番反映は未確認。コミット・push・デプロイなし。
