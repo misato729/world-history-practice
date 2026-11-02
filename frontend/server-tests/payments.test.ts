@@ -78,18 +78,18 @@ test('raw Stripe signature verification rejects whitespace changes, invalid JSON
 function fakeStripe() {
   const state = {
     price: { active: true, currency: 'jpy', unit_amount: 500, type: 'one_time', livemode: false } as StripeObject,
-    session: { id: 'cs_existing', url: 'https://checkout.stripe.com/synthetic', status: 'open', livemode: false } as StripeObject,
+    session: { allowed_payment_method_types: ['card', 'link', 'paypay'], id: 'cs_existing', url: 'https://checkout.stripe.com/synthetic', status: 'open', livemode: false } as StripeObject,
     charge: { id: 'ch_synthetic', currency: 'jpy', amount: 500, amount_refunded: 500, payment_intent: 'pi_synthetic', disputed: false } as StripeObject,
     intent: { id: 'pi_synthetic', currency: 'jpy', amount: 500, metadata: { purchase_type: 'paid_membership', user_id: '1', stripe_price_id: 'price_synthetic' } } as StripeObject,
     requests: [] as { params: StripeObject, options: { idempotencyKey: string } }[], expired: [] as string[],
-    newSession: null as StripeObject | null, failCharge: false,
+    newSession: null as StripeObject | null, expirationResult: null as StripeObject | null, failCharge: false,
   }
   const client: PaymentStripeClient = {
     prices: { retrieve: async () => state.price },
     checkout: { sessions: {
       create: async (params, options) => { state.requests.push({ params, options }); return state.newSession || { id: `cs_${randomUUID()}`, url: 'https://checkout.stripe.com/new-synthetic', status: 'open', livemode: false } },
       retrieve: async () => state.session,
-      expire: async id => { state.expired.push(id); return { id, status: 'expired' } },
+      expire: async id => { state.expired.push(id); return state.expirationResult || { id, status: 'expired', livemode: false } },
     } },
     charges: { retrieve: async () => { if (state.failCharge) throw Object.assign(new Error('synthetic transport failure'), { type: 'StripeConnectionError' }); return state.charge } },
     paymentIntents: { retrieve: async () => state.intent },
@@ -161,7 +161,10 @@ dbTest('Checkout creates a fixed one-time Price with consent, origin, metadata a
   assert.equal(params.integration_identifier, 'hosted_web_0001')
   assert.equal(params.origin_context, 'web')
   assert.equal('payment_method_collection' in params, false)
-  assert.deepEqual(params.allowed_payment_method_types, ['card'])
+  assert.deepEqual(params.allowed_payment_method_types, ['card', 'link', 'paypay'])
+  assert.equal(params.wallet_options?.link?.display === 'never', false)
+  assert.equal('payment_method_types' in params, false)
+  assert.equal('excluded_payment_method_types' in params, false)
   assert.deepEqual(params.line_items, [{ price: 'price_synthetic', quantity: 1 }])
   assert.equal(params.consent_collection.terms_of_service, 'required')
   assert.deepEqual(params.branding_settings, { display_name: settings.siteName })
@@ -177,7 +180,50 @@ dbTest('Checkout creates a fixed one-time Price with consent, origin, metadata a
   assert.equal(payment!.status, 'pending')
 })
 
+for (const legacyMethods of [['card'], ['card', 'link'], null, ['card', 'link', 'paypay', 'konbini']]) {
+  dbTest(`legacy Checkout ${JSON.stringify(legacyMethods)} expires before issuing wallet-enabled Checkout`, async f => {
+    f.stripe.state.session.allowed_payment_method_types = legacyMethods
+    const created = await createCheckoutSession(f.user, { db: f.db, settings, client: f.stripe.client })
+    assert.notEqual(created.checkout_session_id, 'cs_existing')
+    assert.deepEqual(f.stripe.state.expired, ['cs_existing'])
+    assert.deepEqual(f.stripe.state.requests[0]!.params.allowed_payment_method_types, ['card', 'link', 'paypay'])
+    assert.equal((await records(f)).payment.status, 'expired')
+    const pending = await query(`SELECT * FROM payments WHERE user_id=$1 AND status='pending'`, [f.user.id], f.db)
+    assert.equal(pending.length, 1)
+    assert.equal(pending[0]!.stripe_checkout_session_id, created.checkout_session_id)
+  })
+}
+
+for (const expirationResult of [
+  { id: 'cs_existing', status: 'complete', livemode: false },
+  { id: 'cs_other', status: 'expired', livemode: false },
+  { id: 'cs_existing', status: 'expired', livemode: true },
+]) {
+  dbTest(`unconfirmed legacy Checkout expiration ${JSON.stringify(expirationResult)} never creates a second payment`, async f => {
+    f.stripe.state.session.allowed_payment_method_types = ['card']
+    f.stripe.state.expirationResult = expirationResult
+    await assert.rejects(createCheckoutSession(f.user, { db: f.db, settings, client: f.stripe.client }), ApiError)
+    assert.equal(f.stripe.state.requests.length, 0)
+    assert.equal((await records(f)).payment.status, 'pending')
+    assert.equal((await records(f)).membership, undefined)
+  })
+}
+
+for (const method of ['link', 'paypay']) {
+  dbTest(`${method} grants access only after verified paid completion and remains idempotent`, async f => {
+    const unpaid = checkout(f, { payment_method_types: [method], payment_status: 'unpaid' })
+    await assert.rejects(processEvent(f, unpaid), PaymentEventMismatchError)
+    assert.equal((await records(f)).membership, undefined)
+    assert.equal((await records(f)).payment.status, 'pending')
+    const paid = checkout(f, { payment_method_types: [method] })
+    assert.equal(await processEvent(f, paid), 'processed')
+    assert.equal(await processEvent(f, paid), 'duplicate')
+    assert.equal((await records(f)).membership!.status, 'active')
+  })
+}
+
 dbTest('open pending Checkout is reused and completed pending Checkout blocks another purchase', async f => {
+  f.stripe.state.session.allowed_payment_method_types = ['paypay', 'card', 'link']
   const reused = await createCheckoutSession(f.user, { db: f.db, settings, client: f.stripe.client })
   assert.equal(reused.checkout_session_id, 'cs_existing')
   assert.equal(f.stripe.state.requests.length, 0)

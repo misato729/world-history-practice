@@ -6,6 +6,9 @@ import { ApiError, fail } from '../core/errors.ts'
 import { paymentStripeClient, type PaymentStripeClient, type StripeObject } from './payment-client.ts'
 import { paymentSettings, type PaymentSettings } from './payment-settings.ts'
 
+// Apple Pay and Google Pay are card wallets rendered by Stripe on eligible devices.
+const CHECKOUT_PAYMENT_METHODS: Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[] = ['card', 'link', 'paypay']
+
 export type PaymentOptions = { client?: PaymentStripeClient, settings?: PaymentSettings, db?: Database }
 const unavailable = (settings: PaymentSettings): never => {
   const error = new ApiError(503, 'payment_unavailable', '現在、決済を開始できません')
@@ -21,7 +24,7 @@ function checkoutParameters(user: User, settings: PaymentSettings): Stripe.Check
     ui_mode: 'hosted_page', mode: 'payment', locale: 'ja', billing_address_collection: 'auto',
     branding_settings: { display_name: settings.siteName },
     phone_number_collection: { enabled: false }, automatic_tax: { enabled: false }, allow_promotion_codes: false,
-    allowed_payment_method_types: ['card'], submit_type: 'auto', integration_identifier: 'hosted_web_0001', origin_context: 'web',
+    allowed_payment_method_types: CHECKOUT_PAYMENT_METHODS, submit_type: 'auto', integration_identifier: 'hosted_web_0001', origin_context: 'web',
     line_items: [{ price: settings.priceId, quantity: 1 }], client_reference_id: String(user.id), customer_email: user.email,
     consent_collection: { terms_of_service: 'required' },
     custom_text: { terms_of_service_acceptance: { message: `${settings.siteName}の[利用規約](${settings.frontendUrl}/terms)と[プライバシーポリシー](${settings.frontendUrl}/privacy-policy)に同意します。[特定商取引法に基づく表記](${settings.frontendUrl}/commercial-disclosure)もご確認ください。` }, submit: { message: `「模擬試験${settings.freeExamMax + 1}以降の利用資格」を${priceLabel}で買い切る契約です。月額課金や自動更新はありません。決済完了後に利用資格を提供し、提供開始後の利用者都合による返金は原則として受け付けません。` } },
@@ -45,8 +48,16 @@ export async function createCheckoutSession(user: User, options: PaymentOptions 
       if (pending) {
         const session = await client.checkout.sessions.retrieve(pending.stripe_checkout_session_id)
         if (session.livemode !== settings.livemode) unavailable(settings)
-        if (session.status === 'open' && session.url) return { checkout_session_id: session.id, checkout_url: session.url }
-        if (session.status !== 'expired') inProgress()
+        if (session.status === 'open' && session.url) {
+          const allowed = session.allowed_payment_method_types
+          if (Array.isArray(allowed) && allowed.length === CHECKOUT_PAYMENT_METHODS.length && CHECKOUT_PAYMENT_METHODS.every(method => allowed.includes(method))) {
+            return { checkout_session_id: session.id, checkout_url: session.url }
+          }
+          // Replace a legacy payment form only after Stripe confirms it cannot be paid.
+          const expired = await client.checkout.sessions.expire(session.id)
+          if (expired.livemode !== settings.livemode) unavailable(settings)
+          if (expired.id !== session.id || expired.status !== 'expired') inProgress()
+        } else if (session.status !== 'expired') inProgress()
         await query(`UPDATE payments SET status='expired',updated_at=CURRENT_TIMESTAMP WHERE id=$1`, [pending.id], db)
       }
       const session = await client.checkout.sessions.create(checkoutParameters(locked, settings), { idempotencyKey: `paid-membership-user-${user.id}-${randomUUID()}` })

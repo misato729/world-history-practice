@@ -240,3 +240,11 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-03 静的ページ修正の本番反映
 
 `static_pages_release_20261103`。今回の実装/記録だけを両mainへ送信し、各CI全成功・Netlify同SHA自動Published・公開JSの取得条件/静的10ルート200・本番PC1440/SP390実操作と独立最終PASSを確認。元dirtyの全照合値を保持。DB/Stripe/Fly変更なし、本番通信API0件の直接計数とは区別する。機能SHAは世界史7cde4ff/日本史91a8fa2。配信記録だけskip netlify/skip ciで追送し、機能配信を維持する。[CI/配信/全ファイル](../../static-pages-release-20261103.md)。
+
+## 2026-11-03 Stripeウォレット・PayPay対応
+
+`stripe_wallets_20261103`。World/日本史/情報教認/templateへ許可card/link/paypay、Apple/Googleはカード系Walletの表示条件維持。旧openは3方式の完全集合だけ再利用し、それ以外は同ID/expired/同mode確認後に置換。4版で決済140件/法務12件/型4つ/PC1280-SP390計8画像/独立最終PASS。特商法の支払方法を実装へ合わせ、既存dirtyと販売状態を保持。専用test DB/サーバー後片付け済み、実Stripe/通常DB/commit/push/deploy未実施。[全変更ファイル・確認範囲](../../stripe-wallets.md)。
+
+## 2026-11-03 Wallet/PayPayの送信・本番反映
+
+`stripe_wallets_release_20261103`。4 Git/既存3サービスの配信が承認され、templateは追加回答で送信のみ。既存dirty・採点注入・販売状態を保持し、CIとNetlify/Fly/本番ソース・表示を確認する。[配信記録](../../stripe-wallets-release.md)。

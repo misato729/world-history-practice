@@ -48,7 +48,7 @@ useSeoMeta({
         <div v-if="requestDisclosure"><dt>開示の請求方法</dt><dd>上記の問い合わせ先へ、所在地・電話番号の開示を希望する旨をメールでご連絡ください。購入前の請求にも、申込みの意思決定に先立って十分な時間的余裕をもって、電子メールで遅滞なく開示します。開示に費用はかかりません。</dd></div>
         <div><dt>販売価格</dt><dd>{{ PRICE_LABEL }}（税込）</dd></div>
         <div><dt>販売価格以外の負担</dt><dd>インターネット接続に必要な通信料は利用者の負担となります。</dd></div>
-        <div><dt>支払方法</dt><dd>クレジットカード（Stripe Checkout）</dd></div>
+        <div><dt>支払方法</dt><dd>クレジットカード、Apple Pay、Google Pay、Link、PayPay（利用可能な方法はStripeの決済画面に表示されます）</dd></div>
         <div><dt>支払時期</dt><dd>購入手続き時に決済されます。</dd></div>
         <div><dt>提供内容</dt><dd>公開中および今後追加される模擬試験{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降の利用資格。月額課金や自動更新はありません。</dd></div>
         <div><dt>提供時期</dt><dd>決済完了をStripeの通知で確認後、直ちに利用できます。通知の遅延時は反映まで時間を要する場合があります。</dd></div>

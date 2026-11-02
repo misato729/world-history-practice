@@ -2,7 +2,7 @@
 
 Checkout Studioの指定は既存のCheckout呼び出しに反映済み。Stripe SDK 23の `ui_mode: hosted_page`、住所auto、電話番号収集なし、自動税なし、プロモーションコードなし、submit_type auto、integration_identifier hosted_web_0001、origin_context webを使用する。買い切りのmode paymentではpayment_method_collectionを送らない。
 
-2026年11月3日のユーザー確認により、購入者・商品照合用metadata/client_reference_id、PaymentIntent metadata、連絡先メール、規約同意、契約内容の表示、カード払い指定、冪等キーは維持する。実際のPrice・戻り先は環境設定から解決し、サンプル値で置換しない。
+2026年11月3日のユーザー確認により、購入者・商品照合用metadata/client_reference_id、PaymentIntent metadata、連絡先メール、規約同意、契約内容の表示、カード・Link・PayPayの許可指定、冪等キーは維持する。Apple Pay/Google Payはカード系ウォレットとしてStripeの有効化と利用端末の条件に従う。2026年11月3日の追加依頼で許可手段を拡張した。実際のPrice・戻り先は環境設定から解決し、サンプル値で置換しない。
 
 ## 未完了の接続作業
 
