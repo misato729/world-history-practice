@@ -204,3 +204,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ## 2026-11-02 広告用プライバシーポリシー（ローカル）
 
 追加依頼で広告未使用の記述をAdSense利用/Cookie/外部送信情報と目的/広告設定とWebChoices/Google公式情報リンクへ更新。14条・制定日保持、改定日11月2日追加。両版の既存法務テスト計5件、実Vue/CSSコンパイル、部品previewのPC1440/SP390・折返し/キーボード確認、独立レビューPASS。共通レイアウト/DB/API/広告通信を含まない確認で、初回previewのSITE不足は修正後成功として区別。commit/push/本番反映なし。[詳細と公式資料](../../adsense-release-20261102.md)。
+
+## 2026-11-02 広告用ポリシーを本番反映
+
+追加承認で本文/記録6件を6ac0528としてmain送信。原資料保護hookとCI41433871838（harness/verify）全成功、Netlify同SHA自動Publishedを確認。本番HTTP200・14条/4リンク/改定日/広告説明/旧未使用記載の除去、実Chrome PC1440/SP390の折返し・横はみ出しなし・Tab移動・head script1件を確認。世界史のCSR外枠で初回本文parserが止まった件は描画後DOM確認と分けて記録。独立最終PASS。完了文書だけskip netlify/skip ciで追送し、本文配信SHAを維持。Fly/DB変更なし。[配信結果](../../adsense-release-20261102.md)。
