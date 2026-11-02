@@ -20,8 +20,8 @@ test('12 profiles retain 53 source rubric elements, 8 points, and distinct stabl
 })
 
 test('catalog exposes every explicit version and selects the latest without replacing historical profiles', () => {
-  assert.equal(allEssayRuleProfiles.length, 19)
-  assert.equal(new Set(allEssayRuleProfiles.map(profile => `${profile.id}:${profile.version}`)).size, 19)
+  assert.equal(allEssayRuleProfiles.length, 37)
+  assert.equal(new Set(allEssayRuleProfiles.map(profile => `${profile.id}:${profile.version}`)).size, 37)
   for (const profile of allEssayRuleProfiles) {
     validateEssayProfile(profile)
     assert.equal(getEssayRuleProfile(profile.id, profile.version), profile)

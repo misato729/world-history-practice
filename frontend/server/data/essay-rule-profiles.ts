@@ -1,3 +1,6 @@
+import { MOCK_08_10_ESSAY_PROFILES_V3 } from './mock-08-10-essay-profile-v3.ts'
+import { MOCK_08_10_ESSAY_PROFILE_REVISIONS } from './mock-08-10-essay-profile-revisions.ts'
+import { MOCK_08_10_ESSAY_PROFILES } from './mock-08-10-essay-profiles.ts'
 import type { EssayScoringProfile } from '../../shared/types/essay.ts'
 import { NEW_CURRICULUM_ESSAY_PROFILES } from './new-curriculum-essay-profiles.ts'
 import { buildWeightedEssayProfileRevisions } from './weighted-essay-profile-revisions.ts'
@@ -2956,6 +2959,9 @@ export const allEssayRuleProfiles: EssayScoringProfile[] = [
   ...essayRuleProfiles,
   ...buildWeightedEssayProfileRevisions(essayRuleProfiles),
   ...NEW_CURRICULUM_ESSAY_PROFILES,
+  ...MOCK_08_10_ESSAY_PROFILES,
+  ...MOCK_08_10_ESSAY_PROFILE_REVISIONS,
+  ...MOCK_08_10_ESSAY_PROFILES_V3,
 ]
 
 export function getEssayRuleProfile(id: string, version?: number): EssayScoringProfile | undefined {

@@ -30,7 +30,7 @@
     ]
   },
   "exam": {
-    "set_count": 7,
+    "set_count": 10,
     "questions_per_exam": 5,
     "choice_labels": [
       "①",
