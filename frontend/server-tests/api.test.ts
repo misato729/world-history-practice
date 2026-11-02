@@ -70,14 +70,14 @@ test('signed tokens expire, bind role and purpose, reject tampering and accept l
   const user = { id: 7, role: 'user' as const }
   const now = Date.now()
   const token = issueToken(user, now)
-  assert.deepEqual(verifyToken(token, now), { user_id: 7, role: 'user' })
+  assert.deepEqual(verifyToken(token, now), { user_id: 7, role: 'user', auth_version: 0 })
   assert.equal(verifyToken(token, now + 86400001), null)
   assert.equal(verifyToken(token + 'x', now), null)
   const legacy = (purpose: string) => {
     const value = Buffer.from(JSON.stringify({ _rails: { message: Buffer.from(JSON.stringify(user.id ? { user_id: user.id, role: user.role } : {})).toString('base64'), exp: new Date(now + 60000).toISOString(), pur: purpose } })).toString('base64')
     return value + '--' + createHmac('sha256', process.env.SECRET_KEY_BASE!).update(value).digest('hex')
   }
-  assert.deepEqual(verifyToken(legacy('access_token'), now), { user_id: 7, role: 'user' })
+  assert.deepEqual(verifyToken(legacy('access_token'), now), { user_id: 7, role: 'user', auth_version: 0 })
   assert.equal(verifyToken(legacy('another-purpose'), now), null)
 })
 
@@ -187,6 +187,52 @@ test('HTTP paid mode, expiry, malformed token and sales-off preserve server auth
     assert.equal((await request('/payments/config')).body.data.enabled, false)
     assert.equal((await request('/payments/checkout_sessions', { method: 'POST', token: session.access_token })).body.error.code, 'payment_unavailable')
   } finally { setConfigurationForTesting(original) }
+})
+
+test('password changes validate input, preserve records and revoke old sessions including legacy tokens', integration, async () => {
+  const session = await account()
+  const other = await account()
+  const body = { current_password: 'Synthetic-password-123', password: 'Changed-password-456', password_confirmation: 'Changed-password-456' }
+  const item = (await request('/questions/next?exam_number=1&after_question_number=0')).body.data
+  assert.equal((await request(`/questions/${item.id}/favorite`, { method: 'PUT', token: session.access_token })).status, 201)
+  assert.equal((await request(`/questions/${item.id}/answer`, { method: 'POST', token: session.access_token, body: { answer_type: 'single_choice', selected_choice_id: item.choices[0].id, question_version: item.question_version, submission_key: randomUUID() } })).status, 200)
+  const favoritesBefore = await query('SELECT * FROM favorites WHERE user_id=$1 ORDER BY id', [session.user.id])
+  const historiesBefore = await query('SELECT * FROM answer_histories WHERE user_id=$1 ORDER BY id', [session.user.id])
+  const change = (input: unknown, token = session.access_token) => request('/me/password', { method: 'PATCH', token, body: input })
+  const [before] = await query<User>('SELECT * FROM users WHERE id=$1', [session.user.id])
+  const legacyData = Buffer.from(JSON.stringify({ _rails: { message: Buffer.from(JSON.stringify({ user_id: before!.id, role: before!.role })).toString('base64'), exp: new Date(Date.now() + 60000).toISOString(), pur: 'access_token' } })).toString('base64')
+  const legacy = legacyData + '--' + createHmac('sha256', process.env.SECRET_KEY_BASE!).update(legacyData).digest('hex')
+  assert.equal((await request('/me', { token: legacy })).status, 200)
+  assert.equal((await request('/me/password', { method: 'PATCH', body })).status, 401)
+  assert.equal((await change({ ...body, current_password: 'wrong' })).status, 422)
+  assert.equal((await change({ ...body, password_confirmation: 'mismatch' })).status, 422)
+  assert.equal((await change({ ...body, password: 'short', password_confirmation: 'short' })).status, 422)
+  assert.equal((await change({ ...body, password: 'あ'.repeat(25), password_confirmation: 'あ'.repeat(25) })).status, 422)
+  assert.equal((await change({ ...body, password_confirmation: undefined })).status, 422)
+  assert.equal((await change({ ...body, password: body.current_password, password_confirmation: body.current_password })).status, 422)
+  assert.deepEqual((await query<User>('SELECT * FROM users WHERE id=$1', [session.user.id]))[0], before)
+  const responses = await Promise.all([change(body), change(body)])
+  assert.deepEqual(responses.map(r => r.status).sort(), [200, 401])
+  const changed = responses.find(r => r.status === 200)!.body.data
+  assert.equal(changed.user.id, session.user.id)
+  assert.equal(changed.user.role, session.user.role)
+  assert.equal(changed.user.password_digest, undefined)
+  assert.equal((await request('/me', { token: changed.access_token })).status, 200)
+  assert.equal((await request('/me', { token: session.access_token })).status, 401)
+  assert.equal((await request('/me', { token: legacy })).status, 401)
+  assert.equal((await request('/me', { token: other.access_token })).status, 200)
+  const [after] = await query<User>('SELECT * FROM users WHERE id=$1', [session.user.id])
+  assert.equal(after!.auth_version, 1)
+  for (const key of ['id', 'name', 'email', 'role', 'created_at'] as const) assert.deepEqual(after![key], before![key])
+  assert.notEqual(after!.password_digest, before!.password_digest)
+  assert.deepEqual(await query('SELECT * FROM favorites WHERE user_id=$1 ORDER BY id', [session.user.id]), favoritesBefore)
+  assert.deepEqual(await query('SELECT * FROM answer_histories WHERE user_id=$1 ORDER BY id', [session.user.id]), historiesBefore)
+  assert.equal((await request('/auth/login', { method: 'POST', body: { email: session.email, password: body.current_password } })).status, 401)
+  const login = await request('/auth/login', { method: 'POST', body: { email: session.email, password: body.password } })
+  assert.equal(login.status, 200)
+  assert.equal((await request('/me', { token: login.body.data.access_token })).status, 200)
+  for (let count = 0; count < 2; count++) assert.equal((await consumeRateLimit('password_change', String(session.user.id))).allowed, true)
+  assert.equal((await change({ ...body, current_password: body.password, password: 'Another-password-789', password_confirmation: 'Another-password-789' }, changed.access_token)).status, 429)
 })
 
 test('account deletion checks password, removes personal records and invalidates tokens', integration, async () => {

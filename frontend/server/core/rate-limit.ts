@@ -7,6 +7,7 @@ import { fail } from './errors.ts'
 
 export const rules = {
   signup: { limit: 10, period: 900 }, login: { limit: 30, period: 300 },
+  password_change: { limit: 10, period: 900 },
   checkout_ip: { limit: 20, period: 300 }, checkout_user: { limit: 10, period: 300 },
   answer: { limit: 120, period: 60 },
 } as const

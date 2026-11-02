@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 211,
-  "updated_at": "2026-11-01T21:33:09.172Z",
+  "revision": 215,
+  "updated_at": "2026-11-02T02:05:30.167Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-01T21-33-09-172Z-r211.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T02-05-30-167Z-r215.json",
   "contexts": [
     {
       "id": "product",
@@ -5353,6 +5353,140 @@
       },
       "authorization": "requested",
       "next_action": "追加依頼待ち。コミット・push・デプロイは未実施"
+    },
+    {
+      "id": "account_password_change_20261102",
+      "context": "service",
+      "title": "アカウント設定からのパスワード変更",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: アカウント設定からパスワードを変更できるようにしてください",
+      "next_action": "追加依頼待ち。本番反映時は009の適用とAPI/画面の配信・本番確認を行う",
+      "evidence": [
+        "docs/password-change-20261102.md"
+      ],
+      "last_verified_at": "2026-11-02T01:59:56.993Z",
+      "verification_scope": "ローカル実装のみ。API12/auth15成功。サーバー92/93後に設定補完し該当3成功。全unit470/472後に依存3成功、既存index.vueの文字サイズ1失敗を保持。型検査/build成功、実部品+合成保存のPC1440/SP390/320操作、独立再レビュー合格。通常/本番DB・Git送信・配信なし。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "認証・入力検証・更新と既存データ保持",
+          "verification": "隔離_test DBのAPIテスト・認証テスト・型検査",
+          "status": "passed",
+          "evidence": [
+            "docs/password-change-20261102.md"
+          ],
+          "checked_at": "2026-11-02T01:59:56.993Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPで変更とエラー表示を操作",
+          "verification": "ブラウザ実操作と再読込",
+          "status": "passed",
+          "evidence": [
+            "docs/password-change-20261102.md"
+          ],
+          "checked_at": "2026-11-02T01:59:56.993Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "実装担当以外のレビュー",
+          "verification": "別担当が差分・検証結果を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/password-change-20261102.md"
+          ],
+          "checked_at": "2026-11-02T01:59:56.993Z",
+          "reviewer": "password_change_review"
+        }
+      ],
+      "execution": {
+        "worker": "password_change_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初回レビューで変更前の認証による削除競合を指摘。ロック後の版・パスワード再確認へ修正済み。初回の検証環境不足と既存文字サイズ検査失敗も根拠に記録",
+            "at": "2026-11-02T01:59:22.529Z",
+            "failed_criteria": [
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "変更API・旧セッション失効・データ保持、型検査/build、実部品のPC/SP操作と独立再レビュー合格。既存文字サイズテスト失敗は対象外として明記",
+            "at": "2026-11-02T01:59:57.503Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "password_change_release_20261102",
+      "context": "service",
+      "title": "パスワード変更のコミット・push・本番反映",
+      "status": "doing",
+      "depends_on": [
+        "account_password_change_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: OKです。コミット・push・デプロイして本番反映してください",
+      "next_action": "009保全結果を確認し、機能をコミット、Fly/API更新後pushしてNetlify自動反映・本番検証",
+      "evidence": [
+        "docs/password-change-release-20261102.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "既存の世界史配信先だけを更新。既存利用者のパスワードは変更しない",
+      "acceptance": [
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "承認された差分のみ送信しCI成功",
+          "verification": "資料保護・全フロント検査・Git同期・CI",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "db",
+          "kind": "automated",
+          "description": "009適用と既存データ保持",
+          "verification": "共通migration・全既存表の件数/内容ダイジェスト比較",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "NetlifyとFlyへの反映および本番動作",
+          "verification": "配信SHA・health・合成会員の変更/旧token失効/再ログイン・PC/SP表示",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立リリースレビュー",
+          "verification": "別担当の送信範囲・配信・検証根拠の読取レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "password_release_owner",
+        "max_attempts": 3,
+        "attempts": []
+      }
     }
   ],
   "gate_policy": {

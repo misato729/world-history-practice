@@ -60,6 +60,7 @@ DB接続は`DATABASE_URL`が優先されます。未指定時は`PGHOST`・`PGPO
 | 稼働確認 | `GET /health` |
 | 会員登録・ログイン | `POST /auth/signup`・`POST /auth/login` |
 | 自分の情報・退会 | `GET /me`・`DELETE /me` |
+| パスワード変更 | `PATCH /me/password`（現在のパスワード・新パスワード・確認入力） |
 | 利用可能な演習セット | `GET /exams` |
 | 公開教材の大問一覧 | `GET /exams/:exam_number/groups` |
 | 問題取得・次問取得 | `GET /questions/:id`・`GET /questions/next` |

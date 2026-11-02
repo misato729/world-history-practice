@@ -7,19 +7,19 @@ import type { AuthUser, FavoriteQuestion } from '../../shared/types/auth.ts'
 
 export type User = {
   id: number, name: string, email: string, password_digest: string,
-  role: 'user' | 'admin', created_at: Date | string, updated_at?: Date | string,
+  role: 'user' | 'admin', created_at: Date | string, updated_at?: Date | string, auth_version?: number,
 }
 export const TOKEN_LIFETIME = 86400
 const iso = (value: Date | string) => new Date(value).toISOString()
 const signature = (data: string) => createHmac('sha256', secretKey()).update(data).digest('hex')
 const matches = (left: string, right: string) => left.length === right.length && timingSafeEqual(Buffer.from(left), Buffer.from(right))
 
-export function issueToken(user: Pick<User, 'id' | 'role'>, now = Date.now()): string {
-  const data = Buffer.from(JSON.stringify({ user_id: user.id, role: user.role, exp: Math.floor(now / 1000) + TOKEN_LIFETIME, purpose: 'access_token' })).toString('base64url')
+export function issueToken(user: Pick<User, 'id' | 'role' | 'auth_version'>, now = Date.now()): string {
+  const data = Buffer.from(JSON.stringify({ user_id: user.id, role: user.role, auth_version: user.auth_version ?? 0, exp: Math.floor(now / 1000) + TOKEN_LIFETIME, purpose: 'access_token' })).toString('base64url')
   return `${data}--${signature(data)}`
 }
 
-export function verifyToken(token: string, now = Date.now()): { user_id: number, role: string } | null {
+export function verifyToken(token: string, now = Date.now()): { user_id: number, role: string, auth_version: number } | null {
   try {
     if (token.length > 8192) return null
     const delimiter = token.lastIndexOf('--')
@@ -34,7 +34,9 @@ export function verifyToken(token: string, now = Date.now()): { user_id: number,
     const purpose = metadata ? metadata.pur : payload.purpose
     if (purpose !== 'access_token' || !Number.isFinite(expires) || expires <= now) return null
     if (!Number.isSafeInteger(payload.user_id) || payload.user_id < 1 || !['user', 'admin'].includes(payload.role)) return null
-    return { user_id: payload.user_id, role: payload.role }
+    const version = payload.auth_version === undefined ? 0 : payload.auth_version
+    if (!Number.isSafeInteger(version) || version < 0) return null
+    return { user_id: payload.user_id, role: payload.role, auth_version: version }
   } catch { return null }
 }
 
@@ -44,7 +46,7 @@ export async function authenticate(event: H3Event, required = false, db?: Databa
   const token = header?.match(/^Bearer (.+)$/)?.[1]
   const payload = token ? verifyToken(token) : null
   const user = payload ? (await query<User>('SELECT * FROM users WHERE id=$1', [payload.user_id], db))[0] : null
-  if (!user || user.role !== payload?.role) fail(401, 'unauthorized', 'ログインが必要です')
+  if (!user || user.role !== payload?.role || (user.auth_version ?? 0) !== payload?.auth_version) fail(401, 'unauthorized', 'ログインが必要です')
   return user
 }
 

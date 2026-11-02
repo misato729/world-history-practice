@@ -58,6 +58,15 @@ export const useAuth = () => {
     user.value = null
   }
 
+  const changePassword = async (attributes: { current_password: string, password: string, password_confirmation: string }) => {
+    const token = accessToken.value
+    const response = await nuxtApp.$api<ApiResponse<AuthSession>>('/api/v1/me/password', {
+      method: 'PATCH', headers: authHeaders.value, body: attributes, retry: 0,
+    })
+    if (accessToken.value !== token) throw new Error('ログイン状態が変更されました')
+    setSession(response.data)
+  }
+
   const ensureCurrentUser = async (force = false) => {
     if (!accessToken.value) return null
     if (user.value && !force) return user.value
@@ -87,6 +96,7 @@ export const useAuth = () => {
     login,
     signup,
     logout,
+    changePassword,
     ensureCurrentUser,
   }
 }

@@ -553,7 +553,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   background: linear-gradient(115deg, #fff 38%, #e9f5fc 100%);
 }
 .overview-copy { max-width: 680px; }
-.overview-copy h1 { margin: 0; font-size: clamp(2rem, 3vw, 3rem); font-weight: 800; letter-spacing: .025em; line-height: 1.4; }
+.overview-copy h1 { margin: 0; font-size: 3rem; font-weight: 800; letter-spacing: .025em; line-height: 1.4; }
 .overview-copy > p { margin: 16px 0 0; color: var(--text-secondary); font-size: 1rem; line-height: 1.95; }
 .overview-copy > .overview-tagline { margin-top: 20px; color: #24617e; font-size: 1.0625rem; font-weight: 700; }
 .overview-actions { margin-top: 22px; }
@@ -608,6 +608,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .usage-premium-link :deep(.iconify) { flex: 0 0 16px; width: 16px; height: 16px; }
 
 @media (max-width: 960px) {
+  .overview-copy h1 { font-size: 2rem; }
   .overview-section { grid-template-columns: minmax(0, 1fr); }
   .overview-art { display: none; }
   .launcher-heading { grid-template-columns: minmax(0, 1fr); gap: 14px; }

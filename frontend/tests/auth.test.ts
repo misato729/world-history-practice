@@ -33,6 +33,29 @@ const createAuth = (token: string | null, api: (...args: any[]) => Promise<unkno
   return { auth: useAuth(), states, cookieCalls: () => cookieCalls }
 }
 
+test('password change replaces the session and uses authenticated non-retrying PATCH', async () => {
+  const { auth } = createAuth('old-token', async (path, options) => {
+    assert.equal(path, '/api/v1/me/password')
+    assert.equal(options.method, 'PATCH')
+    assert.equal(options.headers.Authorization, 'Bearer old-token')
+    assert.equal(options.retry, 0)
+    return { data: { access_token: 'new-token', user } }
+  })
+  await auth.changePassword({ current_password: 'old-password', password: 'new-password', password_confirmation: 'new-password' })
+  assert.equal(auth.accessToken.value, 'new-token')
+  assert.deepEqual(auth.user.value, user)
+})
+
+test('a delayed password response cannot restore a logged out session', async () => {
+  let resolve!: (value: unknown) => void
+  const { auth } = createAuth('old-token', async () => new Promise(done => { resolve = done }))
+  const pending = auth.changePassword({ current_password: 'old-password', password: 'new-password', password_confirmation: 'new-password' })
+  auth.logout()
+  resolve({ data: { access_token: 'new-token', user } })
+  await assert.rejects(pending)
+  assert.equal(auth.accessToken.value, null)
+})
+
 test('anonymous users do not trigger a current-user request', async () => {
   let requests = 0
   const { auth } = createAuth(null, async () => { requests += 1 })
