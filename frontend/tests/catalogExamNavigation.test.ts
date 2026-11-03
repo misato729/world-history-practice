@@ -67,10 +67,10 @@ test('the active group covers all its public children, not only the starting chi
 })
 
 
-test('static sidebar slots do not invent question numbers or real groups', () => {
+test('static sidebar slots use fixed groups without asserting publication counts', () => {
   const rows = createSidebarExamCatalog([mockExam()], false, false)
   assert.ok(rows.length > 5)
-  assert.ok(rows.every(row => row.isStatic && row.question_numbers.length === 0 && !row.groups))
+  assert.ok(rows.every(row => row.isStatic && row.question_numbers.length === 0 && row.groups?.length === 4))
   assert.equal(rows.find(row => row.exam_number === 6)?.access, 'paid_membership_required')
 })
 
@@ -90,7 +90,8 @@ test('free API results keep sparse public groups and append each locked slot onc
     assert.equal(row.isStatic, true)
     assert.equal(row.access, 'paid_membership_required')
     assert.deepEqual(row.question_numbers, [])
-    assert.equal(row.groups, undefined)
+    assert.equal(row.groups?.length, 4)
+    assert.ok(catalogGroupLinks(row).every(link => link.to === '/premium'))
   }
   assert.equal(JSON.stringify(source), before)
 })

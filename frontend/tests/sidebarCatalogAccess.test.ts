@@ -68,7 +68,7 @@ function assertStatic(h: ReturnType<typeof harness>) {
   assert.equal(h.sidebar.isLoading.value, false)
   assert.equal(h.sidebar.hasAccessError.value, false)
   assert.equal(h.sidebar.exams.value.length, catalog.EXAM_SET_COUNT)
-  assert.ok(h.sidebar.exams.value.every((exam: catalog.ExamCatalogEntry & { groupLinks: unknown[] }) => !exam.question_numbers.length && !exam.groupLinks.length && (exam as catalog.SidebarExamCatalogEntry).isStatic))
+  assert.ok(h.sidebar.exams.value.every((exam: catalog.ExamCatalogEntry & { groupLinks: unknown[] }) => !exam.question_numbers.length && exam.groupLinks.length === 4 && (exam as catalog.SidebarExamCatalogEntry).isStatic))
 }
 
 for (const kind of ['anonymous', 'free', 'premium', 'admin', 'verification']) {
@@ -149,7 +149,7 @@ test('static accordion opens free and paid menus without requesting questions or
       for (const number of [1, catalog.FREE_EXAM_MAX + 1]) {
         h.sidebar.toggleExam(number)
         assert.equal(h.sidebar.openExam.value, number)
-        assert.equal(h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === number).groupLinks.length, 0)
+        assert.equal(h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === number).groupLinks.length, 4)
         h.sidebar.toggleExam(number)
         assert.equal(h.sidebar.openExam.value, null)
       }
@@ -185,7 +185,8 @@ test('revocation immediately replaces an open real paid group with a static lock
     assert.equal(h.sidebar.openExam.value, 6)
     assert.equal(h.sidebar.isStaticExamLocked(paid), true)
     assert.equal(h.sidebar.examTarget(paid), '/premium')
-    assert.deepEqual(paid.groupLinks, [])
+    assert.equal(paid.groupLinks.length, 4)
+    assert.ok(paid.groupLinks.every((entry: { to: string }) => entry.to === '/premium'))
     h.user.value = null; h.accessToken.value = null
     assert.equal(h.sidebar.examTarget(h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === 6)), '/premium')
   } finally { h.dispose() }

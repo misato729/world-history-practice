@@ -1,3 +1,4 @@
+import { STATIC_EXAM_GROUPS } from './staticExamGroups.ts'
 import { EXAM_CONFIG, type ExamConfiguration } from './examConfig.ts'
 
 export type ExamCatalogGroup = { id: number; group_number: number; title: string; question_numbers: number[] }
@@ -37,12 +38,13 @@ export const catalogGroupLabel = (group: Pick<ExamCatalogGroup, 'group_number' |
 }
 export const catalogExamStartNumber = (exam: ExamCatalogEntry) => exam.question_numbers.find(number => Number.isSafeInteger(number) && number > 0)
 
-/** A group is navigable only when its first child exists in the public catalog. */
+/** API groups use published positions; static groups use verified fixed entry positions. */
 export const catalogGroupLinks = (exam: ExamCatalogEntry) => {
   const published = new Set(exam.question_numbers)
+  const isStatic = 'isStatic' in exam && exam.isStatic === true
   return [...(exam.groups ?? [])].sort((left, right) => left.group_number - right.group_number).flatMap(group => {
-    const questionNumber = group.question_numbers.find(number => Number.isSafeInteger(number) && number > 0 && published.has(number))
-    return questionNumber === undefined ? [] : [{ group, questionNumber, to: `/practice/${exam.exam_number}/${questionNumber}` }]
+    const questionNumber = group.question_numbers.find(number => Number.isSafeInteger(number) && number > 0 && (isStatic || published.has(number)))
+    return questionNumber === undefined ? [] : [{ group, questionNumber, to: isStatic && exam.access === 'paid_membership_required' ? '/premium' : `/practice/${exam.exam_number}/${questionNumber}` }]
   })
 }
 
@@ -57,7 +59,7 @@ export const catalogQuestionLabel = (exam: ExamCatalogEntry, questionNumber: num
 
 export type SidebarExamCatalogEntry = ExamCatalogEntry & { isStatic: boolean }
 
-/** Static rows carry no inferred publication details; API rows keep their real positions. */
+/** Static rows use fixed navigation metadata without asserting counts; API rows keep their real positions. */
 export const createSidebarExamCatalog = (
   catalog: readonly ExamCatalogEntry[] | null,
   usePublished: boolean,
@@ -72,6 +74,7 @@ export const createSidebarExamCatalog = (
       || (usePublished && exam?.access === 'paid_membership_required')
     if (!usePublished || locked) return [{
       exam_number: examNumber, question_numbers: [], isStatic: true,
+      groups: STATIC_EXAM_GROUPS[examNumber]?.map(group => ({ ...group, question_numbers: [...group.question_numbers] })) ?? [],
       access: locked ? 'paid_membership_required' as const : 'available' as const,
     }]
     return exam && catalogExamStartNumber(exam) !== undefined ? [{ ...exam, isStatic: false }] : []
