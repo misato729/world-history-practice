@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 291,
-  "updated_at": "2026-11-03T04:55:52.691Z",
+  "revision": 307,
+  "updated_at": "2026-11-03T09:58:16.644Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T04-55-52-691Z-r291.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T09-58-16-644Z-r307.json",
   "contexts": [
     {
       "id": "product",
@@ -7210,6 +7210,333 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "achievement_report_20261103",
+      "context": "service",
+      "title": "マイページの達成度一覧と状態別復習",
+      "status": "needs_review",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 添付の達成度レポートのような機能をマイページへ追加",
+      "next_action": "旧評価3回の失敗は保持。ユーザー追加依頼の独自設計をlearning_map_20261103で実装/再検証済み。追加の旧仕様再試行なし",
+      "evidence": [
+        "docs/achievement-report-20261103.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "世界史ラボのローカル実装。Git送信・本番変更は対象外",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "本人の利用可能な公開問題だけを集計し直近2回の状態を返す",
+          "verification": "隔離PostgreSQL/APIで認証・権限・公開状態・旧版履歴・同時刻順・論述を検証",
+          "status": "failed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:07:51Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "マイページに一覧と状態別復習を提供",
+          "verification": "単体検査・型検査・PC/SPで表示と操作、遷移・エラー・認証切替を確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当による差分レビュー",
+          "verification": "受入条件と変更差分を別担当が確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "achievement_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "単体5件成功。隔離DBの2件は合成fixtureの出典不足で停止したため既存制約に合わせてfixtureを修正",
+            "at": "2026-11-03T09:04:30.978Z",
+            "failed_criteria": [
+              "api",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "隔離fixtureの5問制限と従来セット自動公開で期待値が不一致。テスト用設定と非公開条件を明示して修正",
+            "at": "2026-11-03T09:05:38.955Z",
+            "failed_criteria": [
+              "api",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "failed",
+            "summary": "公開状態/HTTPは成功。論述fixtureのessay_result不足を独立レビューで特定。旧仕様の評価は上限で終了",
+            "at": "2026-11-03T09:07:52.619Z",
+            "failed_criteria": [
+              "api",
+              "ui",
+              "review"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "learning_map_20261103",
+      "context": "service",
+      "title": "独自デザインの学習マップと状態別復習",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 参考画面を模倣せず文言・色・ロゴを変更する追加依頼",
+      "next_action": "追加依頼に従ってコミット/push/本番反映。現時点では実施しない",
+      "evidence": [
+        "docs/achievement-report-20261103.md"
+      ],
+      "last_verified_at": "2026-11-03T09:17:55Z",
+      "verification_scope": "独自地図SVG/文言/状態別シンボル、隔離PG/API3件・関連単体40件・Node24型検査・PC1280/SP390・独立レビューPASS。無料/全アクセスの集計、表内スクロール、状態別復習と問題4→9、別タブ/認証切替を確認。検証サーバー/使い捨てDBは停止削除。Git送信/本番変更なし",
+      "acceptance": [
+        {
+          "id": "api",
+          "kind": "automated",
+          "description": "本人の利用可能な公開問題だけを集計し直近2回の状態を返す",
+          "verification": "隔離PostgreSQL/APIで認証・権限・公開状態・旧版履歴・同時刻順・論述を検証",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:17:55Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "マイページに一覧と状態別復習を提供",
+          "verification": "単体検査・型検査・PC/SPで表示と操作、遷移・エラー・認証切替を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:17:55Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当による差分レビュー",
+          "verification": "受入条件と変更差分を別担当が確認",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:17:55Z",
+          "reviewer": "achievement_review"
+        }
+      ],
+      "execution": {
+        "worker": "achievement_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "独自デザインの学習マップを実装。単体40/DB3/型検査/PC-SP実操作/独立レビュー成功、合成検証環境を片付け済み",
+            "at": "2026-11-03T09:17:59.956Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "learning_map_unanswered_copy_20261103",
+      "context": "service",
+      "title": "学習マップの履歴なし表示を未回答へ統一",
+      "status": "done",
+      "depends_on": [
+        "learning_map_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 これから取り組むを未回答と同じ表示へ変更",
+      "next_action": "追加依頼を待つ。未コミット・未配信",
+      "evidence": [
+        "docs/achievement-report-20261103.md"
+      ],
+      "last_verified_at": "2026-11-03T09:29:09Z",
+      "verification_scope": "表示共有ラベルと補足のみ変更。旧表示残存なし、既存単体5/5、独立レビューPASS、diff検査成功。実画面の再検証/送信/配信なし",
+      "acceptance": [
+        {
+          "id": "copy",
+          "kind": "automated",
+          "description": "共有ラベルを未回答に統一し、状態判定を維持",
+          "verification": "旧文言残存検査と既存単体テスト5件",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:29:09Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当の意味・差分レビュー",
+          "verification": "共有ラベルと補足、既存履歴の扱いを独立確認",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:29:09Z",
+          "reviewer": "achievement_review"
+        }
+      ],
+      "execution": {
+        "worker": "unanswered_copy_implementer",
+        "max_attempts": 2,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "共有ラベルと補足を未回答へ統一、単体5件/残存検査/独立レビュー成功",
+            "at": "2026-11-03T09:29:10.497Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "learning_map_symbols_20261103",
+      "context": "service",
+      "title": "未回答をハイフン・対象外を空欄・不正解をバツへ変更",
+      "status": "doing",
+      "depends_on": [
+        "learning_map_unanswered_copy_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 未回答はハイフン、存在しない問題は空欄、不正解系をバツ系へ変更",
+      "next_action": "ブラウザー接続回復後に実画面を再確認。コードは未コミット・未配信",
+      "evidence": [
+        "docs/achievement-report-20261103.md"
+      ],
+      "last_verified_at": "2026-11-03T09:49:56Z",
+      "verification_scope": "記号変更/単体5件/SFCコンパイル/コードレビュー成功。ブラウザー接続タイムアウトのため今回PC/SP再確認は未完了",
+      "acceptance": [
+        {
+          "id": "symbols",
+          "kind": "automated",
+          "description": "指定記号と空欄を共通表示へ反映",
+          "verification": "記号/空欄の定義と実SFCコンパイル、既存単体5件",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:49:56Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "表示と凡例の一貫性/状態判定維持を別担当確認",
+          "status": "passed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:49:56Z",
+          "reviewer": "achievement_review"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "PC/SPで変更後の実表示を確認",
+          "verification": "ブラウザー接続回復後に合成データで再確認",
+          "status": "failed",
+          "evidence": [
+            "docs/achievement-report-20261103.md"
+          ],
+          "checked_at": "2026-11-03T09:49:56Z"
+        }
+      ],
+      "execution": {
+        "worker": "map_symbols_implementer",
+        "max_attempts": 2,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "記号変更、単体5件、SFCコンパイル、独立コードレビュー成功。ブラウザー接続タイムアウトでPC/SP実表示未確認",
+            "at": "2026-11-03T09:50:02.046Z",
+            "failed_criteria": [
+              "ui"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "learning_map_release_20261103",
+      "context": "service",
+      "title": "学習マップを限定コミットpushしCI/本番反映を確認",
+      "status": "doing",
+      "depends_on": [
+        "learning_map_20261103",
+        "learning_map_unanswered_copy_20261103",
+        "learning_map_symbols_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 OKです。コミット・push・本番反映してください",
+      "next_action": "最終記号のPC/SP確認後、承認した学習マップ差分のみを送信し配信確認",
+      "evidence": [
+        "docs/learning-map-release-20261103.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "世界史のみ、既存設定/実問題/利用者/販売設定保持。別件Stripe記録は作業場に保持",
+      "acceptance": [
+        {
+          "id": "git_ci",
+          "kind": "automated",
+          "description": "承認範囲の送信とCI成功",
+          "verification": "候補/送信SHA/CI結果確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "同じ実装をNetlify/Flyへ反映",
+          "verification": "公開配信SHA/VMソース/認証API/health確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "差分と公開証跡の別担当確認",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "map_release_implementer",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

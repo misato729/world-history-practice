@@ -87,6 +87,7 @@ const deleteAccount = async () => {
       <NuxtLink class="primary-link" to="/login">ログインへ</NuxtLink>
     </div>
     <template v-else>
+      <AchievementReport />
       <section class="content-panel account-info">
         <div><span>ユーザー名</span><strong>{{ user?.name }}</strong></div>
         <div><span>メールアドレス</span><strong>{{ user?.email }}</strong></div>
