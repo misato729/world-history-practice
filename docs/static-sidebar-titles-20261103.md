@@ -14,3 +14,9 @@
 - docs/workflow/contexts/service.md：作業引き継ぎ。
 
 既存の別件Stripe差分と元の記録用ロックは保持する。
+
+## 公開確認
+
+追加依頼により実装88e5f61をmainへ送信。Netlify6ae9dd77fb424bcb2526bf54は同SHAで2026-11-03T13:11:45.003ZにPublished。本番privacyの静的サイドバーをPC1280/SP390で操作し、無料模試1の4大問名、有料模試6の4大問名と全子リンク/premiumを確認。SPのページ幅390、PCの長い名称の折り返しを確認。独立担当の画像/送信範囲レビューPASS（SP画像内は大問3/4、全4項目はDOM操作で確認）。回答・決済・フォーム送信や実DB変更なし。[CI41642108432](https://github.com/misato729/world-history-practice/actions/runs/41642108432)は全成功。Docker/DB/API/全フロントテスト/型/本番ビルド/非root本番イメージまで成功。
+
+既存Stripe記録は共有文書から該当節を除いた内容だけステージして保持。最後の公開記録はskip ci/skip netlifyで送信し、検査済みの実装を維持する。
