@@ -7,6 +7,7 @@ import {validateQuestionInput,type ChoiceInput,type QuestionInput,type Normalize
 import {LEARNING_WRITE_LOCK,ensureExamSet,assertQuestionReferences,assertPublishedSet,loadExamSet,validateExamSet} from './learning-structure.ts'
 export type {QuestionInput,ChoiceInput} from './learning-validation.ts'
 export {loadExamSet,saveExamSet,createQuestionGroup,saveQuestionGroup,loadQuestionGroup,validateExamSet,publishExamSet,deleteQuestionGroup,listExamSets} from './learning-structure.ts'
+export {examSetContentsFingerprint,swapExamSetContents} from './learning-set-swap.ts'
 export type ChoiceRecord=ChoiceInput&{id:number;question_id:number}
 export type QuestionRecord=Omit<NormalizedQuestionInput,'choices'>&{
  id:number;created_at:Date|string;updated_at:Date|string;choices:ChoiceRecord[]

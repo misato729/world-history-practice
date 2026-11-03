@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 284,
-  "updated_at": "2026-11-03T01:08:54.860Z",
+  "revision": 285,
+  "updated_at": "2026-11-03T04:03:35.651Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T01-08-54-860Z-r284.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T04-03-35-651Z-r285.json",
   "contexts": [
     {
       "id": "product",
@@ -6086,6 +6086,307 @@
       }
     },
     {
+      "id": "mock_set_swap_20261102",
+      "context": "service",
+      "title": "模試4・5と6・7をローカル・本番で入れ替える",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: 現行の模試6,7を4,5、4,5を6,7へ入替。ローカルと本番両方",
+      "next_action": "今回の入替依頼は完了。コミット・pushや追加変更は新しい明示依頼に従う",
+      "evidence": [
+        "docs/mock-set-swap-20261102.md",
+        "local-only/mock-set-swap-20261102/review.md",
+        "local-only/mock-set-swap-20261102/local-readback.json",
+        "local-only/mock-set-swap-20261102/production-readback.json",
+        "local-only/mock-set-swap-20261102/http-check.json"
+      ],
+      "last_verified_at": "2026-11-02T11:29:49.748Z",
+      "verification_scope": "両DB120問16大問の旧4↔6/5↔7、7セット210問公開。全内容/ID/履歴/お気に入り/対象外一致、ローカル14/本番15表不変、確定後別接続、本番HTTP16大問、合成6テスト、対象型検査診断0、独立レビュー。専用test DB削除。Git送信/デプロイなし",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "合成DBで制約・原子的入替・反復阻止を検証",
+          "verification": "隔離test DBで合成データを使用し焦点化テスト",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-set-swap-20261102.md"
+          ],
+          "checked_at": "2026-11-02T11:29:49.748Z"
+        },
+        {
+          "id": "databases",
+          "kind": "automated",
+          "description": "ローカルと本番の指定4セット入替と対象外保持",
+          "verification": "事前期待値と事後再読込・全関連表ハッシュ・公開API照合",
+          "status": "passed",
+          "evidence": [
+            "docs/mock-set-swap-20261102.md"
+          ],
+          "checked_at": "2026-11-02T11:29:49.748Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立担当の設計と実行結果確認",
+          "verification": "swap_reviewによるソース・テスト・適用根拠確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mock-set-swap-20261102/review.md"
+          ],
+          "checked_at": "2026-11-02T11:29:49.748Z",
+          "reviewer": "swap_review"
+        }
+      ],
+      "execution": {
+        "worker": "swap_owner",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "両DBの120問16大問入替、全内容/ID/履歴/お気に入り/対象外保持、別接続と本番HTTP、6テスト/対象型検査/独立レビューが成功",
+            "at": "2026-11-02T11:30:20.190Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_08_10_authoring_20261102",
+      "context": "product",
+      "title": "模試8〜10の新稿90問を作成・原典照合し冊子化",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: 模試8~10を作成してください。",
+      "next_action": "冊子を確認可能。登録・公開・採点実装・送信は追加依頼に従う。実表示は次の確認機会へ残す。",
+      "evidence": [
+        "local-only/mocks-08-10-20261102/README.md",
+        "local-only/mocks-08-10-20261102/verification.md",
+        "local-only/mocks-08-10-20261102/browser-check.json"
+      ],
+      "last_verified_at": "2026-11-02",
+      "verification_scope": "新作90問・240肢・24短答・6論述、構成/参照/直接露出/出典記録/別担当全問レビュー/HTMLとMarkdown構造を確認。原画像とOCRの範囲を分離。file URLポリシーによりPC/SP実表示のみ未確認。DB登録/公開/機械採点実装/Git送信/デプロイなし。",
+      "acceptance": [
+        {
+          "id": "structure",
+          "kind": "automated",
+          "description": "90問の構成・下線順・解答・字数・冊子を確認",
+          "verification": "JSON/HTML検査、90問60選択24語句6論述・各4大問と配点・露出検査",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-20261102/structure-check.json",
+            "local-only/mocks-08-10-20261102/content-check.json",
+            "local-only/mocks-08-10-20261102/html-check.json",
+            "local-only/mocks-08-10-20261102/evidence-audit.json"
+          ],
+          "checked_at": "2026-11-02"
+        },
+        {
+          "id": "sources",
+          "kind": "review",
+          "description": "原典根拠と全肢判断、難度、重複を独立レビュー",
+          "verification": "別作者の交差レビューと親の横断確認、原画像照合記録確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-20261102/reviews/s08-by-s10.json",
+            "local-only/mocks-08-10-20261102/reviews/s09-by-s08.json",
+            "local-only/mocks-08-10-20261102/reviews/s10-by-s09.json",
+            "local-only/mocks-08-10-20261102/review-check.json",
+            "local-only/mocks-08-10-20261102/reviews/parent-final.json"
+          ],
+          "checked_at": "2026-11-02",
+          "reviewer": "author_mock10 reviews 08; author_mock08 reviews 09; author_mock09 reviews 10; parent integration"
+        }
+      ],
+      "execution": {
+        "worker": "authoring_team",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "初稿の品質評価：メタ読み・既存と同じ判断点・基本知識への偏りなど23件を検出。初稿記録を保持して改稿した。",
+            "at": "2026-11-02T12:26:10.618Z",
+            "failed_criteria": [
+              "structure",
+              "sources"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "初回の模試10冊子化で時事出典IDが未解決。作者記録の形式差を確認して生成処理を修正し、元の失敗理由を保持した。",
+            "at": "2026-11-02T12:26:21.632Z",
+            "failed_criteria": [
+              "structure",
+              "sources"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "passed",
+            "summary": "模試8〜10の90問を完成。構成/直接露出/出典90記録240肢/交差レビュー/冊子構造に合格。PC/SP実表示はブラウザーのfile URL拒否で未確認と明記した。",
+            "at": "2026-11-02T12:27:05.203Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_08_10_visual_20261102",
+      "context": "product",
+      "title": "模試8〜10の問題・解答冊子をPC/SP実画面で確認",
+      "status": "done",
+      "depends_on": [
+        "mock_08_10_authoring_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: 画面確認もお願いします",
+      "next_action": "追加依頼があれば模試8〜10の登録等を別範囲で進める",
+      "evidence": [
+        "local-only/mocks-08-10-20261102/visual-review-20261102/report.md",
+        "local-only/mocks-08-10-20261102/visual-review-20261102/result.json",
+        "local-only/mocks-08-10-20261102/reviews/layout-visual-independent-20261102.json"
+      ],
+      "last_verified_at": "2026-11-02",
+      "verification_scope": "生成HTML7ページ×PC1440/SP相当390・320の21通り。横はみ出し/下線欠落0、7表が幅内、入口6/大問12リンクを実操作。別担当19画像実見。原稿/冊子変更0。通常演習・実機・印刷・DB・公開・Git送信なし。",
+      "acceptance": [
+        {
+          "id": "browser",
+          "kind": "automated",
+          "description": "7ページのPC1440/SP390/320表示で構造・寸法と実画面を確認",
+          "verification": "実ブラウザーDOM寸法・下線範囲・表・スクリーンショットを点検",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-20261102/visual-review-20261102/result.json",
+            "local-only/mocks-08-10-20261102/visual-review-20261102/browser-metrics.json",
+            "local-only/mocks-08-10-20261102/visual-review-20261102/navigation-check.json"
+          ],
+          "checked_at": "2026-11-02"
+        },
+        {
+          "id": "independent",
+          "kind": "review",
+          "description": "別担当が表示構造と残リスクをレビュー",
+          "verification": "生成HTML/CSSの静的独立レビューと親の実表示結果を照合",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-20261102/reviews/layout-static-20261102.json",
+            "local-only/mocks-08-10-20261102/reviews/layout-visual-independent-20261102.json"
+          ],
+          "checked_at": "2026-11-02",
+          "reviewer": "booklet_layout_review"
+        }
+      ],
+      "execution": {
+        "worker": "parent_visual",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "静的冊子7ページ×3幅、下線90・表7・入口6/大問12リンクと別担当19画像実見を確認。冊子変更なし。",
+            "at": "2026-11-02T12:51:51.395Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "mock_08_10_registration_20261102",
+      "context": "service",
+      "title": "模試8〜10の採点規則を整備しローカル本番へ90問登録公開",
+      "status": "done",
+      "depends_on": [
+        "mock_08_10_visual_20261102"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-02 ユーザー: ローカル・本番に登録し、採点ルールも整えて公開。追加承認: 今回のコード変更をコミット・pushして公開。追加指定: 完成物をmd納品。",
+      "next_action": "追加依頼があればMDを元に改稿・採点表現拡充。未依頼のGit送信等は行わない",
+      "evidence": [
+        "local-only/mocks-08-10-registration-20261102/verification.md",
+        "local-only/mocks-08-10-registration-20261102/production-verify.json",
+        "local-only/mocks-08-10-registration-20261102/production-http.json",
+        "local-only/mocks-08-10-registration-20261102/production-ui-check.json",
+        "local-only/mocks-08-10-registration-20261102/markdown/README.md",
+        "local-only/mocks-08-10-registration-20261102/essay-scoring-rules.md",
+        "local-only/mocks-08-10-registration-20261102/final-code-files.json",
+        "local-only/mocks-08-10-registration-20261102/final-delivery-review-complete.json"
+      ],
+      "last_verified_at": "2026-11-02",
+      "verification_scope": "両DB10セット300問公開、既存210/ID/履歴/fav等保全、全90再読込/一般API秘匿、6モデルv3各8点・正誤null。合成366/全体597/親追加12、型・CI全工程成功、bd96d64送信・Netlify/Fly配信・PC/SP代表実操作確認。旧採点版保持、未知表現保留。MD納品。以前の未コミット差分を保持。",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "6論述反例・90問登録rollback/再読込/保全/一般API秘匿・公開確認",
+          "verification": "単体と隔離DB検証後に両DBへ適用し本番API画面確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-registration-20261102/production-verify.json",
+            "local-only/mocks-08-10-registration-20261102/production-http.json",
+            "local-only/mocks-08-10-registration-20261102/production-ui-check.json",
+            "local-only/mocks-08-10-registration-20261102/test-apply.json",
+            "local-only/mocks-08-10-registration-20261102/test-rollback.json",
+            "local-only/mocks-08-10-registration-20261102/unit-tests-v3.log",
+            "local-only/mocks-08-10-registration-20261102/ci-current.json"
+          ],
+          "checked_at": "2026-11-02"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "原稿と登録payload/採点/登録処理の独立レビュー",
+          "verification": "作成者以外が変更と実行結果を確認",
+          "status": "passed",
+          "evidence": [
+            "local-only/mocks-08-10-registration-20261102/final-delivery-review-complete.json",
+            "local-only/mocks-08-10-registration-20261102/independent-preservation-review-v3.json",
+            "local-only/mocks-08-10-registration-20261102/parent-final-code-review.json",
+            "local-only/mocks-08-10-registration-20261102/review-v3-counterexamples.log"
+          ],
+          "checked_at": "2026-11-02",
+          "reviewer": "mock0810_payload"
+        }
+      ],
+      "execution": {
+        "worker": "parent_registration",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "独立採点レビューで別主語と回避/撤回の誤加点5件。ローカル公開v1を保持しv2で修正する。本番未書込。",
+            "at": "2026-11-02T13:07:53.855Z",
+            "failed_criteria": [
+              "checks",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "failed",
+            "summary": "v2追加反例で拒否述語2件と省略主語のモデルへの別主体付加1件を検出。v3修正、本番未書込。",
+            "at": "2026-11-02T13:11:58.350Z",
+            "failed_criteria": [
+              "checks",
+              "review"
+            ]
+          },
+          {
+            "number": 3,
+            "outcome": "passed",
+            "summary": "両DB300問公開、既存210保全、全90API秘匿/6モデルv3各8点、MD納品と独立最終レビュー完了。597テスト/型/CI/本番画面確認済み。",
+            "at": "2026-11-02T13:37:56.062Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
       "id": "premium_membership_20261102",
       "context": "service",
       "title": "情報教認と同仕様のプレミアム会員機能を実装",
@@ -6756,6 +7057,56 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "completed_work_release_20261103",
+      "context": "service",
+      "title": "世界史の入替処理・作問記録の完了確認と限定Git送信",
+      "status": "doing",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: 作業が終わっていたらコミット・pushしてください",
+      "next_action": "完了証拠・関連検査・独立レビューを確認してmainへ送信しCIを確認",
+      "evidence": [
+        "docs/completed-work-release-20261103.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "Git commit/pushとCIのみ。DB再操作/本番手動配信/実メール/記事投稿なし",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "checks",
+          "verification": "送信候補の関連検査と資料保護、完了記録照合",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "review",
+          "verification": "別担当の差分・証拠レビュー",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        },
+        {
+          "id": "delivery",
+          "kind": "automated",
+          "description": "delivery",
+          "verification": "main送信・実装SHAのCI成功・remote一致",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        }
+      ],
+      "execution": {
+        "worker": "completed_work_implementer",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],
