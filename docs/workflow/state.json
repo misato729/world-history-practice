@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 320,
-  "updated_at": "2026-11-03T21:18:42.036Z",
+  "revision": 321,
+  "updated_at": "2026-11-03T21:37:55.705Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T21-18-42-036Z-r320.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T21-37-55-705Z-r321.json",
   "contexts": [
     {
       "id": "product",
@@ -7729,12 +7729,13 @@
       "depends_on": [],
       "authorization": "requested",
       "request_ref": "2026-11-04 トップの利用にあたっての下へ日付と内容、降順、管理画面管理、初期3件を日本史世界史へ",
-      "next_action": "送信・本番反映は未依頼",
+      "next_action": "公開完了。次のユーザー依頼待ち",
       "evidence": [
-        "docs/updates-history-20261104.md"
+        "docs/updates-history-20261104.md",
+        "docs/updates-release-20261104.md"
       ],
-      "last_verified_at": "2026-11-03T21:18:18Z",
-      "verification_scope": "両隔離DB HTTP検査/型成功、初期3件の降順と権限・CRUD・競合・再適用保持確認。合成管理者のPC/SP追加編集再読込削除とトップ位置/幅確認。独立レビューPASS。世界史通常local011適用済、日本史通常local未起動で適用未実施。未送信・未公開",
+      "last_verified_at": "2026-11-03T21:37:54.484903Z",
+      "verification_scope": "両隔離DB HTTP検査/型成功、初期3件の降順と権限・CRUD・競合・再適用保持確認。合成管理者のPC/SP追加編集再読込削除とトップ位置/幅確認。独立レビューPASS。世界史通常local011適用済、日本史通常local未起動で適用未実施。未送信・未公開。追加明示依頼で送信/最終CI成功/Fly・Netlify・本番DB反映、初期3件/匿名管理401/本番PCSP確認、独立最終レビューPASS",
       "acceptance": [
         {
           "id": "checks",
