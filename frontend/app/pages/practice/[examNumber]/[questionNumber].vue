@@ -103,6 +103,8 @@ const { $api: api } = useNuxtApp()
 const { isLoggedIn, user, accessToken, authHeaders, logout } = useAuth()
 const { canUseFavorites, isFavorite, setFavorite, toggleFavorite } = useFavorites()
 const updatingFavorite = ref(false)
+const incorrectReview = useIncorrectReview()
+const isIncorrectReview = computed(() => route.query.review === 'incorrect' && route.query.answer_history_id === undefined)
 
 const allExamNumbers = EXAM_CATALOG.map(exam => exam.exam_number)
 const allQuestionNumbers = computed(() => publishedQuestionNumbers(matchingCatalog.value?.data ?? []))
@@ -201,7 +203,7 @@ const nextPracticePosition = computed(() => (
     : null
 ))
 const practiceNavigationQuery = computed(() => {
-  if (attemptId.value) return { attempt: attemptId.value }
+  if (attemptId.value) return { attempt: attemptId.value, ...(isIncorrectReview.value ? { review: 'incorrect' } : {}) }
 
   if (hasConditionSelection.value) {
     const query: Record<string, string> = {
@@ -437,7 +439,7 @@ const finishPractice = async (confirmed = false) => {
     if (!confirmed && attempt.manifest.items.some(q => !attempt.answers[q.id])) { confirmEnd.value = true; return }
     await attemptApi.finish(attempt.id, confirmed)
     if (!pageActive || route.path !== originPath || attemptId.value !== attempt.id || accessToken.value !== originToken) return
-    await navigateTo(`/practice/results/${attempt.id}`)
+    await navigateTo({ path: `/practice/results/${attempt.id}`, query: isIncorrectReview.value ? { review: 'incorrect' } : {} })
   } catch (error: any) { if (error?.data?.error?.code === 'attempt_invalidated') { activeAttempt.value = null; answerResult.value = null; attemptError.value = error.data.error.message }
     endError.value = attemptApi.message(error, '終了できませんでした。') }
   finally { ending.value = false }
@@ -473,6 +475,7 @@ const submitAnswer = async () => {
   const answerPayload = { answer_type: question.value.answer_type ?? 'single_choice', question_version: question.value.question_version ?? 1, ...(['short_text', 'essay'].includes(question.value.answer_type ?? '') ? { submitted_text: submittedText.value } : { selected_choice_id: selectedChoiceId.value }) }
   const currentId = question.value.id
   const currentVersion = question.value.question_version ?? 1
+  const reviewOwner = incorrectReview.sessionKey.value
   const requestVersion = ++answerRequestVersion
   const currentToken = accessToken.value
   const answerContext = currentRequestContext()
@@ -497,6 +500,7 @@ const submitAnswer = async () => {
     if (attempt.guest) attemptApi.recordGuest(attempt.id, currentId, response.data)
     attempt.answers[currentId] = response.data
     activeAttempt.value = attempt
+    if (reviewOwner === incorrectReview.sessionKey.value) incorrectReview.invalidate()
     answerResult.value = response.data
   }
   catch (error: any) {
@@ -694,6 +698,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleFavoriteModalK
         <div>
           <div class="practice-context">
             <span class="exam-label">模擬試験 {{ examNumber }}</span>
+            <span v-if="isIncorrectReview">間違えた問題を復習中</span>
             <span v-if="practiceProgress" class="practice-progress">{{ practiceProgress }}</span>
           </div>
           <h1 v-if="displayedGroup"><span class="group-number">大問{{ displayedGroup.group_number }}</span> {{ displayedGroup.title }}</h1>

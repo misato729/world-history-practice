@@ -50,3 +50,42 @@ export const shufflePracticeSequence = (
 
   return shuffled
 }
+
+const mixPracticePosition = (value: number) => {
+  let mixed = value >>> 0
+  mixed = Math.imul(mixed ^ (mixed >>> 16), 0x21F0AAAD)
+  mixed = Math.imul(mixed ^ (mixed >>> 15), 0x735A2D97)
+  return (mixed ^ (mixed >>> 15)) >>> 0
+}
+
+const stablePracticePositionRank = (
+  position: PracticePosition,
+  seed: number,
+) => {
+  const examRank = Math.imul(position.examNumber >>> 0, 0x9E3779B1)
+  const questionRank = Math.imul(position.questionNumber >>> 0, 0x85EBCA77)
+  return mixPracticePosition((seed >>> 0) ^ examRank ^ questionRank)
+}
+
+/**
+ * Gives every exact problem position a seed-dependent rank before sorting.
+ * Unlike Fisher-Yates, filtering the input does not change the relative order
+ * of the positions that remain.
+ */
+export const stableRandomizePracticeSequence = (
+  positions: readonly PracticePosition[],
+  seed: number,
+): PracticePosition[] => (
+  [...positions].sort((left, right) => {
+    const rankDifference = (
+      stablePracticePositionRank(left, seed)
+      - stablePracticePositionRank(right, seed)
+    )
+    if (rankDifference !== 0) return rankDifference
+
+    return (
+      left.examNumber - right.examNumber
+      || left.questionNumber - right.questionNumber
+    )
+  })
+)

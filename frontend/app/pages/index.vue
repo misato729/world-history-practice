@@ -9,7 +9,7 @@ import {
   type PracticeOrder,
 } from '~/utils/practiceSequence'
 
-type LauncherMode = 'exam' | 'conditions'
+type LauncherMode = 'exam' | 'conditions' | 'incorrect'
 
 const title = SITE.name
 const description = SITE.description
@@ -217,6 +217,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
           <UIcon name="i-lucide-list-filter" />
           条件を指定
         </button>
+        <button id="incorrect-mode-tab" type="button" role="tab" :aria-selected="launcherMode === 'incorrect'" aria-controls="incorrect-mode-panel" :class="{ active: launcherMode === 'incorrect' }" @click="launcherMode = 'incorrect'"><UIcon name="i-lucide-list-restart" />間違えた問題</button>
       </div>
 
       <div
@@ -260,7 +261,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
       </div>
 
       <div
-        v-else
+        v-else-if="launcherMode === 'conditions'"
         id="conditions-mode-panel"
         class="launcher-panel"
         role="tabpanel"
@@ -360,6 +361,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
           </div>
         </form>
       </div>
+      <div v-if="launcherMode === 'incorrect'" id="incorrect-mode-panel" class="launcher-panel" role="tabpanel" aria-labelledby="incorrect-mode-tab"><IncorrectReviewPanel /></div>
     </section>
 
     <section id="usage-guide" class="home-section policy-section" aria-labelledby="usage-guide-title">
@@ -413,9 +415,9 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
 .section-heading::before { content: ''; flex: 0 0 6px; width: 6px; height: 24px; border-radius: 3px; background: #267ba4; }
 .section-heading > span { min-width: 0; }
 .launcher-tabs {
-  width: min(400px, 100%);
+  width: min(600px, 100%);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 28px;
   padding: 5px;
   gap: 4px;
@@ -424,6 +426,8 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   background: #e7eef4;
 }
 .launcher-tabs button {
+  white-space: normal;
+  overflow-wrap: anywhere;
   min-height: 48px;
   display: inline-flex;
   align-items: center;
@@ -660,4 +664,5 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
   .exam-card { transition: none; }
   .exam-card:hover { transform: none; }
 }
+@media (max-width: 640px) { .launcher-tabs button { flex-direction: column; gap: 4px; padding: 8px 2px; font-size: .8125rem; line-height: 1.4; } }
 </style>

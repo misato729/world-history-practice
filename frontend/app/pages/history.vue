@@ -99,6 +99,13 @@ const historyLink = (history: HistoryItem) => ({
   path: `/practice/${history.question.exam_number}/${history.question.question_number}`,
   query: { answer_history_id: history.id },
 })
+const { start: startIncorrectReview, starting: startingIncorrectReview, error: incorrectReviewError } = useIncorrectReview()
+const incorrectReviewNotice = ref('')
+const startIncorrectReviewFromHistory = async () => {
+  incorrectReviewNotice.value = ''
+  const started = await startIncorrectReview()
+  if (!started && !incorrectReviewError.value && isLoggedIn.value) incorrectReviewNotice.value = '現在、復習する問題はありません。'
+}
 </script>
 
 <template>
@@ -106,6 +113,7 @@ const historyLink = (history: HistoryItem) => ({
     <header class="page-intro">
       <h1>解答履歴</h1>
       <p>これまでに回答した問題を、新しい順に確認できます。</p>
+      <button v-if="isLoggedIn" class="secondary-link" type="button" :disabled="startingIncorrectReview" @click="startIncorrectReviewFromHistory">{{ startingIncorrectReview ? '読み込み中です' : '間違えた問題を復習する' }}</button><p v-if="incorrectReviewError" role="alert">{{ incorrectReviewError }}</p><p v-if="incorrectReviewNotice" role="status">{{ incorrectReviewNotice }}</p>
     </header>
 
     <div v-if="!isLoggedIn" class="empty-state">
