@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 327,
-  "updated_at": "2026-11-03T23:48:17.878Z",
+  "revision": 328,
+  "updated_at": "2026-11-03T23:54:12.147Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T23-48-17-878Z-r327.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T23-54-12-147Z-r328.json",
   "contexts": [
     {
       "id": "product",
@@ -7207,6 +7207,81 @@
             "outcome": "passed",
             "summary": "既存2Netlifyを最新main SHAでPublished、Fly各2VMで同image・実ソースhash・env/guest/region/ID保持とhealth/販売設定を確認。JPは同内容local_path再試行成功、注入hash・各20profile・移行台帳前後一致。匿名PC/SP4状態と独立レビューPASS。World事前台帳未取得は区別",
             "at": "2026-11-03T04:55:50.645Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "stripe_checkout_title_20261103",
+      "context": "service",
+      "title": "Stripe共通公開名と決済画面タイトルの修正",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 決済画面title修正、公開ビジネス名はmisatoの地歴ラボを明示選択。2026-11-04 作業記録のみcommit/pushを明示承認",
+      "next_action": "作業記録のcommit/push。追加の依頼待ち",
+      "evidence": [
+        "docs/stripe-checkout-title-20261103.md"
+      ],
+      "last_verified_at": "2026-11-03T06:57:25Z",
+      "verification_scope": "ユーザー指定の共通公開名misatoの地歴ラボをStripeへ保存。管理画面/日本史既存Checkoutを再読込し公開名/title一致・h1/商品名日本史保持、独立レビューPASS。コード/DB/支払変更なし。実設定の確認日は保持し、2026-11-04の追加依頼で記録のみ送信対象とする",
+      "acceptance": [
+        {
+          "id": "setting",
+          "kind": "automated",
+          "description": "setting",
+          "verification": "保存/再読込後の公開名、document.title、本文の日本史名と差分範囲を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/stripe-checkout-title-20261103.md"
+          ],
+          "checked_at": "2026-11-03T06:57:25Z"
+        },
+        {
+          "id": "checkout",
+          "kind": "automated",
+          "description": "checkout",
+          "verification": "保存/再読込後の公開名、document.title、本文の日本史名と差分範囲を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/stripe-checkout-title-20261103.md"
+          ],
+          "checked_at": "2026-11-03T06:57:25Z"
+        },
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "scope",
+          "verification": "保存/再読込後の公開名、document.title、本文の日本史名と差分範囲を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/stripe-checkout-title-20261103.md"
+          ],
+          "checked_at": "2026-11-03T06:57:25Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "review",
+          "verification": "保存/再読込後の公開名、document.title、本文の日本史名と差分範囲を確認",
+          "status": "passed",
+          "evidence": [
+            "docs/stripe-checkout-title-20261103.md"
+          ],
+          "checked_at": "2026-11-03T06:57:25Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "checkout_title_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "ユーザー指定の共通公開名misatoの地歴ラボをStripeへ保存。管理画面/日本史既存Checkoutを再読込し公開名/title一致・h1/商品名日本史保持、独立レビューPASS。コード/DB/支払変更なし、記録未コミット",
+            "at": "2026-11-03T06:57:26.873Z",
             "failed_criteria": []
           }
         ]
