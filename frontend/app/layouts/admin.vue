@@ -4,6 +4,7 @@ const navigationOpen = ref(false)
 const { user, logout } = useAuth()
 
 const navigationItems = [
+  { label: '更新履歴', to: '/admin/updates', icon: 'i-lucide-calendar-days' },
   { label: '教材・大問', to: '/admin/exams', icon: 'i-lucide-notebook-tabs' },
   { label: '問題一覧', to: '/admin/questions', icon: 'i-lucide-list-checks' },
   { label: '問題を作成', to: '/admin/questions/new', icon: 'i-lucide-square-plus' },

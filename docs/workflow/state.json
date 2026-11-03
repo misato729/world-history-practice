@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 318,
-  "updated_at": "2026-11-03T12:59:51.025Z",
+  "revision": 320,
+  "updated_at": "2026-11-03T21:18:42.036Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T12-59-51-025Z-r318.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T21-18-42-036Z-r320.json",
   "contexts": [
     {
       "id": "product",
@@ -7716,6 +7716,70 @@
             "outcome": "passed",
             "summary": "cb4679dのCI全成功、Netlify同SHA公開、公開JSと本番PC/SPの見出し/設定フラグメント/位置と幅一致、独立レビューPASS",
             "at": "2026-11-03T12:59:49.815Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "updates_history_20261104",
+      "context": "service",
+      "title": "トップの更新履歴と管理画面CRUDを追加",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-04 トップの利用にあたっての下へ日付と内容、降順、管理画面管理、初期3件を日本史世界史へ",
+      "next_action": "送信・本番反映は未依頼",
+      "evidence": [
+        "docs/updates-history-20261104.md"
+      ],
+      "last_verified_at": "2026-11-03T21:18:18Z",
+      "verification_scope": "両隔離DB HTTP検査/型成功、初期3件の降順と権限・CRUD・競合・再適用保持確認。合成管理者のPC/SP追加編集再読込削除とトップ位置/幅確認。独立レビューPASS。世界史通常local011適用済、日本史通常local未起動で適用未実施。未送信・未公開",
+      "acceptance": [
+        {
+          "id": "checks",
+          "kind": "automated",
+          "description": "権限/入力/CRUD/競合と型",
+          "verification": "隔離DB HTTP検査と型",
+          "status": "passed",
+          "evidence": [
+            "docs/updates-history-20261104.md"
+          ],
+          "checked_at": "2026-11-03T21:18:18Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "トップ位置と管理PC/SP操作",
+          "verification": "合成管理者で追加編集削除と再読込",
+          "status": "passed",
+          "evidence": [
+            "docs/updates-history-20261104.md"
+          ],
+          "checked_at": "2026-11-03T21:18:18Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "独立レビュー",
+          "verification": "別担当の差分/RBAC/データ保持確認",
+          "status": "passed",
+          "evidence": [
+            "docs/updates-history-20261104.md"
+          ],
+          "checked_at": "2026-11-03T21:18:18Z",
+          "reviewer": "achievement_review"
+        }
+      ],
+      "execution": {
+        "worker": "updates_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "更新履歴の両隔離DB権限/CRUD/競合・型と合成PCSP、独立レビュー成功。通常local011適用済",
+            "at": "2026-11-03T21:18:41.121Z",
             "failed_criteria": []
           }
         ]

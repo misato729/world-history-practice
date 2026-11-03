@@ -393,6 +393,7 @@ watch(availableExamNumbers, (examNumbers, previousExamNumbers) => {
         </div>
       </dl>
     </section>
+    <UpdatesHistory />
   </div>
 </template>
 
