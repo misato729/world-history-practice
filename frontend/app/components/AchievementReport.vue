@@ -89,13 +89,13 @@ button { cursor: pointer; }button:disabled { opacity: .5; cursor: not-allowed; }
 .report-table thead th { padding: 9px 6px; color: var(--muted); background: var(--surface); }
 .report-table th:first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); min-width: 112px; padding: 10px; white-space: nowrap; }
 .report-table td { min-width: 44px; height: 46px; }.report-table tr:last-child td, .report-table tr:last-child th { border-bottom: 0; }
-.achievement-cell { display: grid; place-items: center; width: 44px; min-height: 46px; font-size: 24px; margin: auto; border-radius: 4px; }
+.achievement-cell { display: grid; place-items: center; width: 44px; min-height: 46px; font-size: 1.5rem; margin: auto; border-radius: 4px; }
 .achievement-cell:hover { background: var(--surface-soft, #f3f5f3); }.achievement-cell:focus-visible, .report-table-wrap:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
 .mastered { color: #296344; }.correct { color: #287782; }.incorrect { color: #a76131; }.struggling { color: #a14057; }.unanswered { color: #818a94; }.reference { color: #62639b; }
 .achievement-cell.mastered { background: #e3f0e4; }.achievement-cell.correct { background: #e6f2f4; }.achievement-cell.incorrect { background: #fbf0e6; }.achievement-cell.struggling { background: #fae8ed; }.achievement-cell.reference { background: #eeeefa; }
 .dimmed .achievement-cell { opacity: .25; }.dimmed .achievement-cell:focus-visible, .dimmed .achievement-cell:hover { opacity: 1; }
 .not-present { color: var(--muted); }.report-legend { display: flex; flex-wrap: wrap; gap: 12px 22px; list-style: none; padding: 0; margin: 20px 0 10px; }
-.report-legend li { display: flex; align-items: center; gap: 7px; font-size: .85rem; }.report-legend .iconify { font-size: 22px; flex-shrink: 0; }.report-legend li > span:last-child { color: var(--ink); }
+.report-legend li { display: flex; align-items: center; gap: 7px; font-size: .85rem; }.report-legend .iconify { font-size: 1.375rem; flex-shrink: 0; }.report-legend li > span:last-child { color: var(--ink); }
 .report-empty { margin-top: 18px; }
 @media (max-width: 520px) { .progress-wrap { flex-basis: 100%; min-width: 0; }.review-controls { align-items: stretch; }.review-controls label { flex-basis: 100%; }.review-controls select, .review-controls button { width: 100%; }.report-table th:first-child { min-width: 96px; padding: 8px; }.report-heading { gap: 8px; }.map-brand { gap: 8px; }.map-symbol { width: 32px; height: 32px; } }
 </style>
