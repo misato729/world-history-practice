@@ -96,3 +96,9 @@
 - [docs/workflow/state.json](workflow/state.json)：追加タスク/検証結果。
 - [docs/workflow/handoffs/2026-11-03T09-44-53-612Z-r305.json](workflow/handoffs/2026-11-03T09-44-53-612Z-r305.json)：今回の着手/検証記録。
 - [docs/workflow/handoffs/2026-11-03T09-50-02-046Z-r306.json](workflow/handoffs/2026-11-03T09-50-02-046Z-r306.json)：今回の着手/検証記録。
+
+## 公開状況の更新
+
+ユーザーの追加依頼により、実装1470914をmainへ送信しCI成功、Netlify/Flyへ本番反映済み。[公開結果・全変更ファイル](learning-map-release-20261103.md)。上の未配信表記は各作業時点の記録。SP再確認は未完了として保持。
+
+公開後にブラウザー接続が回復し、変更後の実コンポーネント＋合成データでPC/SPの記号・未回答絞り込み・表内横スクロールを再確認。以前の未確認事項は解消。[最終確認](learning-map-release-20261103.md)。本番本人レポートの閲覧は行っていない。

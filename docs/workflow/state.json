@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 308,
-  "updated_at": "2026-11-03T10:08:14.915Z",
+  "revision": 312,
+  "updated_at": "2026-11-03T10:20:42.073Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T10-08-14-915Z-r308.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T10-20-42-073Z-r312.json",
   "contexts": [
     {
       "id": "product",
@@ -7421,18 +7421,19 @@
       "id": "learning_map_symbols_20261103",
       "context": "service",
       "title": "未回答をハイフン・対象外を空欄・不正解をバツへ変更",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "learning_map_unanswered_copy_20261103"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-03 未回答はハイフン、存在しない問題は空欄、不正解系をバツ系へ変更",
-      "next_action": "ブラウザー接続回復後に実画面を再確認。コードは未コミット・未配信",
+      "next_action": "最後の公開結果記録だけをskip付きで送信。Stripe別件は保持",
       "evidence": [
-        "docs/achievement-report-20261103.md"
+        "docs/achievement-report-20261103.md",
+        "docs/learning-map-release-20261103.md"
       ],
-      "last_verified_at": "2026-11-03T09:49:56Z",
-      "verification_scope": "記号変更/単体5件/SFCコンパイル/コードレビュー成功。ブラウザー接続タイムアウトのため今回PC/SP再確認は未完了",
+      "last_verified_at": "2026-11-03T10:20:04Z",
+      "verification_scope": "修正後の実コンポーネント＋合成データでPC1280/SP390の新記号/対象外空欄/未回答絞り込み/表内スクロール、document幅一致を確認。単体5件/SFC/コードレビュー成功。前回の接続timeoutを保持",
       "acceptance": [
         {
           "id": "symbols",
@@ -7441,9 +7442,9 @@
           "verification": "記号/空欄の定義と実SFCコンパイル、既存単体5件",
           "status": "passed",
           "evidence": [
-            "docs/achievement-report-20261103.md"
+            "docs/learning-map-release-20261103.md"
           ],
-          "checked_at": "2026-11-03T09:49:56Z"
+          "checked_at": "2026-11-03T10:20:04Z"
         },
         {
           "id": "review",
@@ -7452,9 +7453,9 @@
           "verification": "表示と凡例の一貫性/状態判定維持を別担当確認",
           "status": "passed",
           "evidence": [
-            "docs/achievement-report-20261103.md"
+            "docs/learning-map-release-20261103.md"
           ],
-          "checked_at": "2026-11-03T09:49:56Z",
+          "checked_at": "2026-11-03T10:20:04Z",
           "reviewer": "achievement_review"
         },
         {
@@ -7462,11 +7463,11 @@
           "kind": "automated",
           "description": "PC/SPで変更後の実表示を確認",
           "verification": "ブラウザー接続回復後に合成データで再確認",
-          "status": "failed",
+          "status": "passed",
           "evidence": [
-            "docs/achievement-report-20261103.md"
+            "docs/learning-map-release-20261103.md"
           ],
-          "checked_at": "2026-11-03T09:49:56Z"
+          "checked_at": "2026-11-03T10:20:04Z"
         }
       ],
       "execution": {
@@ -7481,6 +7482,13 @@
             "failed_criteria": [
               "ui"
             ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "ブラウザー接続回復後のPC/SPで新記号/空欄/未回答絞り込み/横スクロールを確認、独立画像レビューPASS",
+            "at": "2026-11-03T10:20:37.621Z",
+            "failed_criteria": []
           }
         ]
       }
@@ -7489,49 +7497,53 @@
       "id": "learning_map_release_20261103",
       "context": "service",
       "title": "学習マップを限定コミットpushしCI/本番反映を確認",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "learning_map_20261103",
         "learning_map_unanswered_copy_20261103"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-03 OKです。コミット・push・本番反映してください",
-      "next_action": "関連検査後に修正を送信。CI成功後にAPI反映、SP再確認は別に未完了として保持",
+      "next_action": "公開とPC/SP確認まで完了。最後の記録を限定送信し、別件Stripeの未コミット記録だけを保持",
       "evidence": [
         "docs/learning-map-release-20261103.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "世界史のみ、既存設定/実問題/利用者/販売設定保持。別件Stripe記録は作業場に保持。ユーザーは記号変更のSP未再確認を明記した報告後に公開を承認。記号の実装/コードレビュー済み部分を公開対象とし、SP再確認タスクの未完了状態は別に保持",
+      "last_verified_at": "2026-11-03T10:16:26Z",
+      "verification_scope": "1470914のCI全成功、NetlifyPublished/SHA、Fly両VM実ソース一致と既存env/files/資源/配置/販売保持、health/匿名集計API401/no-store、配信JSを確認。独立レビューPASS。実利用者ログイン未実施、変更後SPは別タスクで未完了として保持。その後の接続回復で修正後PC/SP実コンポーネント確認も成功し、独立画像レビューPASS。未確認だった記号表示は解消",
       "acceptance": [
         {
           "id": "git_ci",
           "kind": "automated",
           "description": "承認範囲の送信とCI成功",
           "verification": "候補/送信SHA/CI結果確認",
-          "status": "failed",
+          "status": "passed",
           "evidence": [
             "docs/learning-map-release-20261103.md"
           ],
-          "checked_at": "2026-11-03T10:07:34Z"
+          "checked_at": "2026-11-03T10:16:26Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "同じ実装をNetlify/Flyへ反映",
           "verification": "公開配信SHA/VMソース/認証API/health確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/learning-map-release-20261103.md"
+          ],
+          "checked_at": "2026-11-03T10:16:26Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "独立レビュー",
           "verification": "差分と公開証跡の別担当確認",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/learning-map-release-20261103.md"
+          ],
+          "checked_at": "2026-11-03T10:16:26Z",
+          "reviewer": "achievement_review"
         }
       ],
       "execution": {
@@ -7548,6 +7560,13 @@
               "production",
               "review"
             ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "修正1470914のCI全成功、Netlify同SHA公開とFly2VM反映/既存設定保持、公開JSと匿名API401を確認、独立レビューPASS",
+            "at": "2026-11-03T10:16:32.896Z",
+            "failed_criteria": []
           }
         ]
       }
