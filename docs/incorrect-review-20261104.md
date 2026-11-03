@@ -44,3 +44,7 @@
 - [docs/workflow/handoffs/2026-11-03T22-36-57-608Z-r322.json](../docs/workflow/handoffs/2026-11-03T22-36-57-608Z-r322.json)：初回指摘・修正後の合格・完了の引き継ぎ記録。
 - [docs/workflow/handoffs/2026-11-03T22-36-59-158Z-r323.json](../docs/workflow/handoffs/2026-11-03T22-36-59-158Z-r323.json)：初回指摘・修正後の合格・完了の引き継ぎ記録。
 - [docs/workflow/handoffs/2026-11-03T22-38-43-869Z-r324.json](../docs/workflow/handoffs/2026-11-03T22-38-43-869Z-r324.json)：初回指摘・修正後の合格・完了の引き継ぎ記録。
+
+## 追加依頼による送信・公開完了
+
+上記の未送信・未公開は実装時点の記録。2026-11-04の追加依頼によりcommit/pushとCI確認を完了。世界史・日本史はFly/Netlify反映、ログイン後の0件表示と履歴入口、PC/SPを本番確認した。[公開結果と確認範囲](incorrect-review-release-20261104.md)を参照。

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 325,
-  "updated_at": "2026-11-03T23:29:37.914Z",
+  "revision": 327,
+  "updated_at": "2026-11-03T23:48:17.878Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T23-29-37-914Z-r325.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T23-48-17-878Z-r327.json",
   "contexts": [
     {
       "id": "product",
@@ -7794,9 +7794,10 @@
       "depends_on": [],
       "authorization": "requested",
       "request_ref": "2026-11-04 情報教認の間違えた問題の復習を両ラボと未実装ならテンプレートへ",
-      "next_action": "実装完了。コミット・push・公開は次の明示依頼待ち",
+      "next_action": "追加依頼の送信・CI確認・本番反映も完了",
       "evidence": [
-        "docs/incorrect-review-20261104.md"
+        "docs/incorrect-review-20261104.md",
+        "docs/incorrect-review-release-20261104.md"
       ],
       "last_verified_at": "2026-11-03T22:36:57.979Z",
       "verification_scope": "3repo型成功。全フロントWorld658/JP251/template149、匿名追加後の関連6ずつ成功。専用PostgreSQLの最新/公開/資格/所有者/正解除外/復帰検査をskipなし成功。合成Nuxt PC1280/SP390で跨模試の復習、再読込、残り再復習と全問正解、0件通知を確認。独立コードレビューPASS。通常/本番DB非接続、未送信・未公開。PC/SP画像の最終独立レビューもPASS",
@@ -7865,52 +7866,66 @@
       "id": "incorrect_review_release_20261104",
       "context": "service",
       "title": "復習機能の送信と本番反映",
-      "status": "doing",
+      "status": "done",
       "authorization": "requested",
       "request_ref": "2026-11-04 3つともcommit/push、世界史と日本史は本番反映・CIと本番で動作確認",
       "depends_on": [
         "incorrect_review_20261104"
       ],
-      "next_action": "限定commit/pushとCI確認、両ラボのAPI/フロント公開",
+      "next_action": "依頼完了。次のユーザー依頼待ち",
       "evidence": [
         "docs/incorrect-review-release-20261104.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "確認中",
+      "last_verified_at": "2026-11-03T23:48:15.552Z",
+      "verification_scope": "限定送信・同実装SHAの全CI成功、資料保護と送信範囲の独立レビューPASS。Fly2VMのenv/files/guest/nrt/ID保持、Netlify同SHA、匿名GET/HEAD401 no-store、実ログインPC1280/SP390の0件表示・履歴の0件通知、独立最終レビューPASS。本番対象0件のため回答書込/周回は隔離検証と区別。",
       "acceptance": [
         {
           "id": "delivery",
           "kind": "automated",
           "description": "限定commit/pushと同SHAのCI全成功",
           "verification": "Git/Actions/本番API/ブラウザー/安全な配信比較",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/incorrect-review-release-20261104.md"
+          ],
+          "checked_at": "2026-11-03T23:48:15.552Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "既存Fly設定保持とAPI/Netlify同SHA、本番PCSP/復習操作",
           "verification": "Git/Actions/本番API/ブラウザー/安全な配信比較",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/incorrect-review-release-20261104.md"
+          ],
+          "checked_at": "2026-11-03T23:48:15.552Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "独立担当の送信範囲と公開結果のレビュー",
           "verification": "別担当が差分と安全な配信証跡を検証",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/incorrect-review-release-20261104.md"
+          ],
+          "checked_at": "2026-11-03T23:48:15.552Z",
+          "reviewer": "incorrect_review_audit"
         }
       ],
       "execution": {
         "worker": "incorrect_release_implementer",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "passed",
+            "summary": "限定送信と全CI成功。依頼範囲の本番反映/設定保持/実ログインPCSPと0件通知、独立最終レビューPASS。テンプレートは送信のみ",
+            "at": "2026-11-03T23:48:17.275Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],
