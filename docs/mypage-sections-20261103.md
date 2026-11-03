@@ -37,3 +37,6 @@
 - `docs/workflow/handoffs/2026-11-03T12-50-24-650Z-r313.json`
 - `docs/workflow/handoffs/2026-11-03T12-50-36-205Z-r314.json`
 - `docs/workflow/handoffs/2026-11-03T12-50-37-240Z-r315.json`
+
+初回送信：実装2376aea、Netlify公開6ae9d900b32d5ef23d23c8ecは同SHAで成功。CI41639353136は既存siteHeaderMenu.test.tsが旧URL/accountを期待して1件失敗。実装の仕様に合わせ/account#account-settingsへ期待値2箇所だけを更新し再検証する。
+追加変更：`frontend/tests/siteHeaderMenu.test.ts`（既存メニューテストの期待値更新）。

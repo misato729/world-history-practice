@@ -31,7 +31,7 @@ test('anonymous users have a login link in the mobile menu', () => {
   assert.equal(login.length, 1)
   assert.equal(login[0]?.label, 'ログイン')
   assert.equal(login[0]?.icon, 'i-lucide-log-in')
-  assert.equal(items.some(item => item.to === '/account'), false)
+  assert.equal(items.some(item => item.to === '/account#account-settings'), false)
 })
 
 test('authenticated menus retain their existing role-specific links without login', () => {
@@ -43,7 +43,7 @@ test('authenticated menus retain their existing role-specific links without logi
     const items = menuFor(true, user)
     assert.equal(items.some(item => item.to === '/login'), false)
     assert.equal(items.some(item => item.to === '/history'), true)
-    assert.equal(items.some(item => item.to === '/account'), true)
+    assert.equal(items.some(item => item.to === '/account#account-settings'), true)
     assert.equal(items.some(item => item.to === '/favorites'), user.paid_content_access)
     assert.equal(items.some(item => item.to === '/admin/questions'), user.role === 'admin')
   }
