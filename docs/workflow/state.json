@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 281,
-  "updated_at": "2026-11-03T00:53:24.017Z",
+  "revision": 284,
+  "updated_at": "2026-11-03T01:08:54.860Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T00-53-24-017Z-r281.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T01-08-54-860Z-r284.json",
   "contexts": [
     {
       "id": "product",
@@ -6602,7 +6602,7 @@
       "depends_on": [],
       "authorization": "requested",
       "request_ref": "2026-11-03 ユーザー: 静的サイドバーにアコーディオン、無料会員の問題API取得後も模試6以降をアコーディオン込みで静的表示。追加回答で4repo",
-      "next_action": "実装/ローカル検証は完了。後続のstatic_sidebar_release_20261103で明示承認された送信・配信を実施",
+      "next_action": "実装/検証と後続static_sidebar_release_20261103による送信・配信確認まで完了。追加依頼を待つ",
       "evidence": [
         "docs/static-sidebar.md"
       ],
@@ -6673,61 +6673,89 @@
       "id": "static_sidebar_release_20261103",
       "context": "service",
       "title": "静的サイドバー修正の限定送信と3サービス本番反映",
-      "status": "doing",
+      "status": "done",
       "depends_on": [
         "static_sidebar_accordion_20261103"
       ],
       "authorization": "requested",
       "request_ref": "2026-11-03 ユーザー: コミット・push・本番反映。対象4repo、templateは既存合意どおりpushのみ",
-      "next_action": "今回のindexだけを送信しCIと3Netlifyの同SHA公開、PC/SP静的開閉を確認",
+      "next_action": "今回の送信・配信作業は完了。追加依頼を待つ",
       "evidence": [
         "docs/static-sidebar-release.md"
       ],
-      "last_verified_at": null,
-      "verification_scope": "4Git/CI、3Netlify。画面側のみ、Fly/API/DB・Stripe設定変更なし。元dirtyとtemplate seed0保全",
+      "last_verified_at": "2026-11-03T01:08:51Z",
+      "verification_scope": "静的サイドバー4main送信/CI成功、既存3Netlify同SHA Published・匿名PC/SP実操作と12画像を確認。独立最終レビューPASS、元dirty/資料保護/template空state保全。画面のみ、template公開なし",
       "acceptance": [
         {
           "id": "scope",
           "kind": "automated",
           "description": "公開indexは今回だけ、既存dirty・非公開資料保護・template初期状態を保持",
           "verification": "公開indexは今回だけ、既存dirty・非公開資料保護・template初期状態を保持",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar-release.md"
+          ],
+          "checked_at": "2026-11-03T01:08:51Z"
         },
         {
           "id": "ci",
           "kind": "automated",
           "description": "送信実装SHAの必須CI成功",
           "verification": "送信実装SHAの必須CI成功",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar-release.md"
+          ],
+          "checked_at": "2026-11-03T01:08:51Z"
         },
         {
           "id": "production",
           "kind": "automated",
           "description": "3Netlify同SHA Publishedと本番静的開閉PC/SP、template配信なし",
           "verification": "3Netlify同SHA Publishedと本番静的開閉PC/SP、template配信なし",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar-release.md"
+          ],
+          "checked_at": "2026-11-03T01:08:51Z"
         },
         {
           "id": "review",
           "kind": "review",
           "description": "別担当が送信範囲・CI/本番の証拠を照合",
           "verification": "別担当が送信範囲・CI/本番の証拠を照合",
-          "status": "pending",
-          "evidence": [],
-          "checked_at": null,
-          "reviewer": null
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar-release.md"
+          ],
+          "checked_at": "2026-11-03T01:08:51Z",
+          "reviewer": "premium_review"
         }
       ],
       "execution": {
         "worker": "sidebar_release_implementer",
         "max_attempts": 3,
-        "attempts": []
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "配信後の記録文書の末尾空行でdiff形式検査が不合格。実装/CI/本番は成功済みでコード変更なし。空行を修正し再評価",
+            "at": "2026-11-03T01:07:14.507Z",
+            "failed_criteria": [
+              "scope",
+              "ci",
+              "production",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "静的サイドバー4main送信/CI成功、既存3Netlify同SHA Published・匿名PC/SP実操作と12画像を確認。独立最終レビューPASS、元dirty/資料保護/template空state保全。画面のみ、template公開なし",
+            "at": "2026-11-03T01:08:53.230Z",
+            "failed_criteria": []
+          }
+        ]
       }
     }
   ],

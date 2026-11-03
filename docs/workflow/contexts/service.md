@@ -260,3 +260,7 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 ### 静的サイドバーの送信・配信
 
 `static_sidebar_release_20261103`。4Gitと既存3Netlifyの反映が明示承認された。template送信のみ、元dirty・採点/販売/認証設定を保持し、CI/同SHA公開・実画面を確認する。[配信記録](../../static-sidebar-release.md)。
+
+### 静的サイドバーの配信確認完了
+
+`static_sidebar_release_20261103`。4mainの限定push・全CI、既存3Netlify同実装SHA公開を確認。各本番の静的/取得後×PC/SPを操作し12画像と親子premiumリンクを確認、独立最終レビューPASS。templateはpushのみ。実装時点の未送信状態は解消。呼出回数/ログイン無料/降格は合成・回帰の確認で、本番計測とは区別。[全変更ファイルと配信の証拠](../../static-sidebar-release.md)。最後の記録コミットは`[skip netlify] [skip ci]`で送信し、別作業は保持する。
