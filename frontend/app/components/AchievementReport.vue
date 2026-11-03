@@ -2,7 +2,11 @@
 import { achievementLabels } from '../../shared/achievement'
 import type { AchievementQuestion, AchievementStatus } from '../../shared/types/achievement'
 
+const emit = defineEmits<{ settled: [] }>()
 const { report, loading, error, reload } = useAchievementReport()
+watch(loading, (value, previous) => {
+  if (previous && !value) emit('settled')
+}, { flush: 'post' })
 const { accessToken } = useAuth()
 const attemptApi = usePracticeAttempt()
 const filter = ref<AchievementStatus | 'all'>('all')

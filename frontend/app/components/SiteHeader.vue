@@ -14,7 +14,7 @@ const menuItems = computed(() => [
         ...(!PAYMENTS_ENABLED || user.value?.paid_content_access
           ? [{ label: 'お気に入り一覧', to: '/favorites', icon: 'i-lucide-star' }]
           : []),
-        { label: 'アカウント設定', to: '/account', icon: 'i-lucide-user-round' },
+        { label: 'アカウント設定', to: '/account#account-settings', icon: 'i-lucide-user-round' },
         ...(user.value?.role === 'admin'
           ? [{ label: '管理画面', to: '/admin/questions', icon: 'i-lucide-shield-check' }]
           : []),
@@ -58,7 +58,7 @@ const handleLogout = async () => {
 
       <div class="header-actions">
         <NuxtLink v-if="!isLoggedIn" class="login-link" to="/login">ログイン</NuxtLink>
-        <NuxtLink v-else class="account-link" to="/account" title="アカウント設定">
+        <NuxtLink v-else class="account-link" to="/account" title="マイページ">
           <UIcon name="i-lucide-circle-user-round" />
           <span class="account-label">マイページ</span>
         </NuxtLink>

@@ -1,6 +1,15 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
+const route = useRoute()
+const settingsSection = useTemplateRef<HTMLElement>('settingsSection')
+const alignAccountSettings = async () => {
+  // The map loads after navigation and can move the fragment target.
+  if (route.hash !== '#account-settings') return
+  await nextTick()
+  if (route.hash === '#account-settings') settingsSection.value?.scrollIntoView({ block: 'start' })
+}
+
 const { $api: api } = useNuxtApp()
 const { isLoggedIn, user, authHeaders, logout, ensureCurrentUser, changePassword } = useAuth()
 if (isLoggedIn.value) await ensureCurrentUser()
@@ -80,15 +89,15 @@ const deleteAccount = async () => {
 
 <template>
   <div class="page-wrap">
-    <header class="page-intro"><h1>アカウント設定</h1><p>登録情報の確認、パスワード変更、ログアウト、アカウント削除を行います。</p></header>
+    <header class="page-intro"><h1>マイページ</h1><p>登録情報や学習状況の確認、アカウント設定を行います。</p></header>
     <div v-if="!isLoggedIn" class="empty-state">
       <h2>ログインが必要です</h2>
-      <p>アカウント設定はログイン後に利用できます。</p>
+      <p>マイページはログイン後に利用できます。</p>
       <NuxtLink class="primary-link" to="/login">ログインへ</NuxtLink>
     </div>
     <template v-else>
-      <AchievementReport />
-      <section class="content-panel account-info">
+      <section class="content-panel account-info" aria-labelledby="registration-heading">
+        <h2 id="registration-heading">登録情報</h2>
         <div><span>ユーザー名</span><strong>{{ user?.name }}</strong></div>
         <div><span>メールアドレス</span><strong>{{ user?.email }}</strong></div>
         <div><span>会員区分</span><strong>{{ membershipLabel }}</strong></div>
@@ -96,48 +105,52 @@ const deleteAccount = async () => {
         <div v-if="PAYMENTS_ENABLED && user?.membership.status === 'active'"><span>有効期限</span><strong>なし（買い切り）</strong></div>
         <div v-if="PAYMENTS_ENABLED && user?.verification_access && user?.membership.status !== 'active'"><span>検証用資格の期限</span><strong>{{ new Date(user.verification_access.expires_at).toLocaleString('ja-JP') }}</strong></div>
       </section>
-      <section v-if="PAYMENTS_ENABLED && !user?.paid_content_access" class="content-panel membership-action">
-        <h2>プレミアム会員</h2>
-        <p>{{ PRICE_LABEL }}の買い切りで、演習セット{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降を利用できます。</p>
-        <NuxtLink class="primary-link" to="/premium">プレミアム会員の詳細を見る</NuxtLink>
-      </section>
-      <section class="content-panel password-settings">
-        <h2>パスワード変更</h2>
-        <p id="password-help">新しいパスワードは8文字以上で入力してください。変更すると、他の端末では再ログインが必要になります。</p>
-        <form class="password-form" @submit.prevent="submitPasswordChange">
-          <fieldset :disabled="passwordChanging">
-            <div class="field"><label for="password-current">現在のパスワード</label><input id="password-current" v-model="passwordCurrent" type="password" autocomplete="current-password" required></div>
-            <div class="field"><label for="new-password">新しいパスワード</label><input id="new-password" v-model="newPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="password-help" required></div>
-            <div class="field"><label for="password-confirmation">新しいパスワード（確認）</label><input id="password-confirmation" v-model="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
-            <button class="primary-link" type="submit">{{ passwordChanging ? '変更しています' : 'パスワードを変更' }}</button>
-          </fieldset>
-          <p v-if="passwordError" class="form-error" role="alert">{{ passwordError }}</p>
-          <p v-if="passwordSuccess" class="password-success" role="status">{{ passwordSuccess }}</p>
-        </form>
-      </section>
-      <section class="content-panel account-actions">
-        <h2>ログイン状態</h2>
-        <button class="secondary-link" type="button" @click="handleLogout">
-          <UIcon name="i-lucide-log-out" />
-          ログアウト
-        </button>
-      </section>
-      <section class="content-panel danger-zone">
-        <h2>アカウント削除</h2>
-        <p>アカウントを削除すると、解答履歴とお気に入りを復元できなくなります。<template v-if="PAYMENTS_ENABLED">プレミアム会員資格も削除され、再登録による復元や自動返金は行われません。</template></p>
-        <button v-if="!deleteFormOpen" type="button" @click="deleteFormOpen = true">アカウントを削除</button>
-        <form v-else class="delete-form" @submit.prevent="deleteAccount">
-          <div class="field">
-            <label for="current-password">現在のパスワード</label>
-            <input id="current-password" v-model="currentPassword" type="password" autocomplete="current-password" required>
-          </div>
-          <label class="delete-confirmation"><input v-model="deleteConfirmed" type="checkbox"><span>削除後にデータ{{ PAYMENTS_ENABLED ? 'とプレミアム会員資格' : '' }}を復元できないことを確認しました。</span></label>
-          <p v-if="deleteError" class="form-error" role="alert">{{ deleteError }}</p>
-          <div class="delete-actions">
-            <button type="button" @click="deleteFormOpen = false">キャンセル</button>
-            <button class="danger-button" type="submit" :disabled="!deleteConfirmed || !currentPassword || deleting">{{ deleting ? '削除しています' : '完全に削除する' }}</button>
-          </div>
-        </form>
+      <AchievementReport @settled.once="alignAccountSettings" />
+      <section id="account-settings" ref="settingsSection" class="account-settings" aria-labelledby="account-settings-heading">
+        <h2 id="account-settings-heading">アカウント設定</h2>
+        <section v-if="PAYMENTS_ENABLED && !user?.paid_content_access" class="content-panel membership-action">
+          <h3>プレミアム会員</h3>
+          <p>{{ PRICE_LABEL }}の買い切りで、演習セット{{ EXAM_CONFIG.payments.free_exam_count + 1 }}以降を利用できます。</p>
+          <NuxtLink class="primary-link" to="/premium">プレミアム会員の詳細を見る</NuxtLink>
+        </section>
+        <section class="content-panel password-settings">
+          <h3>パスワード変更</h3>
+          <p id="password-help">新しいパスワードは8文字以上で入力してください。変更すると、他の端末では再ログインが必要になります。</p>
+          <form class="password-form" @submit.prevent="submitPasswordChange">
+            <fieldset :disabled="passwordChanging">
+              <div class="field"><label for="password-current">現在のパスワード</label><input id="password-current" v-model="passwordCurrent" type="password" autocomplete="current-password" required></div>
+              <div class="field"><label for="new-password">新しいパスワード</label><input id="new-password" v-model="newPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="password-help" required></div>
+              <div class="field"><label for="password-confirmation">新しいパスワード（確認）</label><input id="password-confirmation" v-model="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
+              <button class="primary-link" type="submit">{{ passwordChanging ? '変更しています' : 'パスワードを変更' }}</button>
+            </fieldset>
+            <p v-if="passwordError" class="form-error" role="alert">{{ passwordError }}</p>
+            <p v-if="passwordSuccess" class="password-success" role="status">{{ passwordSuccess }}</p>
+          </form>
+        </section>
+        <section class="content-panel account-actions">
+          <h3>ログイン状態</h3>
+          <button class="secondary-link" type="button" @click="handleLogout">
+            <UIcon name="i-lucide-log-out" />
+            ログアウト
+          </button>
+        </section>
+        <section class="content-panel danger-zone">
+          <h3>アカウント削除</h3>
+          <p>アカウントを削除すると、解答履歴とお気に入りを復元できなくなります。<template v-if="PAYMENTS_ENABLED">プレミアム会員資格も削除され、再登録による復元や自動返金は行われません。</template></p>
+          <button v-if="!deleteFormOpen" type="button" @click="deleteFormOpen = true">アカウントを削除</button>
+          <form v-else class="delete-form" @submit.prevent="deleteAccount">
+            <div class="field">
+              <label for="current-password">現在のパスワード</label>
+              <input id="current-password" v-model="currentPassword" type="password" autocomplete="current-password" required>
+            </div>
+            <label class="delete-confirmation"><input v-model="deleteConfirmed" type="checkbox"><span>削除後にデータ{{ PAYMENTS_ENABLED ? 'とプレミアム会員資格' : '' }}を復元できないことを確認しました。</span></label>
+            <p v-if="deleteError" class="form-error" role="alert">{{ deleteError }}</p>
+            <div class="delete-actions">
+              <button type="button" @click="deleteFormOpen = false">キャンセル</button>
+              <button class="danger-button" type="submit" :disabled="!deleteConfirmed || !currentPassword || deleting">{{ deleting ? '削除しています' : '完全に削除する' }}</button>
+            </div>
+          </form>
+        </section>
       </section>
     </template>
   </div>
@@ -147,8 +160,12 @@ const deleteAccount = async () => {
 .account-info { display: grid; gap: 18px; }
 .account-info div { display: grid; grid-template-columns: 160px 1fr; gap: 20px; }
 .account-info span { color: var(--muted); }
-.account-actions h2, .danger-zone h2 { font-size: 1.25rem; }
-.password-settings h2 { font-size: 1.25rem; }
+.account-info strong { overflow-wrap: anywhere; }
+.account-info h2 { margin-bottom: 0; font-size: 1.25rem; }
+.account-settings { margin-top: 28px; scroll-margin-top: calc(var(--site-navigation-height, var(--header-height)) + 20px); }
+.account-settings > h2 { margin: 0 0 18px; font-size: 1.5rem; }
+.account-actions h3, .danger-zone h3 { font-size: 1.25rem; }
+.password-settings h3 { font-size: 1.25rem; }
 .password-form { max-width: 480px; margin-top: 20px; }
 .password-form fieldset { display: grid; gap: 18px; min-width: 0; margin: 0; padding: 0; border: 0; }
 .password-form button { justify-self: start; cursor: pointer; }
