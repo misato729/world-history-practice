@@ -55,7 +55,7 @@ function harness(path: string, kind: string) {
     window: { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) },
     ...catalog, hasFullExamAccess }
   const scope = effectScope()
-  const setup = factory(sidebarSource, Object.keys(dependencies), '{ exams, catalogEnabled, isLoading, hasAccessError, examTarget, isStaticExamLocked, retryCatalog }')
+  const setup = factory(sidebarSource, Object.keys(dependencies), '{ exams, catalogEnabled, isLoading, hasAccessError, examTarget, isStaticExamLocked, retryCatalog, openExam, toggleExam }')
   const sidebar = scope.run(() => setup(...Object.values(dependencies)))!
   mounted.forEach(callback => callback())
   return { sidebar, route, user, accessToken, requests, qualifications, events,
@@ -68,7 +68,7 @@ function assertStatic(h: ReturnType<typeof harness>) {
   assert.equal(h.sidebar.isLoading.value, false)
   assert.equal(h.sidebar.hasAccessError.value, false)
   assert.equal(h.sidebar.exams.value.length, catalog.EXAM_SET_COUNT)
-  assert.ok(h.sidebar.exams.value.every((exam: catalog.ExamCatalogEntry & { groupLinks: unknown[] }) => !exam.question_numbers.length && !exam.groupLinks.length))
+  assert.ok(h.sidebar.exams.value.every((exam: catalog.ExamCatalogEntry & { groupLinks: unknown[] }) => !exam.question_numbers.length && !exam.groupLinks.length && (exam as catalog.SidebarExamCatalogEntry).isStatic))
 }
 
 for (const kind of ['anonymous', 'free', 'premium', 'admin', 'verification']) {
@@ -134,9 +134,59 @@ test('a delayed catalog error cannot replace static navigation with a retry pane
 test('known entitlement hydration and logout update static links without querying the question API', async () => {
   const h = harness('/exam-overview', 'free')
   try {
-    const exam = h.sidebar.exams.value.find((entry: catalog.ExamCatalogEntry) => entry.exam_number === catalog.FREE_EXAM_MAX + 1)
-    h.user.value = member('premium'); await flush(); assert.equal(h.sidebar.isStaticExamLocked(exam), false)
-    h.accessToken.value = null; h.user.value = null; await flush(); assert.equal(h.sidebar.isStaticExamLocked(exam), true)
+    const exam = () => h.sidebar.exams.value.find((entry: catalog.ExamCatalogEntry) => entry.exam_number === catalog.FREE_EXAM_MAX + 1)
+    h.user.value = member('premium'); await flush(); assert.equal(h.sidebar.isStaticExamLocked(exam()), false)
+    h.accessToken.value = null; h.user.value = null; await flush(); assert.equal(h.sidebar.isStaticExamLocked(exam()), true)
     assert.equal(h.requests.length, 0); assert.equal(h.qualifications.length, 0)
+  } finally { h.dispose() }
+})
+
+
+test('static accordion opens free and paid menus without requesting questions or qualification', async () => {
+  for (const kind of ['anonymous', 'free', 'premium']) {
+    const h = harness('/privacy-policy', kind)
+    try {
+      for (const number of [1, catalog.FREE_EXAM_MAX + 1]) {
+        h.sidebar.toggleExam(number)
+        assert.equal(h.sidebar.openExam.value, number)
+        assert.equal(h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === number).groupLinks.length, 0)
+        h.sidebar.toggleExam(number)
+        assert.equal(h.sidebar.openExam.value, null)
+      }
+      await flush(); assert.equal(h.requests.length, 0); assert.equal(h.qualifications.length, 0)
+    } finally { h.dispose() }
+  }
+})
+
+test('a free member keeps locked paid accordions after the real free catalog loads', async () => {
+  const h = harness('/practice/1/3', 'free')
+  try {
+    h.requests[0]!.result.resolve({ data: [...sparseCatalog(), { exam_number: 6, question_numbers: [99], access: 'paid_membership_required' }] })
+    await flush()
+    assert.deepEqual(h.sidebar.exams.value.map((exam: catalog.ExamCatalogEntry) => exam.exam_number), [1, 6, 7, 8, 9, 10])
+    assert.equal(h.sidebar.examTarget(h.sidebar.exams.value[0]), '/practice/1/3')
+    const paid = h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === 6)
+    assert.equal(h.sidebar.isStaticExamLocked(paid), true)
+    assert.deepEqual(paid.question_numbers, [])
+    assert.equal(h.sidebar.examTarget(paid), '/premium')
+    h.sidebar.toggleExam(6); assert.equal(h.sidebar.openExam.value, 6)
+    await flush(); assert.equal(h.requests.length, 1)
+  } finally { h.dispose() }
+})
+
+test('revocation immediately replaces an open real paid group with a static locked menu', async () => {
+  const h = harness('/practice/6/9', 'premium')
+  try {
+    h.requests[0]!.result.resolve({ data: [{ exam_number: 6, question_numbers: [9, 16], groups: [{ id: 60, group_number: 1, title: 'Synthetic paid group', question_numbers: [9, 16] }] }] })
+    await flush(); h.sidebar.toggleExam(6)
+    assert.equal(h.sidebar.examTarget(h.sidebar.exams.value[0]), '/practice/6/9')
+    h.user.value = member('free')
+    const paid = h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === 6)
+    assert.equal(h.sidebar.openExam.value, 6)
+    assert.equal(h.sidebar.isStaticExamLocked(paid), true)
+    assert.equal(h.sidebar.examTarget(paid), '/premium')
+    assert.deepEqual(paid.groupLinks, [])
+    h.user.value = null; h.accessToken.value = null
+    assert.equal(h.sidebar.examTarget(h.sidebar.exams.value.find((exam: catalog.ExamCatalogEntry) => exam.exam_number === 6)), '/premium')
   } finally { h.dispose() }
 })

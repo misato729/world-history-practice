@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 277,
-  "updated_at": "2026-11-02T23:40:01.330Z",
+  "revision": 281,
+  "updated_at": "2026-11-03T00:53:24.017Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-02T23-40-01-330Z-r277.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T00-53-24-017Z-r281.json",
   "contexts": [
     {
       "id": "product",
@@ -6592,6 +6592,142 @@
             "failed_criteria": []
           }
         ]
+      }
+    },
+    {
+      "id": "static_sidebar_accordion_20261103",
+      "context": "service",
+      "title": "静的サイドバーのアコーディオンとAPI取得後の有料枠表示",
+      "status": "done",
+      "depends_on": [],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: 静的サイドバーにアコーディオン、無料会員の問題API取得後も模試6以降をアコーディオン込みで静的表示。追加回答で4repo",
+      "next_action": "実装/ローカル検証は完了。後続のstatic_sidebar_release_20261103で明示承認された送信・配信を実施",
+      "evidence": [
+        "docs/static-sidebar.md"
+      ],
+      "last_verified_at": "2026-11-03T00:47:53Z",
+      "verification_scope": "4版の静的アコーディオン・無料API後の有料枠/親子ロックを実装。関連104件skip0・型4成功、合成PC/SP16画像・開閉追加0・資格降格を実操作し独立レビューPASS。元dirty/原設定保全。未コミット・未配信",
+      "acceptance": [
+        {
+          "id": "behavior",
+          "kind": "automated",
+          "description": "静的開閉で問題API追加0、無料API後に有料枠補完、資格変更と疎番号を保持",
+          "verification": "静的開閉で問題API追加0、無料API後に有料枠補完、資格変更と疎番号を保持",
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar.md"
+          ],
+          "checked_at": "2026-11-03T00:47:53Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "4版でPC/SPのアコーディオン・ロック親子リンク・表示を実操作",
+          "verification": "4版でPC/SPのアコーディオン・ロック親子リンク・表示を実操作",
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar.md"
+          ],
+          "checked_at": "2026-11-03T00:47:53Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が差分・回帰・API制御とPC/SP証拠を照合",
+          "verification": "別担当が差分・回帰・API制御とPC/SP証拠を照合",
+          "status": "passed",
+          "evidence": [
+            "docs/static-sidebar.md"
+          ],
+          "checked_at": "2026-11-03T00:47:53Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "sidebar_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "関連40件の初回回帰で1件失敗。旧行オブジェクトを保持する資格変更テストを現在の表示行の検査へ更新。UI/独立最終レビューは未実施",
+            "at": "2026-11-03T00:28:37.828Z",
+            "failed_criteria": [
+              "behavior",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "4版の静的アコーディオン・無料API後の有料枠/親子ロックを実装。関連104件skip0・型4成功、合成PC/SP16画像・開閉追加0・資格降格を実操作し独立レビューPASS。元dirty/原設定保全。未コミット・未配信",
+            "at": "2026-11-03T00:47:54.698Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "static_sidebar_release_20261103",
+      "context": "service",
+      "title": "静的サイドバー修正の限定送信と3サービス本番反映",
+      "status": "doing",
+      "depends_on": [
+        "static_sidebar_accordion_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: コミット・push・本番反映。対象4repo、templateは既存合意どおりpushのみ",
+      "next_action": "今回のindexだけを送信しCIと3Netlifyの同SHA公開、PC/SP静的開閉を確認",
+      "evidence": [
+        "docs/static-sidebar-release.md"
+      ],
+      "last_verified_at": null,
+      "verification_scope": "4Git/CI、3Netlify。画面側のみ、Fly/API/DB・Stripe設定変更なし。元dirtyとtemplate seed0保全",
+      "acceptance": [
+        {
+          "id": "scope",
+          "kind": "automated",
+          "description": "公開indexは今回だけ、既存dirty・非公開資料保護・template初期状態を保持",
+          "verification": "公開indexは今回だけ、既存dirty・非公開資料保護・template初期状態を保持",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "ci",
+          "kind": "automated",
+          "description": "送信実装SHAの必須CI成功",
+          "verification": "送信実装SHAの必須CI成功",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "production",
+          "kind": "automated",
+          "description": "3Netlify同SHA Publishedと本番静的開閉PC/SP、template配信なし",
+          "verification": "3Netlify同SHA Publishedと本番静的開閉PC/SP、template配信なし",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "別担当が送信範囲・CI/本番の証拠を照合",
+          "verification": "別担当が送信範囲・CI/本番の証拠を照合",
+          "status": "pending",
+          "evidence": [],
+          "checked_at": null,
+          "reviewer": null
+        }
+      ],
+      "execution": {
+        "worker": "sidebar_release_implementer",
+        "max_attempts": 3,
+        "attempts": []
       }
     }
   ],

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry } from '../app/utils/examCatalog.ts'
+import { createSidebarExamCatalog, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry } from '../app/utils/examCatalog.ts'
 
 const mockExam = (): ExamCatalogEntry => {
   let start = 1
@@ -64,4 +64,41 @@ test('the active group covers all its public children, not only the starting chi
   assert.equal(isCatalogGroupActive(exam, first, 1, 9), false)
   assert.equal(isCatalogGroupActive(exam, first, 2, 8), false)
   assert.equal(isCatalogGroupActive({ ...exam, question_numbers: [1] }, first, 1, 8), false)
+})
+
+
+test('static sidebar slots do not invent question numbers or real groups', () => {
+  const rows = createSidebarExamCatalog([mockExam()], false, false)
+  assert.ok(rows.length > 5)
+  assert.ok(rows.every(row => row.isStatic && row.question_numbers.length === 0 && !row.groups))
+  assert.equal(rows.find(row => row.exam_number === 6)?.access, 'paid_membership_required')
+})
+
+test('free API results keep sparse public groups and append each locked slot once', () => {
+  const source = [
+    { ...mockExam(), exam_number: 6, access: 'paid_membership_required' as const },
+    { exam_number: 1, question_numbers: [7, 19], groups: [{ id: 71, group_number: 1, title: 'Synthetic sparse group', question_numbers: [7, 19] }] },
+    { exam_number: 2, question_numbers: [] },
+    { ...mockExam(), exam_number: 7 },
+  ]
+  const before = JSON.stringify(source)
+  const rows = createSidebarExamCatalog(source, true, false)
+  assert.deepEqual(rows.map(row => row.exam_number), [1, 6, 7, 8, 9, 10])
+  assert.equal(rows[0]!.isStatic, false)
+  assert.equal(catalogGroupLinks(rows[0]!)[0]!.to, '/practice/1/7')
+  for (const row of rows.slice(1)) {
+    assert.equal(row.isStatic, true)
+    assert.equal(row.access, 'paid_membership_required')
+    assert.deepEqual(row.question_numbers, [])
+    assert.equal(row.groups, undefined)
+  }
+  assert.equal(JSON.stringify(source), before)
+})
+
+test('qualified API rows use only actual publications; server denial stays locked', () => {
+  const rows = createSidebarExamCatalog([{ ...mockExam(), exam_number: 6 }, { exam_number: 7, question_numbers: [], access: 'paid_membership_required' }], true, true)
+  assert.deepEqual(rows.map(row => row.exam_number), [6, 7])
+  assert.equal(rows[0]!.isStatic, false)
+  assert.equal(rows[1]!.isStatic, true)
+  assert.equal(rows[1]!.access, 'paid_membership_required')
 })

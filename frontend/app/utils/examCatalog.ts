@@ -54,3 +54,26 @@ export const catalogQuestionLabel = (exam: ExamCatalogEntry, questionNumber: num
   const group = exam.groups?.find(item => item.question_numbers.includes(questionNumber))
   return group ? `大問${group.group_number}・問${group.question_numbers.indexOf(questionNumber) + 1}` : `問${questionNumber}`
 }
+
+export type SidebarExamCatalogEntry = ExamCatalogEntry & { isStatic: boolean }
+
+/** Static rows carry no inferred publication details; API rows keep their real positions. */
+export const createSidebarExamCatalog = (
+  catalog: readonly ExamCatalogEntry[] | null,
+  usePublished: boolean,
+  fullAccess: boolean,
+  config: ExamConfiguration = EXAM_CONFIG,
+): SidebarExamCatalogEntry[] => {
+  const freeMax = config.payments.enabled ? config.payments.free_exam_count : config.exam.set_count
+  const published = new Map((catalog ?? []).map(exam => [exam.exam_number, exam]))
+  return Array.from({ length: config.exam.set_count }, (_, index) => index + 1).flatMap<SidebarExamCatalogEntry>(examNumber => {
+    const exam = published.get(examNumber)
+    const locked = (!fullAccess && examNumber > freeMax)
+      || (usePublished && exam?.access === 'paid_membership_required')
+    if (!usePublished || locked) return [{
+      exam_number: examNumber, question_numbers: [], isStatic: true,
+      access: locked ? 'paid_membership_required' as const : 'available' as const,
+    }]
+    return exam && catalogExamStartNumber(exam) !== undefined ? [{ ...exam, isStatic: false }] : []
+  })
+}

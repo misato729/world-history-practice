@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { EXAM_SET_COUNT, FREE_EXAM_MAX, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup } from '~/utils/examCatalog'
+import { createSidebarExamCatalog, catalogExamLabel, catalogExamStartNumber, catalogGroupLabel, catalogGroupLinks, isCatalogGroupActive, type ExamCatalogEntry, type ExamCatalogGroup, type SidebarExamCatalogEntry } from '~/utils/examCatalog'
 import { hasFullExamAccess } from '~/utils/examConfig'
 
 const props = withDefaults(defineProps<{ desktopOpen?: boolean }>(), { desktopOpen: true })
@@ -15,11 +15,9 @@ const onHome = computed(() => route.path === '/')
 const qualification = useQualifiedExamAccess(onHome)
 const catalogEnabled = computed(() => onPractice.value || (onHome.value && qualification.allowed.value))
 const { data: publicCatalog, status: catalogStatus, error: catalogError, refresh: refreshCatalog } = usePracticeFilterCatalog(computed(() => ({})), catalogEnabled)
-const staticExams: ExamCatalogEntry[] = Array.from({ length: EXAM_SET_COUNT }, (_, index) => ({ exam_number: index + 1, question_numbers: [] }))
-const exams = computed(() => (
-  (catalogEnabled.value ? (publicCatalog.value ?? []).filter(exam => catalogExamStartNumber(exam) !== undefined && exam.access !== 'paid_membership_required') : staticExams)
-    .map(exam => ({ ...exam, groupLinks: catalogGroupLinks(exam) }))
-))
+const canUsePaidExams = computed(() => hasFullExamAccess(user.value) && (!onHome.value || qualification.allowed.value))
+const exams = computed(() => createSidebarExamCatalog(publicCatalog.value, catalogEnabled.value, canUsePaidExams.value)
+  .map(exam => ({ ...exam, groupLinks: catalogGroupLinks(exam) })))
 const isLoading = computed(() => catalogEnabled.value && (catalogStatus.value === 'pending' || catalogStatus.value === 'idle'))
 const hasAccessError = computed(() => Boolean(catalogError.value))
 const retryCatalog = async () => {
@@ -48,14 +46,12 @@ watch(() => route.fullPath, closeMobileList)
 
 const isCurrentGroup = (exam: ExamCatalogEntry, group: ExamCatalogGroup) => route.path.startsWith('/practice/') && isCatalogGroupActive(exam, group, Number(route.params.examNumber), Number(route.params.questionNumber))
 
-// Static navigation can use known access for links, without loading question data.
-const isStaticExamLocked = (exam: ExamCatalogEntry) => !catalogEnabled.value && exam.exam_number > FREE_EXAM_MAX
-  && (onHome.value || !hasFullExamAccess(user.value))
-
-const examTarget = (exam: ExamCatalogEntry) => (
-  catalogEnabled.value ? `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)}`
-    : isStaticExamLocked(exam) ? '/premium'
-    : { path: '/practice/start', query: { exams: String(exam.exam_number) } }
+// A static paid row can remain visible after the free catalog has loaded.
+const isStaticExamLocked = (exam: SidebarExamCatalogEntry) => exam.isStatic && exam.access === 'paid_membership_required'
+const examTarget = (exam: SidebarExamCatalogEntry) => (
+  isStaticExamLocked(exam) ? '/premium'
+    : exam.isStatic ? { path: '/practice/start', query: { exams: String(exam.exam_number) } }
+    : `/practice/${exam.exam_number}/${catalogExamStartNumber(exam)}`
 )
 </script>
 
@@ -128,29 +124,31 @@ const examTarget = (exam: ExamCatalogEntry) => (
               <UIcon v-if="isStaticExamLocked(exam)" name="i-lucide-lock-keyhole" aria-label="プレミアム会員向け" />
             </NuxtLink>
             <button
-              v-if="exam.groupLinks.length"
               type="button"
               :aria-expanded="openExam === exam.exam_number"
               :aria-controls="`exam-${exam.exam_number}-groups`"
-              :title="openExam === exam.exam_number ? `${catalogExamLabel(exam.exam_number)}の大問を閉じる` : `${catalogExamLabel(exam.exam_number)}の大問を開く`"
+              :title="openExam === exam.exam_number ? `${catalogExamLabel(exam.exam_number)}の${exam.groupLinks.length ? '大問' : 'メニュー'}を閉じる` : `${catalogExamLabel(exam.exam_number)}の${exam.groupLinks.length ? '大問' : 'メニュー'}を開く`"
               @click="toggleExam(exam.exam_number)"
             >
               <UIcon
                 :name="openExam === exam.exam_number ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
               />
               <span class="sr-only">
-                {{ openExam === exam.exam_number ? `${catalogExamLabel(exam.exam_number)}の大問を閉じる` : `${catalogExamLabel(exam.exam_number)}の大問を開く` }}
+                {{ openExam === exam.exam_number ? `${catalogExamLabel(exam.exam_number)}の${exam.groupLinks.length ? '大問' : 'メニュー'}を閉じる` : `${catalogExamLabel(exam.exam_number)}の${exam.groupLinks.length ? '大問' : 'メニュー'}を開く` }}
               </span>
             </button>
           </div>
 
           <Transition name="groups">
             <nav
-              v-if="openExam === exam.exam_number && exam.groupLinks.length"
+              v-if="openExam === exam.exam_number"
               :id="`exam-${exam.exam_number}-groups`"
               class="group-list"
-              :aria-label="`${catalogExamLabel(exam.exam_number)}の大問一覧`"
+              :aria-label="`${catalogExamLabel(exam.exam_number)}の${exam.groupLinks.length ? '大問一覧' : 'メニュー'}`"
             >
+              <NuxtLink v-if="!exam.groupLinks.length" :to="examTarget(exam)" @click="closeMobileList">
+                {{ isStaticExamLocked(exam) ? 'プレミアム会員で利用' : '演習を開始' }}
+              </NuxtLink>
               <NuxtLink
                 v-for="entry in exam.groupLinks"
                 :key="entry.group.id"
