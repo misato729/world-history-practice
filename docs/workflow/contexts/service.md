@@ -281,3 +281,9 @@ h1を「世界史ラボとは」、試験概要を「→試験概要を見る」
 `completed_work_release_20261103`。完了済みの未コミット作業の送信が明示依頼された。[対象と確認](../../completed-work-release-20261103.md)。main送信とCIのみ、DBの再操作・Fly配信・実メール・記事投稿なし。
 
 送信完了：実装コミット`6eb6c8b`、必須CI全成功、既存の未コミット変更を解消。原本/私用資料はGit対象外のまま。今回の依頼はcommit/pushのみで、[全変更と確認結果](../../completed-work-release-20261103.md)を参照。
+
+## 2026-11-03 完了済み変更の再配信
+
+`completed_work_redeploy_20261103`。既存2サイトの再デプロイが明示依頼された。[配信範囲と結果](../../completed-work-redeploy-20261103.md)。テンプレートは公開しない。既存設定と注入ファイルを保持して同SHAの公開とPC/SPを確認する。
+
+再配信完了：Netlify最新mainとFly各2VMの反映、health/販売保持とPC/SPを確認。JPは初回release中断を同内容の注入方法修正で解消。独立レビューPASS。[配信元SHA・確認範囲・全変更ファイル](../../completed-work-redeploy-20261103.md)。Worldの事前移行台帳は未取得として区別する。

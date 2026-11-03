@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "revision": 287,
-  "updated_at": "2026-11-03T04:19:23.062Z",
+  "revision": 291,
+  "updated_at": "2026-11-03T04:55:52.691Z",
   "workspace_relative_to_repo": ".",
   "active_context": "service",
-  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T04-19-23-062Z-r287.json",
+  "last_checkpoint": "docs/workflow/handoffs/2026-11-03T04-55-52-691Z-r291.json",
   "contexts": [
     {
       "id": "product",
@@ -7118,6 +7118,95 @@
             "outcome": "passed",
             "summary": "完了済み変更を3mainへ送信、全CI成功。World旧反例を現設定対応へ修正し隔離6件成功、template44件/型成功と元検証コピー30一致、独立レビューPASS。私用資料/秘密/配布空state保全、追加の本番操作なし",
             "at": "2026-11-03T04:19:21.280Z",
+            "failed_criteria": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "completed_work_redeploy_20261103",
+      "context": "service",
+      "title": "完了済み変更を既存本番へ再配信",
+      "status": "done",
+      "depends_on": [
+        "completed_work_release_20261103"
+      ],
+      "authorization": "requested",
+      "request_ref": "2026-11-03 ユーザー: 再デプロイもしてください",
+      "next_action": "再デプロイと本番確認は完了。追加依頼を待つ",
+      "evidence": [
+        "docs/completed-work-redeploy-20261103.md"
+      ],
+      "last_verified_at": "2026-11-03T04:55:49Z",
+      "verification_scope": "既存2Netlifyを最新main SHAでPublished、Fly各2VMで同image・実ソースhash・env/guest/region/ID保持とhealth/販売設定を確認。JPは同内容local_path再試行成功、注入hash・各20profile・移行台帳前後一致。匿名PC/SP4状態と独立レビューPASS。World事前台帳未取得は区別",
+      "acceptance": [
+        {
+          "id": "protection",
+          "kind": "automated",
+          "description": "protection",
+          "verification": "protectionの実証拠を配信記録へ保存",
+          "status": "passed",
+          "evidence": [
+            "docs/completed-work-redeploy-20261103.md"
+          ],
+          "checked_at": "2026-11-03T04:55:49Z"
+        },
+        {
+          "id": "deploy",
+          "kind": "automated",
+          "description": "deploy",
+          "verification": "deployの実証拠を配信記録へ保存",
+          "status": "passed",
+          "evidence": [
+            "docs/completed-work-redeploy-20261103.md"
+          ],
+          "checked_at": "2026-11-03T04:55:49Z"
+        },
+        {
+          "id": "ui",
+          "kind": "automated",
+          "description": "ui",
+          "verification": "uiの実証拠を配信記録へ保存",
+          "status": "passed",
+          "evidence": [
+            "docs/completed-work-redeploy-20261103.md"
+          ],
+          "checked_at": "2026-11-03T04:55:49Z"
+        },
+        {
+          "id": "review",
+          "kind": "review",
+          "description": "review",
+          "verification": "reviewの実証拠を配信記録へ保存",
+          "status": "passed",
+          "evidence": [
+            "docs/completed-work-redeploy-20261103.md"
+          ],
+          "checked_at": "2026-11-03T04:55:49Z",
+          "reviewer": "premium_review"
+        }
+      ],
+      "execution": {
+        "worker": "redeploy_implementer",
+        "max_attempts": 3,
+        "attempts": [
+          {
+            "number": 1,
+            "outcome": "failed",
+            "summary": "Fly deployは成功したが、CLIがrelease詳細stdoutを返さず最初の適用件数ログ検査は未達。再配信せず台帳のversion/sha256だけをVM内で比較し、10件と現ソースの全checksum一致を確認。世界史は事前台帳を取得していないため新規適用0の直接観測とは扱わない。",
+            "at": "2026-11-03T04:49:44.563Z",
+            "failed_criteria": [
+              "protection",
+              "deploy",
+              "ui",
+              "review"
+            ]
+          },
+          {
+            "number": 2,
+            "outcome": "passed",
+            "summary": "既存2Netlifyを最新main SHAでPublished、Fly各2VMで同image・実ソースhash・env/guest/region/ID保持とhealth/販売設定を確認。JPは同内容local_path再試行成功、注入hash・各20profile・移行台帳前後一致。匿名PC/SP4状態と独立レビューPASS。World事前台帳未取得は区別",
+            "at": "2026-11-03T04:55:50.645Z",
             "failed_criteria": []
           }
         ]
