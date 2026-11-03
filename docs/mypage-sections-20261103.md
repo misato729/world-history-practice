@@ -40,3 +40,18 @@
 
 初回送信：実装2376aea、Netlify公開6ae9d900b32d5ef23d23c8ecは同SHAで成功。CI41639353136は既存siteHeaderMenu.test.tsが旧URL/accountを期待して1件失敗。実装の仕様に合わせ/account#account-settingsへ期待値2箇所だけを更新し再検証する。
 追加変更：`frontend/tests/siteHeaderMenu.test.ts`（既存メニューテストの期待値更新）。
+
+### 本番確認
+
+最終テスト修正コミットは `cb4679dd9d9ad5eda70819493ec4405ca003fe5c`。Netlifyの公開 `6ae9d9f50c8d9615329e4663` は同SHAでPublished、2026-11-03T12:56:46.529Z。公開/account/のJS61ファイルを実行せず読み、マイページ・登録情報・設定section ID・メニューフラグメント・settled通知を確認した。
+
+既存ログイン状態のブラウザーで本番を閲覧し、見出し順と別ページ→設定メニュー移動をPC1280/SP390で確認。見出し上端PC95.8/SP130.0px、固定ヘッダー下端77/112pxで隠れず、横へのはみ出しとメニュー残留なし。PC/SPの設定セクションだけの画像をローカル一時領域に保存。登録情報・履歴本文の記録、フォーム送信・回答・決済・パスワード変更・削除・ログアウトは行っていない。[最終CI41639925497](https://github.com/misato729/world-history-practice/actions/runs/41639925497)はharness/verifyとも成功。Docker、DB/API、全フロントテスト、型、本番ビルド、非root本番Docker検査まで通過。
+
+送信前の軽量ハーネス169件、サンプル構成検査、private-source検査は成功。テスト期待値修正は別担当レビューPASS、メニューテスト7件成功。
+追加変更記録：`docs/workflow/handoffs/2026-11-03T12-55-21-364Z-r316.json`（初回CI不合格）。
+
+最終独立レビューも公開証跡とPC/SP画像を確認しPASS。公開記録だけの最終コミットは `[skip netlify] [skip ci]` を付け、確認済みの公開実装cb4679dを維持する。
+
+最終公開記録の追加ファイル：
+- `docs/workflow/handoffs/2026-11-03T12-59-49-815Z-r317.json`（最終合格）
+- `docs/workflow/handoffs/2026-11-03T12-59-51-025Z-r318.json`（公開完了）
