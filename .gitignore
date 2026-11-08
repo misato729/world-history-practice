@@ -9,6 +9,7 @@
 **/.data/
 *.pem
 *.key
+SECRET_KEY_BASE.txt
 
 # Copyrighted reference materials and derived full OCR/images: local only.
 **/[pP][aA][sS][tT]-[eE][xX][aA][mM]/
